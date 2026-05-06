@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Environment and local secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# WhatsApp/WPPConnect session and browser state
+tokens/
+.wwebjs_auth/
+.wwebjs_cache/
+wppconnect_tokens/
+
+# Local app data and broadcast artifacts
+data/
+media/
+logs/
+
+# Build, test, and coverage output
+dist/
+build/
+coverage/
+.nyc_output/
+
+# Package manager logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime caches and temporary files
+.cache/
+.tmp/
+tmp/
+*.log
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
