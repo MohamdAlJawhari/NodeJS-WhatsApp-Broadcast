@@ -3,6 +3,7 @@ require("dotenv").config();
 const { loadContacts } = require("./contacts");
 const { createClient } = require("./whatsapp");
 const { sendBroadcast } = require("./sender");
+const { validatePhone } = require("./validator");
 
 async function main() {
   const sessionName = process.env.SESSION_NAME || "employee-session";
@@ -44,7 +45,14 @@ Hello {{name}}, your password is {{password}}.
       .replace(/\{\{password\}\}/g, contact.password);
 
     console.log("\n----------------");
-    console.log("Phone:", contact.phone);
+    const validation = validatePhone(contact.phone);
+
+    console.log(
+      "Phone:",
+      validation.valid
+        ? validation.international
+        : contact.phone
+    );
     console.log(previewMessage);
 
   });
