@@ -13,7 +13,7 @@ async function main() {
 Hello {{name}}, your password is {{password}}.
 `;
 
-// Loads contacts from Excel.
+  // Loads contacts from Excel.
   const contacts = loadContacts(contactsFile);
 
   console.log("Contacts loaded:", contacts.length);
@@ -26,6 +26,44 @@ Hello {{name}}, your password is {{password}}.
   // Opens WhatsApp and waits until it is ready.
   const client = await createClient(sessionName);
 
+  // Validates media file if provided.
+  const readline = require("readline");
+
+  // Shows message preview and asks for confirmation before sending.
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  console.log("\n========== PREVIEW ==========");
+
+  contacts.slice(0, 3).forEach(contact => {
+
+    const previewMessage = template
+      .replace(/\{\{name\}\}/g, contact.name)
+      .replace(/\{\{password\}\}/g, contact.password);
+
+    console.log("\n----------------");
+    console.log("Phone:", contact.phone);
+    console.log(previewMessage);
+
+  });
+
+  console.log("\n=============================");
+
+  const answer = await new Promise(resolve => {
+    rl.question(
+      "\nStart sending? (yes/no): ",
+      resolve
+    );
+  });
+
+  rl.close();
+
+  if (answer.toLowerCase() !== "yes") {
+    console.log("Broadcast canceled.");
+    return;
+  }
   // Sends messages in batches with delays.
   await sendBroadcast(client, contacts, {
     template,

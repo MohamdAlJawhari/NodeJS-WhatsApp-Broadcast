@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { generateMessage } = require("./template");
 const { sleep, randomDelay, formatPhone } = require("./utils");
+const { validateMediaFile, isImage } = require("./media");
 
 async function sendBroadcast(client, contacts, options) {
   const {
@@ -21,6 +22,7 @@ async function sendBroadcast(client, contacts, options) {
 
   const logFile = path.join(logsDir, `send-log-${Date.now()}.json`);
   const results = [];
+  const failedNumbers = [];
 
   console.log(`Starting broadcast to ${contacts.length} contacts...`);
 
@@ -32,13 +34,30 @@ async function sendBroadcast(client, contacts, options) {
     try {
       console.log(`Sending to ${contact.phone}...`);
 
-      if (mediaFile && fs.existsSync(mediaFile)) {
-        await client.sendImage(
-          chatId,
-          mediaFile,
-          path.basename(mediaFile),
-          message
-        );
+      const mediaValidation = validateMediaFile(mediaFile);
+
+      if (mediaValidation.valid) {
+
+        if (isImage(mediaValidation.extension)) {
+
+          await client.sendImage(
+            chatId,
+            mediaFile,
+            path.basename(mediaFile),
+            message
+          );
+
+        } else {
+
+          await client.sendFile(
+            chatId,
+            mediaFile,
+            path.basename(mediaFile),
+            message
+          );
+
+        }
+
       } else {
         await client.sendText(chatId, message);
       }
@@ -56,7 +75,7 @@ async function sendBroadcast(client, contacts, options) {
         status: "failed",
         error: error.message
       });
-
+      failedNumbers.push(contact.phone);
       console.log(`Failed: ${contact.phone}`);
       console.log(error.message);
     }
@@ -72,6 +91,16 @@ async function sendBroadcast(client, contacts, options) {
       await sleep(batchPause);
     }
   }
+
+  const failedFile = path.join(
+    logsDir,
+    `failed-${Date.now()}.json`
+  );
+
+  fs.writeFileSync(
+    failedFile,
+    JSON.stringify(failedNumbers, null, 2)
+  );
 
   console.log("Broadcast finished.");
   console.log(`Log saved to: ${logFile}`);
