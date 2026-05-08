@@ -70,6 +70,48 @@ function validatePhone(phone) {
   }
 }
 
+function extractTemplateVariables(template) {
+
+  const matches = [
+    ...template.matchAll(/\{\{(.*?)\}\}/g)
+  ];
+
+  return matches.map(match =>
+    match[1].trim()
+  );
+}
+
+function validateTemplateVariables(
+  template,
+  contacts
+) {
+
+  const variables =
+    extractTemplateVariables(template);
+
+  const missingVariables = new Set();
+
+  for (const contact of contacts) {
+
+    for (const variable of variables) {
+
+      if (
+        contact[variable] === undefined
+      ) {
+
+        missingVariables.add(variable);
+      }
+    }
+  }
+
+  return {
+    valid: missingVariables.size === 0,
+    missing: [...missingVariables]
+  };
+}
+
 module.exports = {
-  validatePhone
+  validatePhone,
+  extractTemplateVariables,
+  validateTemplateVariables
 };

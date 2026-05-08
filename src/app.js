@@ -3,7 +3,7 @@ require("dotenv").config();
 const { loadContacts } = require("./contacts");
 const { createClient } = require("./whatsapp");
 const { sendBroadcast } = require("./sender");
-const { validatePhone } = require("./validator");
+const { validatePhone, validateTemplateVariables } = require("./validator");
 
 async function main() {
   const sessionName = process.env.SESSION_NAME || "employee-session";
@@ -11,7 +11,7 @@ async function main() {
   const mediaFile = process.env.MEDIA_FILE || "";
 
   const template = `
-Hello {{name}}, your password is {{password}}.
+Hello {{name}}, your password is {{password}}. Your code is {{code}}.
 `;
 
   // Loads contacts from Excel.
@@ -35,6 +35,37 @@ Hello {{name}}, your password is {{password}}.
     input: process.stdin,
     output: process.stdout
   });
+
+  const templateValidation =
+    validateTemplateVariables(
+      template,
+      contacts
+    );
+
+  if (!templateValidation.valid) {
+
+    console.log(
+      "\n========== VALIDATION WARNINGS ==========\n"
+    );
+
+    console.log(
+      "Missing template variables detected:\n"
+    );
+
+    templateValidation.missing.forEach(
+      variable => {
+        console.log(`- ${variable}`);
+      }
+    );
+
+    console.log(
+      "\nThese values will appear empty in messages."
+    );
+
+    console.log(
+      "\n=========================================\n"
+    );
+  }
 
   console.log("\n========== PREVIEW ==========");
 
