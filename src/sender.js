@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const XLSX = require("xlsx");
 const { generateMessage } = require("./template");
 const { sleep, randomDelay, formatPhone } = require("./utils");
 const { validateMediaFile, isImage } = require("./media");
@@ -28,17 +29,72 @@ async function sendBroadcast(client, contacts, options) {
   );
 
   const results = [];
-  const failedNumbers = [];
+  const failedContacts = [];
 
   let successCount = 0;
   let failedCount = 0;
   let skippedCount = 0;
+  let paused = false;
+  let stopped = false;
 
   console.log(
     `Starting broadcast to ${contacts.length} contacts...`
   );
 
+
+  process.stdin.setRawMode(true);
+  process.stdin.resume();
+  process.stdin.setEncoding("utf8");
+
+  process.stdin.on("data", key => {
+
+    // CTRL + C
+    if (key === "\u0003") {
+      process.exit();
+    }
+
+    // Pause
+    if (key.toLowerCase() === "p") {
+
+      paused = true;
+
+      console.log(
+        "\n=== BROADCAST PAUSED ==="
+      );
+    }
+
+    // Resume
+    if (key.toLowerCase() === "r") {
+
+      paused = false;
+
+      console.log(
+        "\n=== BROADCAST RESUMED ==="
+      );
+    }
+
+    // Stop completely
+    if (key.toLowerCase() === "q") {
+
+      stopped = true;
+
+      console.log(
+        "\n=== STOPPING BROADCAST ==="
+      );
+    }
+  });
+
+
   for (let i = 0; i < contacts.length; i++) {
+    if (stopped) {
+      break;
+    }
+
+    while (paused) {
+
+      await sleep(1000);
+    }
+
     const contact = contacts[i];
 
     const phoneField =
@@ -155,7 +211,7 @@ async function sendBroadcast(client, contacts, options) {
 
         failedCount++;
 
-        failedNumbers.push(rawPhone);
+        failedContacts.push(contact);
       }
 
       results.push({
@@ -190,7 +246,7 @@ async function sendBroadcast(client, contacts, options) {
 
         failedCount++;
 
-        failedNumbers.push(rawPhone);
+        failedContacts.push(contact);
 
         results.push({
           phone: rawPhone,
@@ -230,16 +286,37 @@ async function sendBroadcast(client, contacts, options) {
     }
   }
 
-  // Save failed numbers
-  const failedFile = path.join(
-    logsDir,
-    `failed-${Date.now()}.json`
-  );
+  // Save failed contacts to Excel
+  if (failedContacts.length > 0) {
 
-  fs.writeFileSync(
-    failedFile,
-    JSON.stringify(failedNumbers, null, 2)
-  );
+    const failedWorkbook =
+      XLSX.utils.book_new();
+
+    const failedWorksheet =
+      XLSX.utils.json_to_sheet(
+        failedContacts
+      );
+
+    XLSX.utils.book_append_sheet(
+      failedWorkbook,
+      failedWorksheet,
+      "Failed Contacts"
+    );
+
+    const failedFile = path.join(
+      logsDir,
+      `failed-${Date.now()}.xlsx`
+    );
+
+    XLSX.writeFile(
+      failedWorkbook,
+      failedFile
+    );
+
+    console.log(
+      `Failed contacts saved to: ${failedFile}`
+    );
+  }
 
   // Final summary
   console.log("\n========== SUMMARY ==========");
