@@ -305,12 +305,15 @@ async function sendBroadcast(client, contacts, options) {
 
     const failedFile = path.join(
       logsDir,
-      `failed-${Date.now()}.xlsx`
+      `failed-${Date.now()}.csv`
     );
 
     XLSX.writeFile(
       failedWorkbook,
-      failedFile
+      failedFile,
+      {
+        bookType: "csv"
+      }
     );
 
     console.log(

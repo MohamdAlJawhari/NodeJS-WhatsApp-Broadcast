@@ -11,7 +11,7 @@ async function main() {
   const mediaFile = process.env.MEDIA_FILE || "";
 
   const template = `
-Hello {{name}}, your password is {{password}}. Your code is {{code}}.
+Hello {{name}}, your password is {{password}}. Your username is {{username}}.
 `;
 
   // Loads contacts from Excel.
