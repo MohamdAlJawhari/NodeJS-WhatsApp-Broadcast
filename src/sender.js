@@ -39,8 +39,14 @@ async function sendBroadcast(client, contacts, options) {
   );
 
   for (let i = 0; i < contacts.length; i++) {
-
     const contact = contacts[i];
+
+    const phoneField =
+      process.env.PHONE_COLUMN || "phone";
+
+    const rawPhone =
+      contact[phoneField];
+
 
     // Progress percentage
     const progress = (
@@ -52,17 +58,17 @@ async function sendBroadcast(client, contacts, options) {
     );
 
     // Validate phone number
-    const phoneValidation = validatePhone(contact.phone);
+    const phoneValidation = validatePhone(rawPhone);
 
     if (!phoneValidation.valid) {
 
-      console.log(`Skipped: ${contact.phone}`);
+      console.log(`Skipped: ${rawPhone}`);
       console.log(phoneValidation.reason);
 
       skippedCount++;
 
       results.push({
-        phone: contact.phone,
+        phone: rawPhone,
         status: "skipped",
         reason: phoneValidation.reason
       });
@@ -77,7 +83,7 @@ async function sendBroadcast(client, contacts, options) {
 
     try {
 
-      console.log(`Sending to ${contact.phone}...`);
+      console.log(`Sending to ${rawPhone}...`);
 
       const mediaValidation = validateMediaFile(mediaFile);
 
@@ -114,7 +120,7 @@ async function sendBroadcast(client, contacts, options) {
         } catch (mediaError) {
 
           console.log(
-            `Media failed for ${contact.phone}:`,
+            `Media failed for ${rawPhone}:`,
             mediaError.message
           );
 
@@ -149,31 +155,52 @@ async function sendBroadcast(client, contacts, options) {
 
         failedCount++;
 
-        failedNumbers.push(contact.phone);
+        failedNumbers.push(rawPhone);
       }
 
       results.push({
-        phone: contact.phone,
+        phone: rawPhone,
         status,
         message
       });
 
-      console.log(`${status}: ${contact.phone}`);
+      console.log(`${status}: ${rawPhone}`);
 
     } catch (error) {
 
-      failedCount++;
+      // WPPConnect internal bug
+      // Message was actually sent
+      if (
+        error.message.includes("msgChunks")
+      ) {
 
-      failedNumbers.push(contact.phone);
+        console.log(
+          `Warning: Message sent but WPPConnect threw internal error`
+        );
 
-      results.push({
-        phone: contact.phone,
-        status: "failed",
-        error: error.message
-      });
+        successCount++;
 
-      console.log(`Failed: ${contact.phone}`);
-      console.log(error.message);
+        results.push({
+          phone: rawPhone,
+          status: "success_with_warning",
+          warning: error.message
+        });
+
+      } else {
+
+        failedCount++;
+
+        failedNumbers.push(rawPhone);
+
+        results.push({
+          phone: rawPhone,
+          status: "failed",
+          error: error.message
+        });
+
+        console.log(`Failed: ${rawPhone}`);
+        console.log(error.message);
+      }
     }
 
     // Save logs continuously

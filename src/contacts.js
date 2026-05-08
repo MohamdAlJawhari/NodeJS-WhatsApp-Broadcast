@@ -9,7 +9,10 @@ function loadContacts(filePath) {
     throw new Error("Contacts file is empty.");
   }
 
-  if (!rows[0].phone) {
+  const phoneColumn =
+    process.env.PHONE_COLUMN || "phone";
+
+  if (!rows[0][phoneColumn]) {
     throw new Error("Contacts file must contain a 'phone' column.");
   }
 

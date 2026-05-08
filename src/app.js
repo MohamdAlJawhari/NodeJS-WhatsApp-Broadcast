@@ -45,7 +45,12 @@ Hello {{name}}, your password is {{password}}.
       .replace(/\{\{password\}\}/g, contact.password);
 
     console.log("\n----------------");
-    const validation = validatePhone(contact.phone);
+    const phoneField =
+      process.env.PHONE_COLUMN || "phone";
+
+    const validation = validatePhone(
+      contact[phoneField]
+    );
 
     console.log(
       "Phone:",
