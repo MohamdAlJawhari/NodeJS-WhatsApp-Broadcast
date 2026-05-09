@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/app.js",
+    "electron": "electron electron/main.js"
   },
   "keywords": [],
   "author": "",
@@ -16,5 +17,8 @@
     "libphonenumber-js": "^1.12.43",
     "puppeteer": "^24.43.0",
     "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "electron": "^42.0.1"
   }
 }
