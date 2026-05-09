@@ -129,6 +129,8 @@ async function sendBroadcast(client, contacts, options) {
         reason: phoneValidation.reason
       });
 
+      // Save invalid contacts for retry/fixing
+      failedContacts.push(contact);
       continue;
     }
 
