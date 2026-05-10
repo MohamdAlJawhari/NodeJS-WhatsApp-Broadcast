@@ -121,7 +121,8 @@ ipcMain.handle(
 
     const {
       contacts,
-      template
+      template,
+      mediaFile
     } = data;
 
     const preview = contacts
@@ -132,8 +133,8 @@ ipcMain.handle(
 
           phone:
             contact[
-              process.env.PHONE_COLUMN ||
-              "phone"
+            process.env.PHONE_COLUMN ||
+            "phone"
             ],
 
           message:
@@ -148,6 +149,46 @@ ipcMain.handle(
   }
 );
 
+ipcMain.handle(
+  "select-media-file",
+  async () => {
+
+    const result =
+      await dialog.showOpenDialog({
+
+        properties: ["openFile"],
+
+        filters: [
+          {
+            name: "Media Files",
+
+            extensions: [
+              "jpg",
+              "jpeg",
+              "png",
+              "pdf",
+              "mp4"
+            ]
+          }
+        ]
+      });
+
+    if (result.canceled) {
+
+      return {
+        success: false
+      };
+    }
+
+    return {
+      success: true,
+      filePath:
+        result.filePaths[0]
+    };
+  }
+);
+
+// Connect to WhatsApp
 ipcMain.handle(
   "connect-whatsapp",
   async (event) => {
@@ -218,7 +259,8 @@ ipcMain.handle(
 
       const {
         contacts,
-        template
+        template,
+        mediaFile
       } = data;
 
       // Live logger
@@ -243,7 +285,7 @@ ipcMain.handle(
 
         template,
 
-        mediaFile: null,
+        mediaFile,
 
         delayMin: 10000,
 

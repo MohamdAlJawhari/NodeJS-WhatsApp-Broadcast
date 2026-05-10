@@ -6,6 +6,10 @@ const {
 contextBridge.exposeInMainWorld(
   "electronAPI",
   {
+    selectMediaFile: () =>
+      ipcRenderer.invoke(
+        "select-media-file"
+      ),
 
     selectContactsFile: () =>
       ipcRenderer.invoke(

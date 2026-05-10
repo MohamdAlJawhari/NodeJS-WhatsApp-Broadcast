@@ -164,19 +164,25 @@ async function sendBroadcast(client, contacts, options) {
 
           if (isImage(mediaValidation.extension)) {
 
+            const normalizedMediaPath =
+              path.resolve(mediaFile);
+
             await client.sendImage(
               chatId,
-              mediaFile,
-              path.basename(mediaFile),
+              normalizedMediaPath,
+              path.basename(normalizedMediaPath),
               message
             );
 
           } else {
 
+            const normalizedMediaPath =
+              path.resolve(mediaFile);
+
             await client.sendFile(
               chatId,
-              mediaFile,
-              path.basename(mediaFile),
+              normalizedMediaPath,
+              path.basename(normalizedMediaPath),
               message
             );
 
@@ -187,8 +193,15 @@ async function sendBroadcast(client, contacts, options) {
         } catch (mediaError) {
 
           console.log(
-            `Media failed for ${rawPhone}:`,
-            mediaError.message
+            `Media failed for ${rawPhone}`
+          );
+
+          console.log(
+            `Media path: ${mediaFile}`
+          );
+
+          console.log(
+            `Error: ${mediaError.message}`
           );
 
         }

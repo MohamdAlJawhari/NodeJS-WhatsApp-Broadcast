@@ -58,7 +58,19 @@ const progressText =
         "progressText"
     );
 
+const mediaBtn =
+    document.getElementById(
+        "mediaBtn"
+    );
+
+const mediaStatus =
+    document.getElementById(
+        "mediaStatus"
+    );
+
 let contacts = [];
+
+let mediaFile = null;
 
 loadBtn.addEventListener(
     "click",
@@ -108,7 +120,8 @@ previewBtn.addEventListener(
                 .generatePreview({
 
                     contacts,
-                    template
+                    template,
+                    mediaFile
                 });
 
         previewContainer.innerHTML =
@@ -136,6 +149,27 @@ previewBtn.addEventListener(
                 div
             );
         });
+    }
+);
+
+mediaBtn.addEventListener(
+    "click",
+    async () => {
+
+        const result =
+            await window.electronAPI
+                .selectMediaFile();
+
+        if (!result.success) {
+
+            return;
+        }
+
+        mediaFile =
+            result.filePath;
+
+        mediaStatus.innerText =
+            mediaFile;
     }
 );
 
@@ -213,7 +247,8 @@ startBtn.addEventListener(
                 .startBroadcast({
 
                     contacts,
-                    template
+                    template,
+                    mediaFile
                 });
 
         if (!result.success) {
