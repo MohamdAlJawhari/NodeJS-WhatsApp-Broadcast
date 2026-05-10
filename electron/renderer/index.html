@@ -1,49 +1,62 @@
 <body>
 
-  <div class="container">
+    <div class="container">
 
-    <h1>
-      WhatsApp Broadcast Sender
-    </h1>
+        <h1>
+            WhatsApp Broadcast Sender
+        </h1>
 
-    <button id="loadContactsBtn">
-      Load Contacts File
-    </button>
+        <button id="loadContactsBtn">
+            Load Contacts File
+        </button>
 
-    <p id="status">
-      No file selected
-    </p>
+        <p id="status">
+            No file selected
+        </p>
 
-    <hr>
+        <hr>
 
-    <h2>
-      Message Template
-    </h2>
+        <h2>
+            WhatsApp Connection
+        </h2>
 
-    <textarea
-      id="templateInput"
-      rows="8"
-      placeholder="Write your message template here..."
-    ></textarea>
+        <button id="connectBtn">
+            Connect WhatsApp
+        </button>
 
-    <br><br>
+        <p id="connectionStatus">
+            Not connected
+        </p>
 
-    <button id="previewBtn">
-      Preview Messages
-    </button>
+        <img id="qrImage" style="
+    max-width: 300px;
+    display: none;
+    margin-top: 20px;
+  ">
+        <h2>
+            Message Template
+        </h2>
 
-    <hr>
+        <textarea id="templateInput" rows="8" placeholder="Write your message template here..."></textarea>
 
-    <h2>
-      Preview
-    </h2>
+        <br><br>
 
-    <div id="previewContainer">
+        <button id="previewBtn">
+            Preview Messages
+        </button>
+
+        <hr>
+
+        <h2>
+            Preview
+        </h2>
+
+        <div id="previewContainer">
+
+        </div>
 
     </div>
 
-  </div>
-
-  <script src="app.js"></script>
+    <script src="app.js"></script>
 
 </body>

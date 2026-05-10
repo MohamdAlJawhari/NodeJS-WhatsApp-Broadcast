@@ -1,3 +1,6 @@
+const wppconnect =
+  require("@wppconnect-team/wppconnect");
+
 const {
   app,
   BrowserWindow,
@@ -19,6 +22,8 @@ const {
 const {
   loadContacts
 } = require("../src/contacts");
+
+let client = null;
 
 function createWindow() {
 
@@ -136,5 +141,57 @@ ipcMain.handle(
       });
 
     return preview;
+  }
+);
+
+ipcMain.handle(
+  "connect-whatsapp",
+  async (event) => {
+
+    try {
+
+      client =
+        await wppconnect.create({
+
+          session:
+            "employee-session",
+
+          headless: true,
+
+          autoClose: 0,
+
+          catchQR: (base64Qr) => {
+
+            event.sender.send(
+              "qr-code",
+              base64Qr
+            );
+          },
+
+          statusFind: (status) => {
+
+            event.sender.send(
+              "connection-status",
+              status
+            );
+          }
+        });
+
+      event.sender.send(
+        "connection-status",
+        "CONNECTED"
+      );
+
+      return {
+        success: true
+      };
+
+    } catch (error) {
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
   }
 );

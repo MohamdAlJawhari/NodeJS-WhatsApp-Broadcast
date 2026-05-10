@@ -1,93 +1,108 @@
+const connectBtn =
+    document.getElementById(
+        "connectBtn"
+    );
+
+const qrImage =
+    document.getElementById(
+        "qrImage"
+    );
+
+const connectionStatus =
+    document.getElementById(
+        "connectionStatus"
+    );
+
 const loadBtn =
-  document.getElementById(
-    "loadContactsBtn"
-  );
+    document.getElementById(
+        "loadContactsBtn"
+    );
 
 const status =
-  document.getElementById(
-    "status"
-  );
+    document.getElementById(
+        "status"
+    );
 
 const previewBtn =
-  document.getElementById(
-    "previewBtn"
-  );
+    document.getElementById(
+        "previewBtn"
+    );
 
 const templateInput =
-  document.getElementById(
-    "templateInput"
-  );
+    document.getElementById(
+        "templateInput"
+    );
 
 const previewContainer =
-  document.getElementById(
-    "previewContainer"
-  );
+    document.getElementById(
+        "previewContainer"
+    );
 
 let contacts = [];
 
 loadBtn.addEventListener(
-  "click",
-  async () => {
+    "click",
+    async () => {
 
-    status.innerText =
-      "Loading contacts...";
+        status.innerText =
+            "Loading contacts...";
 
-    const result =
-      await window.electronAPI
-        .selectContactsFile();
+        const result =
+            await window.electronAPI
+                .selectContactsFile();
 
-    if (!result.success) {
+        if (!result.success) {
 
-      status.innerText =
-        result.error ||
-        "File selection canceled";
+            status.innerText =
+                result.error ||
+                "File selection canceled";
 
-      return;
+            return;
+        }
+
+        contacts = result.contacts;
+
+        status.innerText =
+            `Loaded ${result.count} contacts`;
     }
-
-    contacts = result.contacts;
-
-    status.innerText =
-      `Loaded ${result.count} contacts`;
-  }
 );
 
 previewBtn.addEventListener(
-  "click",
-  async () => {
+    "click",
+    async () => {
 
-    if (contacts.length === 0) {
+        if (contacts.length === 0) {
 
-      alert(
-        "Load contacts first"
-      );
+            alert(
+                "Load contacts first"
+            );
 
-      return;
-    }
+            return;
+        }
 
-    const template =
-      templateInput.value;
+        const template =
+            templateInput.value;
 
-    const preview =
-      await window.electronAPI
-        .generatePreview({
+        const preview =
+            await window.electronAPI
+                .generatePreview({
 
-          contacts,
-          template
-        });
+                    contacts,
+                    template
+                });
 
-    previewContainer.innerHTML =
-      "";
+        previewContainer.innerHTML =
+            "";
 
-    preview.forEach(item => {
+        preview.forEach(item => {
 
-      const div =
-        document.createElement("div");
+            const div =
+                document.createElement("div");
 
-      div.className =
-        "preview-card";
+            div.className =
+                "preview-card";
 
-      div.innerHTML = `
+            div.innerHTML = `
         <strong>
           ${item.phone}
         </strong>
@@ -97,9 +112,55 @@ previewBtn.addEventListener(
         </p>
       `;
 
-      previewContainer.appendChild(
-        div
-      );
-    });
-  }
+            previewContainer.appendChild(
+                div
+            );
+        });
+    }
 );
+
+connectBtn.addEventListener(
+    "click",
+    async () => {
+
+        connectionStatus.innerText =
+            "Connecting...";
+
+        const result =
+            await window.electronAPI
+                .connectWhatsApp();
+
+        if (!result.success) {
+
+            connectionStatus.innerText =
+                result.error;
+        }
+    }
+);
+
+window.electronAPI.onQRCode(
+    (qr) => {
+
+        qrImage.src = qr;
+
+        qrImage.style.display =
+            "block";
+    }
+);
+
+window.electronAPI
+    .onConnectionStatus(
+        (status) => {
+
+            connectionStatus.innerText =
+                status;
+
+            if (
+                status === "CONNECTED"
+            ) {
+
+                qrImage.style.display =
+                    "none";
+            }
+        }
+    );

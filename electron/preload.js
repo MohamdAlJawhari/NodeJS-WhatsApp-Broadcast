@@ -16,6 +16,23 @@ contextBridge.exposeInMainWorld(
       ipcRenderer.invoke(
         "generate-preview",
         data
+      ),
+
+    connectWhatsApp: () =>
+      ipcRenderer.invoke(
+        "connect-whatsapp"
+      ),
+
+    onQRCode: (callback) =>
+      ipcRenderer.on(
+        "qr-code",
+        (_, qr) => callback(qr)
+      ),
+
+    onConnectionStatus: (callback) =>
+      ipcRenderer.on(
+        "connection-status",
+        (_, status) => callback(status)
       )
   }
 );
