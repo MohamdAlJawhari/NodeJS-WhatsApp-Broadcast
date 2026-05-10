@@ -16,6 +16,10 @@ require("dotenv").config({
 });
 
 const {
+  sendBroadcast
+} = require("../src/sender");
+
+const {
   generateMessage
 } = require("../src/template");
 
@@ -181,6 +185,98 @@ ipcMain.handle(
         "connection-status",
         "CONNECTED"
       );
+
+      return {
+        success: true
+      };
+
+    } catch (error) {
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+);
+
+// Start broadcast
+ipcMain.handle(
+  "start-broadcast",
+  async (event, data) => {
+
+    try {
+
+      if (!client) {
+
+        return {
+          success: false,
+          error:
+            "WhatsApp not connected"
+        };
+      }
+
+      const {
+        contacts,
+        template
+      } = data;
+
+      // Live logger
+      const originalLog =
+        console.log;
+
+      console.log = (...args) => {
+
+        const message =
+          args.join(" ");
+
+        event.sender.send(
+          "broadcast-log",
+          message
+        );
+
+        originalLog(...args);
+      };
+
+      // Progress callback
+      const options = {
+
+        template,
+
+        mediaFile: null,
+
+        delayMin: 10000,
+
+        delayMax: 20000,
+
+        batchSize: 5,
+
+        batchPause: 30000,
+
+        onProgress: (
+          current,
+          total
+        ) => {
+
+          const progress =
+            (
+              current / total
+            ) * 100;
+
+          event.sender.send(
+            "broadcast-progress",
+            progress
+          );
+        }
+      };
+
+      await sendBroadcast(
+        client,
+        contacts,
+        options
+      );
+
+      console.log = originalLog;
 
       return {
         success: true

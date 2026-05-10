@@ -38,6 +38,26 @@ const previewContainer =
         "previewContainer"
     );
 
+const startBtn =
+    document.getElementById(
+        "startBtn"
+    );
+
+const logs =
+    document.getElementById(
+        "logs"
+    );
+
+const progressBar =
+    document.getElementById(
+        "progressBar"
+    );
+
+const progressText =
+    document.getElementById(
+        "progressText"
+    );
+
 let contacts = [];
 
 loadBtn.addEventListener(
@@ -162,5 +182,75 @@ window.electronAPI
                 qrImage.style.display =
                     "none";
             }
+        }
+    );
+
+startBtn.addEventListener(
+    "click",
+    async () => {
+
+        if (contacts.length === 0) {
+
+            alert(
+                "Load contacts first"
+            );
+
+            return;
+        }
+
+        const template =
+            templateInput.value;
+
+        logs.innerHTML = "";
+
+        progressBar.value = 0;
+
+        progressText.innerText =
+            "0%";
+
+        const result =
+            await window.electronAPI
+                .startBroadcast({
+
+                    contacts,
+                    template
+                });
+
+        if (!result.success) {
+
+            alert(result.error);
+        }
+    }
+);
+
+window.electronAPI
+    .onBroadcastLog(
+        (message) => {
+
+            const div =
+                document.createElement("div");
+
+            div.className =
+                "log-line";
+
+            div.innerText =
+                message;
+
+            logs.appendChild(div);
+
+            logs.scrollTop =
+                logs.scrollHeight;
+        }
+    );
+
+window.electronAPI
+    .onBroadcastProgress(
+        (progress) => {
+
+            progressBar.value =
+                progress;
+
+            progressText.innerText =
+                `${progress.toFixed(1)}%`;
         }
     );

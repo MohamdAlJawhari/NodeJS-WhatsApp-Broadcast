@@ -13,7 +13,8 @@ async function sendBroadcast(client, contacts, options) {
     delayMin,
     delayMax,
     batchSize,
-    batchPause
+    batchPause,
+    onProgress
   } = options;
 
   // Ensure logs directory exists
@@ -42,47 +43,47 @@ async function sendBroadcast(client, contacts, options) {
   );
 
 
-  process.stdin.setRawMode(true);
-  process.stdin.resume();
-  process.stdin.setEncoding("utf8");
+  // process.stdin.setRawMode(true);
+  // process.stdin.resume();
+  // process.stdin.setEncoding("utf8");
 
-  process.stdin.on("data", key => {
+  // process.stdin.on("data", key => {
 
-    // CTRL + C
-    if (key === "\u0003") {
-      process.exit();
-    }
+  //   // CTRL + C
+  //   if (key === "\u0003") {
+  //     process.exit();
+  //   }
 
-    // Pause
-    if (key.toLowerCase() === "p") {
+  //   // Pause
+  //   if (key.toLowerCase() === "p") {
 
-      paused = true;
+  //     paused = true;
 
-      console.log(
-        "\n=== BROADCAST PAUSED ==="
-      );
-    }
+  //     console.log(
+  //       "\n=== BROADCAST PAUSED ==="
+  //     );
+  //   }
 
-    // Resume
-    if (key.toLowerCase() === "r") {
+  //   // Resume
+  //   if (key.toLowerCase() === "r") {
 
-      paused = false;
+  //     paused = false;
 
-      console.log(
-        "\n=== BROADCAST RESUMED ==="
-      );
-    }
+  //     console.log(
+  //       "\n=== BROADCAST RESUMED ==="
+  //     );
+  //   }
 
-    // Stop completely
-    if (key.toLowerCase() === "q") {
+  //   // Stop completely
+  //   if (key.toLowerCase() === "q") {
 
-      stopped = true;
+  //     stopped = true;
 
-      console.log(
-        "\n=== STOPPING BROADCAST ==="
-      );
-    }
-  });
+  //     console.log(
+  //       "\n=== STOPPING BROADCAST ==="
+  //     );
+  //   }
+  // });
 
 
   for (let i = 0; i < contacts.length; i++) {
@@ -108,6 +109,14 @@ async function sendBroadcast(client, contacts, options) {
     const progress = (
       ((i + 1) / contacts.length) * 100
     ).toFixed(1);
+
+    if (onProgress) {
+
+      onProgress(
+        i + 1,
+        contacts.length
+      );
+    }
 
     console.log(
       `\n[${progress}%] Processing ${i + 1}/${contacts.length}`

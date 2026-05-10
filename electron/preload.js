@@ -33,6 +33,26 @@ contextBridge.exposeInMainWorld(
       ipcRenderer.on(
         "connection-status",
         (_, status) => callback(status)
+      ),
+
+    startBroadcast: (data) =>
+      ipcRenderer.invoke(
+        "start-broadcast",
+        data
+      ),
+
+    onBroadcastLog: (callback) =>
+      ipcRenderer.on(
+        "broadcast-log",
+        (_, message) =>
+          callback(message)
+      ),
+
+    onBroadcastProgress: (callback) =>
+      ipcRenderer.on(
+        "broadcast-progress",
+        (_, progress) =>
+          callback(progress)
       )
   }
 );
