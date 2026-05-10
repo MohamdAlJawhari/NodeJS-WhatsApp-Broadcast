@@ -27,6 +27,9 @@ const {
   loadContacts
 } = require("../src/contacts");
 
+const broadcastController =
+  require("../src/broadcastController");
+
 let client = null;
 
 function createWindow() {
@@ -149,6 +152,7 @@ ipcMain.handle(
   }
 );
 
+// Select media file
 ipcMain.handle(
   "select-media-file",
   async () => {
@@ -241,6 +245,48 @@ ipcMain.handle(
   }
 );
 
+// Pause broadcast
+ipcMain.handle(
+  "pause-broadcast",
+  async () => {
+
+    broadcastController.paused =
+      true;
+
+    return {
+      success: true
+    };
+  }
+);
+
+// Resume broadcast
+ipcMain.handle(
+  "resume-broadcast",
+  async () => {
+
+    broadcastController.paused =
+      false;
+
+    return {
+      success: true
+    };
+  }
+);
+
+// Stop broadcast
+ipcMain.handle(
+  "stop-broadcast",
+  async () => {
+
+    broadcastController.stopped =
+      true;
+
+    return {
+      success: true
+    };
+  }
+);
+
 // Start broadcast
 ipcMain.handle(
   "start-broadcast",
@@ -311,6 +357,12 @@ ipcMain.handle(
           );
         }
       };
+
+      broadcastController.paused =
+        false;
+
+      broadcastController.stopped =
+        false;
 
       await sendBroadcast(
         client,

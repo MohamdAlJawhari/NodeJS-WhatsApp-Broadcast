@@ -39,6 +39,21 @@ contextBridge.exposeInMainWorld(
         (_, status) => callback(status)
       ),
 
+    pauseBroadcast: () =>
+      ipcRenderer.invoke(
+        "pause-broadcast"
+      ),
+
+    resumeBroadcast: () =>
+      ipcRenderer.invoke(
+        "resume-broadcast"
+      ),
+
+    stopBroadcast: () =>
+      ipcRenderer.invoke(
+        "stop-broadcast"
+      ),
+
     startBroadcast: (data) =>
       ipcRenderer.invoke(
         "start-broadcast",

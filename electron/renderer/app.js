@@ -68,6 +68,21 @@ const mediaStatus =
         "mediaStatus"
     );
 
+const pauseBtn =
+    document.getElementById(
+        "pauseBtn"
+    );
+
+const resumeBtn =
+    document.getElementById(
+        "resumeBtn"
+    );
+
+const stopBtn =
+    document.getElementById(
+        "stopBtn"
+    );
+
 let contacts = [];
 
 let mediaFile = null;
@@ -255,6 +270,33 @@ startBtn.addEventListener(
 
             alert(result.error);
         }
+    }
+);
+
+pauseBtn.addEventListener(
+    "click",
+    async () => {
+
+        await window.electronAPI
+            .pauseBroadcast();
+    }
+);
+
+resumeBtn.addEventListener(
+    "click",
+    async () => {
+
+        await window.electronAPI
+            .resumeBroadcast();
+    }
+);
+
+stopBtn.addEventListener(
+    "click",
+    async () => {
+
+        await window.electronAPI
+            .stopBroadcast();
     }
 );
 

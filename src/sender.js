@@ -5,6 +5,7 @@ const { generateMessage } = require("./template");
 const { sleep, randomDelay, formatPhone } = require("./utils");
 const { validateMediaFile, isImage } = require("./media");
 const { validatePhone } = require("./validator");
+const broadcastController = require("./broadcastController");
 
 async function sendBroadcast(client, contacts, options) {
   const {
@@ -35,8 +36,6 @@ async function sendBroadcast(client, contacts, options) {
   let successCount = 0;
   let failedCount = 0;
   let skippedCount = 0;
-  let paused = false;
-  let stopped = false;
 
   console.log(
     `Starting broadcast to ${contacts.length} contacts...`
@@ -87,12 +86,19 @@ async function sendBroadcast(client, contacts, options) {
 
 
   for (let i = 0; i < contacts.length; i++) {
-    if (stopped) {
+    if (broadcastController.stopped) {
+      console.log(
+        "Broadcast stopped"
+      );
+
       break;
     }
 
-    while (paused) {
+    while (broadcastController.paused) {
 
+      console.log(
+        "Broadcast paused. Waiting to resume..."
+      );
       await sleep(1000);
     }
 
