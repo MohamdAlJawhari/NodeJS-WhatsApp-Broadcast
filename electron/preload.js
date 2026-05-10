@@ -72,6 +72,17 @@ contextBridge.exposeInMainWorld(
         "broadcast-progress",
         (_, progress) =>
           callback(progress)
+      ),
+
+    loadSettings: () =>
+      ipcRenderer.invoke(
+        "load-settings"
+      ),
+
+    saveTemplate: (template) =>
+      ipcRenderer.invoke(
+        "save-template",
+        template
       )
   }
 );

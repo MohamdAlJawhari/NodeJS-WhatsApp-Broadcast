@@ -30,6 +30,11 @@ const {
 const broadcastController =
   require("../src/broadcastController");
 
+const {
+  loadSettings,
+  saveSettings
+} = require("../src/settings");
+
 let client = null;
 
 function createWindow() {
@@ -383,5 +388,33 @@ ipcMain.handle(
         error: error.message
       };
     }
+  }
+);
+
+// Load settings
+ipcMain.handle(
+  "load-settings",
+  async () => {
+
+    return loadSettings();
+  }
+);
+
+// Save template
+ipcMain.handle(
+  "save-template",
+  async (_, template) => {
+
+    const settings =
+      loadSettings();
+
+    settings.defaultTemplate =
+      template;
+
+    saveSettings(settings);
+
+    return {
+      success: true
+    };
   }
 );

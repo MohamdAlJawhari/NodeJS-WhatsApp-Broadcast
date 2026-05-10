@@ -83,6 +83,11 @@ const stopBtn =
         "stopBtn"
     );
 
+const saveTemplateBtn =
+    document.getElementById(
+        "saveTemplateBtn"
+    );
+
 let contacts = [];
 
 let mediaFile = null;
@@ -331,3 +336,35 @@ window.electronAPI
                 `${progress.toFixed(1)}%`;
         }
     );
+
+saveTemplateBtn
+    .addEventListener(
+        "click",
+        async () => {
+
+            const template =
+                templateInput.value;
+
+            await window
+                .electronAPI
+                .saveTemplate(
+                    template
+                );
+
+            alert(
+                "Default template saved"
+            );
+        }
+    );
+
+async function loadAppSettings() {
+
+    const settings =
+        await window.electronAPI
+            .loadSettings();
+
+    templateInput.value =
+        settings.defaultTemplate;
+}
+
+loadAppSettings();

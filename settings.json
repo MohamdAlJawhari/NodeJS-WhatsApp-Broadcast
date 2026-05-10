@@ -1,0 +1,3 @@
+{
+  "defaultTemplate": "Hello {{name}}, your password is {{password}}."
+}
