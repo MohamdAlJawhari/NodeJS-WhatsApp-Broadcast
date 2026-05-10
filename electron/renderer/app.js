@@ -88,6 +88,11 @@ const saveTemplateBtn =
         "saveTemplateBtn"
     );
 
+const broadcastStatus =
+    document.getElementById(
+        "broadcastStatus"
+    );
+
 let contacts = [];
 
 let mediaFile = null;
@@ -262,6 +267,14 @@ startBtn.addEventListener(
         progressText.innerText =
             "0%";
 
+        setBroadcastStatus(
+            "RUNNING"
+        );
+
+        updateButtons(
+            "RUNNING"
+        );
+
         const result =
             await window.electronAPI
                 .startBroadcast({
@@ -274,6 +287,15 @@ startBtn.addEventListener(
         if (!result.success) {
 
             alert(result.error);
+        } else {
+
+            setBroadcastStatus(
+                "COMPLETED"
+            );
+
+            updateButtons(
+                "COMPLETED"
+            );
         }
     }
 );
@@ -284,6 +306,14 @@ pauseBtn.addEventListener(
 
         await window.electronAPI
             .pauseBroadcast();
+
+        setBroadcastStatus(
+            "PAUSED"
+        );
+
+        updateButtons(
+            "PAUSED"
+        );
     }
 );
 
@@ -293,6 +323,14 @@ resumeBtn.addEventListener(
 
         await window.electronAPI
             .resumeBroadcast();
+
+        setBroadcastStatus(
+            "RUNNING"
+        );
+
+        updateButtons(
+            "RUNNING"
+        );
     }
 );
 
@@ -302,6 +340,14 @@ stopBtn.addEventListener(
 
         await window.electronAPI
             .stopBroadcast();
+
+        setBroadcastStatus(
+            "STOPPED"
+        );
+
+        updateButtons(
+            "STOPPED"
+        );
     }
 );
 
@@ -367,4 +413,89 @@ async function loadAppSettings() {
         settings.defaultTemplate;
 }
 
+function setBroadcastStatus(
+    status
+) {
+
+    broadcastStatus.innerText =
+        status;
+
+    broadcastStatus.className =
+        "";
+
+    broadcastStatus.classList.add(
+        `status-${status.toLowerCase()}`
+    );
+}
+
+function updateButtons(
+    state
+) {
+
+    if (state === "IDLE") {
+
+        startBtn.disabled =
+            false;
+
+        pauseBtn.disabled =
+            true;
+
+        resumeBtn.disabled =
+            true;
+
+        stopBtn.disabled =
+            true;
+    }
+
+    if (state === "RUNNING") {
+
+        startBtn.disabled =
+            true;
+
+        pauseBtn.disabled =
+            false;
+
+        resumeBtn.disabled =
+            true;
+
+        stopBtn.disabled =
+            false;
+    }
+
+    if (state === "PAUSED") {
+
+        startBtn.disabled =
+            true;
+
+        pauseBtn.disabled =
+            true;
+
+        resumeBtn.disabled =
+            false;
+
+        stopBtn.disabled =
+            false;
+    }
+
+    if (
+        state === "STOPPED" ||
+        state === "COMPLETED"
+    ) {
+
+        startBtn.disabled =
+            false;
+
+        pauseBtn.disabled =
+            true;
+
+        resumeBtn.disabled =
+            true;
+
+        stopBtn.disabled =
+            true;
+    }
+}
+
 loadAppSettings();
+setBroadcastStatus("IDLE");
+updateButtons("IDLE");

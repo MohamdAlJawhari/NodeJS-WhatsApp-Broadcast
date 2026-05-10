@@ -52,3 +52,47 @@ button {
 
   margin-bottom: 5px;
 }
+
+#broadcastStatus {
+
+  font-weight: bold;
+
+  padding: 5px 10px;
+
+  border-radius: 6px;
+}
+
+.status-idle {
+
+  background: gray;
+
+  color: white;
+}
+
+.status-running {
+
+  background: green;
+
+  color: white;
+}
+
+.status-paused {
+
+  background: orange;
+
+  color: black;
+}
+
+.status-stopped {
+
+  background: red;
+
+  color: white;
+}
+
+.status-completed {
+
+  background: blue;
+
+  color: white;
+}
