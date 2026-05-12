@@ -32,6 +32,9 @@ async function sendBroadcast(client, contacts, options) {
     `send-log-${Date.now()}.json`
   );
 
+  let failedFile = null;
+  let successFile = null;
+
   const results = [];
   const failedContacts = [];
   const successContacts = [];
@@ -361,7 +364,7 @@ async function sendBroadcast(client, contacts, options) {
       "Failed Contacts"
     );
 
-    const failedFile = path.join(
+    failedFile = path.join(
       logsDir,
       `failed-${Date.now()}.csv`
     );
@@ -381,7 +384,7 @@ async function sendBroadcast(client, contacts, options) {
 
   if (successContacts.length > 0) {
 
-    const successFile =
+    successFile =
       path.join(
         logsDir,
         `success-${Date.now()}.csv`
@@ -422,6 +425,13 @@ async function sendBroadcast(client, contacts, options) {
 
   console.log("Broadcast finished.");
   console.log(`Log saved to: ${logFile}`);
+
+  return {
+    logFile,
+    failedFile,
+    successFile,
+    counters: getCounters()
+  };
 }
 
 module.exports = {

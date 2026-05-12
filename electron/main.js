@@ -5,10 +5,12 @@ const {
   app,
   BrowserWindow,
   ipcMain,
-  dialog
+  dialog,
+  shell
 } = require("electron");
 
 const path = require("path");
+const fs = require("fs");
 
 require("dotenv").config({
   path: path.join(__dirname, "..", ".env"),
@@ -36,6 +38,97 @@ const {
 } = require("../src/settings");
 
 let client = null;
+
+const logsDir = path.join(
+  __dirname,
+  "..",
+  "logs"
+);
+
+function ensureLogsDir() {
+
+  if (!fs.existsSync(logsDir)) {
+
+    fs.mkdirSync(logsDir, {
+      recursive: true
+    });
+  }
+}
+
+function findLatestLogFile(prefix) {
+
+  ensureLogsDir();
+
+  const files = fs.readdirSync(logsDir)
+    .filter(file => {
+      return file.startsWith(`${prefix}-`) &&
+        file.endsWith(".csv");
+    })
+    .map(file => {
+      const filePath =
+        path.join(logsDir, file);
+
+      return {
+        filePath,
+        modifiedAt:
+          fs.statSync(filePath).mtimeMs
+      };
+    })
+    .sort((a, b) => {
+      return b.modifiedAt - a.modifiedAt;
+    });
+
+  return files[0]?.filePath || null;
+}
+
+async function openLogLocation(kind) {
+
+  const prefixes = {
+    success: "success",
+    failed: "failed"
+  };
+
+  const prefix = prefixes[kind];
+
+  if (!prefix) {
+
+    return {
+      success: false,
+      error: "Unknown log type"
+    };
+  }
+
+  const logFile =
+    findLatestLogFile(prefix);
+
+  if (logFile) {
+
+    shell.showItemInFolder(logFile);
+
+    return {
+      success: true,
+      filePath: logFile
+    };
+  }
+
+  ensureLogsDir();
+
+  const error =
+    await shell.openPath(logsDir);
+
+  if (error) {
+
+    return {
+      success: false,
+      error
+    };
+  }
+
+  return {
+    success: true,
+    folderPath: logsDir
+  };
+}
 
 function createWindow() {
 
@@ -292,6 +385,64 @@ ipcMain.handle(
   }
 );
 
+// Open latest success/failed log location
+ipcMain.handle(
+  "open-log-folder",
+  async (_, kind) => {
+
+    try {
+
+      return await openLogLocation(kind);
+
+    } catch (error) {
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+);
+
+// Load latest failed contacts for retry
+ipcMain.handle(
+  "load-latest-failed-contacts",
+  async () => {
+
+    try {
+
+      const failedFile =
+        findLatestLogFile("failed");
+
+      if (!failedFile) {
+
+        return {
+          success: false,
+          error:
+            "No failed contacts file found"
+        };
+      }
+
+      const contacts =
+        loadContacts(failedFile);
+
+      return {
+        success: true,
+        filePath: failedFile,
+        count: contacts.length,
+        contacts
+      };
+
+    } catch (error) {
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+);
+
 // Start broadcast
 ipcMain.handle(
   "start-broadcast",
@@ -313,23 +464,6 @@ ipcMain.handle(
         template,
         mediaFile
       } = data;
-
-      // Live logger
-      const originalLog =
-        console.log;
-
-      console.log = (...args) => {
-
-        const message =
-          args.join(" ");
-
-        event.sender.send(
-          "broadcast-log",
-          message
-        );
-
-        originalLog(...args);
-      };
 
       // Progress callback
       const options = {
@@ -379,16 +513,42 @@ ipcMain.handle(
       broadcastController.stopped =
         false;
 
-      await sendBroadcast(
-        client,
-        contacts,
-        options
-      );
+      // Live logger
+      const originalLog =
+        console.log;
 
-      console.log = originalLog;
+      let broadcastResult;
+
+      try {
+
+        console.log = (...args) => {
+
+          const message =
+            args.join(" ");
+
+          event.sender.send(
+            "broadcast-log",
+            message
+          );
+
+          originalLog(...args);
+        };
+
+        broadcastResult =
+          await sendBroadcast(
+            client,
+            contacts,
+            options
+          );
+
+      } finally {
+
+        console.log = originalLog;
+      }
 
       return {
-        success: true
+        success: true,
+        ...broadcastResult
       };
 
     } catch (error) {

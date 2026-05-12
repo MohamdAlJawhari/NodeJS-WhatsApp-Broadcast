@@ -80,6 +80,17 @@ contextBridge.exposeInMainWorld(
         (_, counters) =>
           callback(counters)
       ),
+
+    openLogFolder: (kind) =>
+      ipcRenderer.invoke(
+        "open-log-folder",
+        kind
+      ),
+
+    loadLatestFailedContacts: () =>
+      ipcRenderer.invoke(
+        "load-latest-failed-contacts"
+      ),
     
     loadSettings: () =>
       ipcRenderer.invoke(

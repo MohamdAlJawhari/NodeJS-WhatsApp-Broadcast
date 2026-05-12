@@ -108,6 +108,21 @@ const skippedCountEl =
         "skippedCount"
     );
 
+const openSuccessLogsBtn =
+    document.getElementById(
+        "openSuccessLogsBtn"
+    );
+
+const openFailedLogsBtn =
+    document.getElementById(
+        "openFailedLogsBtn"
+    );
+
+const retryFailedBtn =
+    document.getElementById(
+        "retryFailedBtn"
+    );
+
 let contacts = [];
 
 let mediaFile = null;
@@ -282,55 +297,59 @@ startBtn.addEventListener(
             return;
         }
 
-        const template =
-            templateInput.value;
-
-        logs.innerHTML = "";
-
-        progressBar.value = 0;
-
-        progressText.innerText =
-            "0%";
-
-        setBroadcastStatus(
-            "RUNNING"
+        await runBroadcast(
+            contacts
         );
+    }
+);
 
-        updateButtons(
-            "RUNNING"
+openSuccessLogsBtn.addEventListener(
+    "click",
+    async () => {
+
+        await openLogFolder(
+            "success"
         );
+    }
+);
 
-        updateCounters({
+openFailedLogsBtn.addEventListener(
+    "click",
+    async () => {
 
-            success: 0,
+        await openLogFolder(
+            "failed"
+        );
+    }
+);
 
-            failed: 0,
-
-            skipped: 0
-        });
+retryFailedBtn.addEventListener(
+    "click",
+    async () => {
 
         const result =
             await window.electronAPI
-                .startBroadcast({
-
-                    contacts,
-                    template,
-                    mediaFile
-                });
+                .loadLatestFailedContacts();
 
         if (!result.success) {
 
-            alert(result.error);
-        } else {
-
-            setBroadcastStatus(
-                "COMPLETED"
+            alert(
+                result.error ||
+                "No failed contacts found"
             );
 
-            updateButtons(
-                "COMPLETED"
-            );
+            return;
         }
+
+        contacts =
+            result.contacts;
+
+        status.innerText =
+            `Loaded ${result.count} failed contacts for retry`;
+
+        await runBroadcast(
+            contacts
+        );
     }
 );
 
@@ -437,6 +456,96 @@ saveTemplateBtn
         }
     );
 
+async function openLogFolder(
+    kind
+) {
+
+    const result =
+        await window.electronAPI
+            .openLogFolder(kind);
+
+    if (!result.success) {
+
+        alert(
+            result.error ||
+            "Could not open logs folder"
+        );
+    }
+}
+
+async function runBroadcast(
+    targetContacts
+) {
+
+    if (targetContacts.length === 0) {
+
+        alert(
+            "Load contacts first"
+        );
+
+        return;
+    }
+
+    const template =
+        templateInput.value;
+
+    logs.innerHTML = "";
+
+    progressBar.value = 0;
+
+    progressText.innerText =
+        "0%";
+
+    setBroadcastStatus(
+        "RUNNING"
+    );
+
+    updateButtons(
+        "RUNNING"
+    );
+
+    updateCounters({
+
+        success: 0,
+
+        failed: 0,
+
+        skipped: 0
+    });
+
+    const result =
+        await window.electronAPI
+            .startBroadcast({
+
+                contacts: targetContacts,
+                template,
+                mediaFile
+            });
+
+    if (!result.success) {
+
+        alert(result.error);
+
+        setBroadcastStatus(
+            "IDLE"
+        );
+
+        updateButtons(
+            "IDLE"
+        );
+
+        return;
+    }
+
+    setBroadcastStatus(
+        "COMPLETED"
+    );
+
+    updateButtons(
+        "COMPLETED"
+    );
+}
+
 async function loadAppSettings() {
 
     const settings =
@@ -479,6 +588,9 @@ function updateButtons(
 
         stopBtn.disabled =
             true;
+
+        retryFailedBtn.disabled =
+            false;
     }
 
     if (state === "RUNNING") {
@@ -494,6 +606,9 @@ function updateButtons(
 
         stopBtn.disabled =
             false;
+
+        retryFailedBtn.disabled =
+            true;
     }
 
     if (state === "PAUSED") {
@@ -509,6 +624,9 @@ function updateButtons(
 
         stopBtn.disabled =
             false;
+
+        retryFailedBtn.disabled =
+            true;
     }
 
     if (
@@ -527,6 +645,9 @@ function updateButtons(
 
         stopBtn.disabled =
             true;
+
+        retryFailedBtn.disabled =
+            false;
     }
 }
 
