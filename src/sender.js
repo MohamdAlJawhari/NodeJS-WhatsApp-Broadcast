@@ -40,10 +40,29 @@ async function sendBroadcast(client, contacts, options) {
   let failedCount = 0;
   let skippedCount = 0;
 
+  const getCounters = () => ({
+    success: successCount,
+    failed: failedCount,
+    skipped: skippedCount
+  });
+
+  const emitCounters = () => {
+    if (onCountersUpdate) {
+      onCountersUpdate(getCounters());
+    }
+  };
+
+  const emitProgress = (current, total) => {
+    if (onProgress) {
+      onProgress(current, total);
+    }
+  };
+
   console.log(
     `Starting broadcast to ${contacts.length} contacts...`
   );
 
+  emitCounters();
 
   // process.stdin.setRawMode(true);
   // process.stdin.resume();
@@ -114,30 +133,9 @@ async function sendBroadcast(client, contacts, options) {
       contact[phoneField];
 
 
-    // Progress percentage
     const progress = (
       ((i + 1) / contacts.length) * 100
     ).toFixed(1);
-
-    if (onProgress) {
-
-      onProgress(
-        i + 1,
-        contacts.length
-      );
-    }
-
-    if (onCountersUpdate) {
-
-      onCountersUpdate({
-
-        success: successCount,
-
-        failed: failedCount,
-
-        skipped: skippedCount
-      });
-    }
 
     console.log(
       `\n[${progress}%] Processing ${i + 1}/${contacts.length}`
@@ -161,6 +159,15 @@ async function sendBroadcast(client, contacts, options) {
 
       // Save invalid contacts for retry/fixing
       failedContacts.push(contact);
+
+      emitCounters();
+      emitProgress(i + 1, contacts.length);
+
+      fs.writeFileSync(
+        logFile,
+        JSON.stringify(results, null, 2)
+      );
+
       continue;
     }
 
@@ -306,6 +313,9 @@ async function sendBroadcast(client, contacts, options) {
         console.log(error.message);
       }
     }
+
+    emitCounters();
+    emitProgress(i + 1, contacts.length);
 
     // Save logs continuously
     fs.writeFileSync(
