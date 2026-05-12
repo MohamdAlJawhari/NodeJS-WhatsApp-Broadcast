@@ -93,6 +93,21 @@ const broadcastStatus =
         "broadcastStatus"
     );
 
+const successCountEl =
+    document.getElementById(
+        "successCount"
+    );
+
+const failedCountEl =
+    document.getElementById(
+        "failedCount"
+    );
+
+const skippedCountEl =
+    document.getElementById(
+        "skippedCount"
+    );
+
 let contacts = [];
 
 let mediaFile = null;
@@ -244,6 +259,16 @@ window.electronAPI
         }
     );
 
+window.electronAPI
+    .onBroadcastCounters(
+        (counters) => {
+
+            updateCounters(
+                counters
+            );
+        }
+    );
+
 startBtn.addEventListener(
     "click",
     async () => {
@@ -274,6 +299,15 @@ startBtn.addEventListener(
         updateButtons(
             "RUNNING"
         );
+
+        updateCounters({
+
+            success: 0,
+
+            failed: 0,
+
+            skipped: 0
+        });
 
         const result =
             await window.electronAPI
@@ -494,6 +528,20 @@ function updateButtons(
         stopBtn.disabled =
             true;
     }
+}
+
+function updateCounters(
+    counters
+) {
+
+    successCountEl.innerText =
+        counters.success;
+
+    failedCountEl.innerText =
+        counters.failed;
+
+    skippedCountEl.innerText =
+        counters.skipped;
 }
 
 loadAppSettings();

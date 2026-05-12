@@ -74,6 +74,13 @@ contextBridge.exposeInMainWorld(
           callback(progress)
       ),
 
+    onBroadcastCounters: (callback) =>
+      ipcRenderer.on(
+        "broadcast-counters",
+        (_, counters) =>
+          callback(counters)
+      ),
+    
     loadSettings: () =>
       ipcRenderer.invoke(
         "load-settings"

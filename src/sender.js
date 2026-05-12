@@ -6,6 +6,7 @@ const { sleep, randomDelay, formatPhone } = require("./utils");
 const { validateMediaFile, isImage } = require("./media");
 const { validatePhone } = require("./validator");
 const broadcastController = require("./broadcastController");
+const { createObjectCsvWriter } = require("csv-writer");
 
 async function sendBroadcast(client, contacts, options) {
   const {
@@ -15,7 +16,8 @@ async function sendBroadcast(client, contacts, options) {
     delayMax,
     batchSize,
     batchPause,
-    onProgress
+    onProgress,
+    onCountersUpdate
   } = options;
 
   // Ensure logs directory exists
@@ -32,6 +34,7 @@ async function sendBroadcast(client, contacts, options) {
 
   const results = [];
   const failedContacts = [];
+  const successContacts = [];
 
   let successCount = 0;
   let failedCount = 0;
@@ -122,6 +125,18 @@ async function sendBroadcast(client, contacts, options) {
         i + 1,
         contacts.length
       );
+    }
+
+    if (onCountersUpdate) {
+
+      onCountersUpdate({
+
+        success: successCount,
+
+        failed: failedCount,
+
+        skipped: skippedCount
+      });
     }
 
     console.log(
@@ -235,6 +250,7 @@ async function sendBroadcast(client, contacts, options) {
       // Count results
       if (mediaSent || textSent) {
 
+        successContacts.push(contact);
         successCount++;
 
       } else {
@@ -271,6 +287,8 @@ async function sendBroadcast(client, contacts, options) {
           status: "success_with_warning",
           warning: error.message
         });
+
+        successContacts.push(contact);
 
       } else {
 
@@ -348,6 +366,38 @@ async function sendBroadcast(client, contacts, options) {
 
     console.log(
       `Failed contacts saved to: ${failedFile}`
+    );
+  }
+
+  if (successContacts.length > 0) {
+
+    const successFile =
+      path.join(
+        logsDir,
+        `success-${Date.now()}.csv`
+      );
+
+    const headers =
+      Object.keys(successContacts[0])
+        .map(key => ({
+          id: key,
+          title: key
+        }));
+
+    const csvWriter =
+      createObjectCsvWriter({
+
+        path: successFile,
+
+        header: headers
+      });
+
+    await csvWriter.writeRecords(
+      successContacts
+    );
+
+    console.log(
+      `Success contacts saved: ${successFile}`
     );
   }
 

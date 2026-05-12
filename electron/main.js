@@ -360,7 +360,17 @@ ipcMain.handle(
             "broadcast-progress",
             progress
           );
-        }
+        },
+
+        onCountersUpdate: (
+          counters
+        ) => {
+
+          event.sender.send(
+            "broadcast-counters",
+            counters
+          );
+        },
       };
 
       broadcastController.paused =
