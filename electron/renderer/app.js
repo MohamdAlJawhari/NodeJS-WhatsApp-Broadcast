@@ -23,6 +23,21 @@ const status =
         "status"
     );
 
+const savedContactsList =
+    document.getElementById(
+        "savedContactsList"
+    );
+
+const refreshSavedContactsBtn =
+    document.getElementById(
+        "refreshSavedContactsBtn"
+    );
+
+const openSavedContactsBtn =
+    document.getElementById(
+        "openSavedContactsBtn"
+    );
+
 const previewBtn =
     document.getElementById(
         "previewBtn"
@@ -197,10 +212,20 @@ loadBtn.addEventListener(
 
         if (result.savedFilePath) {
 
-            showToast(
-                "Contact file saved",
-                "success"
-            );
+            if (result.savedDuplicate) {
+
+                showToast(
+                    "Contact file already saved",
+                    "info"
+                );
+
+            } else {
+
+                showToast(
+                    "Contact file saved",
+                    "success"
+                );
+            }
 
         } else if (result.archiveError) {
 
@@ -210,7 +235,43 @@ loadBtn.addEventListener(
             );
         }
 
+        await loadSavedContactFiles();
+
         await refreshValidationWarnings();
+    }
+);
+
+refreshSavedContactsBtn.addEventListener(
+    "click",
+    async () => {
+
+        await loadSavedContactFiles();
+    }
+);
+
+openSavedContactsBtn.addEventListener(
+    "click",
+    async () => {
+
+        const result =
+            await window.electronAPI
+                .openSavedContactsFolder();
+
+        if (!result.success) {
+
+            showToast(
+                result.error ||
+                "Could not open saved contacts folder",
+                "error"
+            );
+
+            return;
+        }
+
+        showToast(
+            "Saved contacts folder opened",
+            "success"
+        );
     }
 );
 
@@ -569,6 +630,221 @@ templateInput.addEventListener(
         scheduleValidationRefresh();
     }
 );
+
+async function loadSavedContactFiles() {
+
+    const result =
+        await window.electronAPI
+            .listSavedContactFiles();
+
+    if (!result.success) {
+
+        savedContactsList.innerText =
+            "Could not load saved contacts";
+
+        showToast(
+            result.error ||
+            "Could not load saved contacts",
+            "error"
+        );
+
+        return;
+    }
+
+    renderSavedContactFiles(
+        result.files || []
+    );
+}
+
+function renderSavedContactFiles(
+    files
+) {
+
+    savedContactsList.innerHTML =
+        "";
+
+    if (files.length === 0) {
+
+        savedContactsList.className =
+            "saved-contacts-empty";
+
+        savedContactsList.innerText =
+            "No saved contact files";
+
+        return;
+    }
+
+    savedContactsList.className =
+        "";
+
+    files.forEach(file => {
+
+        const item =
+            document.createElement("div");
+
+        item.className =
+            "saved-contact-item";
+
+        const info =
+            document.createElement("div");
+
+        info.className =
+            "saved-contact-info";
+
+        const name =
+            document.createElement("strong");
+
+        name.innerText =
+            file.displayName ||
+            file.fileName;
+
+        const meta =
+            document.createElement("span");
+
+        meta.innerText =
+            getSavedContactMeta(file);
+
+        info.appendChild(name);
+        info.appendChild(meta);
+
+        const button =
+            document.createElement("button");
+
+        button.innerText =
+            "Select";
+
+        button.dataset.hasError =
+            file.loadError ? "true" : "false";
+
+        button.disabled =
+            Boolean(file.loadError) ||
+            [
+                "RUNNING",
+                "PAUSED",
+                "STOPPING"
+            ].includes(currentBroadcastState);
+
+        button.addEventListener(
+            "click",
+            async () => {
+                await selectSavedContactFile(
+                    file.id
+                );
+            }
+        );
+
+        item.appendChild(info);
+        item.appendChild(button);
+
+        if (file.loadError) {
+
+            const warning =
+                document.createElement("p");
+
+            warning.className =
+                "saved-contact-warning";
+
+            warning.innerText =
+                file.loadError;
+
+            info.appendChild(warning);
+        }
+
+        savedContactsList.appendChild(
+            item
+        );
+    });
+}
+
+function getSavedContactMeta(
+    file
+) {
+
+    const parts = [];
+
+    if (file.count !== null) {
+
+        parts.push(
+            `${file.count} contacts`
+        );
+    }
+
+    parts.push(
+        formatBytes(file.size)
+    );
+
+    if (file.modifiedAt) {
+
+        parts.push(
+            new Date(file.modifiedAt)
+                .toLocaleString()
+        );
+    }
+
+    if (file.duplicateCount > 1) {
+
+        parts.push(
+            `${file.duplicateCount} saved copies`
+        );
+    }
+
+    return parts.join(" | ");
+}
+
+function formatBytes(
+    size
+) {
+
+    if (!Number.isFinite(size)) {
+
+        return "Unknown size";
+    }
+
+    if (size < 1024) {
+
+        return `${size} B`;
+    }
+
+    if (size < 1024 * 1024) {
+
+        return `${(size / 1024).toFixed(1)} KB`;
+    }
+
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+async function selectSavedContactFile(
+    id
+) {
+
+    const result =
+        await window.electronAPI
+            .loadSavedContactFile(id);
+
+    if (!result.success) {
+
+        showToast(
+            result.error ||
+            "Could not load saved contacts",
+            "error"
+        );
+
+        return;
+    }
+
+    contacts =
+        result.contacts;
+
+    status.innerText =
+        `Loaded ${result.count} saved contacts`;
+
+    showToast(
+        `Loaded ${result.count} saved contacts`,
+        "success"
+    );
+
+    await refreshValidationWarnings();
+}
 
 async function openLogFolder(
     kind
@@ -1026,6 +1302,8 @@ async function loadAppSettings() {
     templateInput.value =
         settings.defaultTemplate;
 
+    await loadSavedContactFiles();
+
     await refreshValidationWarnings();
 }
 
@@ -1053,6 +1331,8 @@ function setUnsafeControlsDisabled(
 
     [
         loadBtn,
+        refreshSavedContactsBtn,
+        openSavedContactsBtn,
         connectBtn,
         previewBtn,
         mediaBtn,
@@ -1067,6 +1347,15 @@ function setUnsafeControlsDisabled(
 
     templateInput.disabled =
         disabled;
+
+    savedContactsList
+        .querySelectorAll("button")
+        .forEach(button => {
+
+            button.disabled =
+                disabled ||
+                button.dataset.hasError === "true";
+        });
 }
 
 function updateButtons(

@@ -16,6 +16,22 @@ contextBridge.exposeInMainWorld(
         "select-contacts-file"
       ),
 
+    listSavedContactFiles: () =>
+      ipcRenderer.invoke(
+        "list-saved-contact-files"
+      ),
+
+    loadSavedContactFile: (id) =>
+      ipcRenderer.invoke(
+        "load-saved-contact-file",
+        id
+      ),
+
+    openSavedContactsFolder: () =>
+      ipcRenderer.invoke(
+        "open-saved-contacts-folder"
+      ),
+
     generatePreview: (data) =>
       ipcRenderer.invoke(
         "generate-preview",

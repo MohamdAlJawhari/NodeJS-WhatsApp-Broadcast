@@ -39,6 +39,92 @@ textarea:disabled {
   border-radius: 8px;
 }
 
+#savedContactsPanel {
+
+  margin-top: 16px;
+}
+
+#savedContactsHeader {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+#savedContactsHeader h2 {
+
+  margin: 0;
+}
+
+#savedContactsActions {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 10px;
+}
+
+#savedContactsList {
+
+  display: grid;
+
+  gap: 8px;
+
+  margin-top: 12px;
+}
+
+.saved-contacts-empty {
+
+  color: #64748b;
+
+  font-style: italic;
+}
+
+.saved-contact-item {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding: 10px;
+
+  border: 1px solid #d7dce2;
+
+  border-radius: 8px;
+
+  background: #fff;
+}
+
+.saved-contact-info {
+
+  display: grid;
+
+  gap: 4px;
+}
+
+.saved-contact-info span {
+
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+.saved-contact-warning {
+
+  color: #b91c1c;
+
+  margin: 4px 0 0;
+}
+
 .validation-panel {
 
   border: 1px solid #d7dce2;

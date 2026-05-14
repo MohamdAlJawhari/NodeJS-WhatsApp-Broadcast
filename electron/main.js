@@ -11,6 +11,7 @@ const {
 
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 
 require("dotenv").config({
   path: path.join(__dirname, "..", ".env"),
@@ -122,10 +123,170 @@ function createTimestamp() {
     .replace(/[:.]/g, "-");
 }
 
+function hashFile(filePath) {
+
+  const hash =
+    crypto.createHash("sha256");
+
+  hash.update(
+    fs.readFileSync(filePath)
+  );
+
+  return hash.digest("hex");
+}
+
+function isContactFile(fileName) {
+
+  return [
+    ".xlsx",
+    ".xls",
+    ".csv"
+  ].includes(
+    path.extname(fileName).toLowerCase()
+  );
+}
+
+function getSavedContactEntries() {
+
+  const savedContactsDir =
+    ensureSavedContactsDir();
+
+  const groups = new Map();
+
+  fs.readdirSync(savedContactsDir)
+    .filter(isContactFile)
+    .forEach(fileName => {
+
+      const filePath =
+        path.join(savedContactsDir, fileName);
+
+      const stats =
+        fs.statSync(filePath);
+
+      const fileHash =
+        hashFile(filePath);
+
+      if (!groups.has(fileHash)) {
+
+        groups.set(fileHash, []);
+      }
+
+      groups.get(fileHash).push({
+        id: fileName,
+        fileName,
+        filePath,
+        displayName:
+          fileName.replace(
+            /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z_/,
+            ""
+          ),
+        size: stats.size,
+        modifiedAtMs:
+          stats.mtimeMs,
+        modifiedAt:
+          stats.mtime.toISOString()
+      });
+    });
+
+  return [...groups.values()]
+    .map(entries => {
+
+      const newest =
+        entries.sort((a, b) => {
+          return b.modifiedAtMs - a.modifiedAtMs;
+        })[0];
+
+      let count = null;
+      let loadError = null;
+
+      try {
+
+        count =
+          loadContacts(newest.filePath).length;
+
+      } catch (error) {
+
+        loadError =
+          error.message;
+      }
+
+      return {
+        ...newest,
+        count,
+        loadError,
+        duplicateCount:
+          entries.length
+      };
+    })
+    .sort((a, b) => {
+      return new Date(b.modifiedAt) -
+        new Date(a.modifiedAt);
+    });
+}
+
+function resolveSavedContactPath(id) {
+
+  const savedContactsDir =
+    ensureSavedContactsDir();
+
+  const requestedPath =
+    path.resolve(savedContactsDir, id);
+
+  const savedRoot =
+    path.resolve(savedContactsDir);
+
+  const relativePath =
+    path.relative(savedRoot, requestedPath);
+
+  if (
+    relativePath.startsWith("..") ||
+    path.isAbsolute(relativePath)
+  ) {
+
+    throw new Error("Invalid saved contacts file");
+  }
+
+  if (!fs.existsSync(requestedPath)) {
+
+    throw new Error("Saved contacts file was not found");
+  }
+
+  if (!isContactFile(requestedPath)) {
+
+    throw new Error("Saved file is not a contacts file");
+  }
+
+  return requestedPath;
+}
+
 function archiveContactFile(filePath) {
 
   const savedContactsDir =
     ensureSavedContactsDir();
+
+  const sourceHash =
+    hashFile(filePath);
+
+  const duplicate =
+    fs.readdirSync(savedContactsDir)
+      .filter(isContactFile)
+      .find(fileName => {
+
+        const savedFilePath =
+          path.join(savedContactsDir, fileName);
+
+        return hashFile(savedFilePath) ===
+          sourceHash;
+      });
+
+  if (duplicate) {
+
+    return {
+      filePath:
+        path.join(savedContactsDir, duplicate),
+      duplicate: true
+    };
+  }
 
   const parsed =
     path.parse(filePath);
@@ -143,7 +304,10 @@ function archiveContactFile(filePath) {
     savedFilePath
   );
 
-  return savedFilePath;
+  return {
+    filePath: savedFilePath,
+    duplicate: false
+  };
 }
 
 function findLatestLogFile(prefix) {
@@ -472,12 +636,19 @@ ipcMain.handle(
         loadContacts(filePath);
 
       let savedFilePath = null;
+      let savedDuplicate = false;
       let archiveError = null;
 
       try {
 
-        savedFilePath =
+        const archiveResult =
           archiveContactFile(filePath);
+
+        savedFilePath =
+          archiveResult.filePath;
+
+        savedDuplicate =
+          archiveResult.duplicate;
 
       } catch (error) {
 
@@ -489,9 +660,100 @@ ipcMain.handle(
         success: true,
         filePath,
         savedFilePath,
+        savedDuplicate,
         archiveError,
         count: contacts.length,
         contacts
+      };
+
+    } catch (error) {
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+);
+
+// List saved contact files
+ipcMain.handle(
+  "list-saved-contact-files",
+  async () => {
+
+    try {
+
+      return {
+        success: true,
+        files:
+          getSavedContactEntries()
+      };
+
+    } catch (error) {
+
+      return {
+        success: false,
+        error: error.message,
+        files: []
+      };
+    }
+  }
+);
+
+// Load a saved contact file without archiving it again
+ipcMain.handle(
+  "load-saved-contact-file",
+  async (_, id) => {
+
+    try {
+
+      const filePath =
+        resolveSavedContactPath(id);
+
+      const contacts =
+        loadContacts(filePath);
+
+      return {
+        success: true,
+        filePath,
+        count: contacts.length,
+        contacts
+      };
+
+    } catch (error) {
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+);
+
+// Open saved contact files folder
+ipcMain.handle(
+  "open-saved-contacts-folder",
+  async () => {
+
+    try {
+
+      const folderPath =
+        ensureSavedContactsDir();
+
+      const error =
+        await shell.openPath(folderPath);
+
+      if (error) {
+
+        return {
+          success: false,
+          error
+        };
+      }
+
+      return {
+        success: true,
+        folderPath
       };
 
     } catch (error) {
