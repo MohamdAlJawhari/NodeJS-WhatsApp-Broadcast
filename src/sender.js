@@ -193,17 +193,22 @@ async function sendBroadcast(client, contacts, options) {
     // Generate personalized message
     const message = generateMessage(template, contact);
 
+    const mediaValidation = validateMediaFile(mediaFile);
+    const hasValidMedia =
+      mediaValidation.valid;
+    const mediaRequested =
+      Boolean(mediaFile);
+    let mediaSendFailed = false;
+
     try {
 
       console.log(`Sending to ${rawPhone}...`);
-
-      const mediaValidation = validateMediaFile(mediaFile);
 
       let mediaSent = false;
       let textSent = false;
 
       // Try sending media first
-      if (mediaValidation.valid) {
+      if (hasValidMedia) {
 
         try {
 
@@ -237,6 +242,8 @@ async function sendBroadcast(client, contacts, options) {
 
         } catch (mediaError) {
 
+          mediaSendFailed = true;
+
           console.log(
             `Media failed for ${rawPhone}`
           );
@@ -252,7 +259,7 @@ async function sendBroadcast(client, contacts, options) {
         }
       }
 
-      // Fallback to text if media failed
+      // Send text when no media was selected, or fall back to text if media failed
       if (!mediaSent) {
 
         await client.sendText(chatId, message);
@@ -267,8 +274,20 @@ async function sendBroadcast(client, contacts, options) {
         status = "success";
       }
 
-      if (textSent && !mediaSent) {
+      if (
+        textSent &&
+        !mediaSent &&
+        mediaSendFailed
+      ) {
         status = "partial_success";
+      }
+
+      if (
+        textSent &&
+        !mediaSent &&
+        !mediaSendFailed
+      ) {
+        status = "success";
       }
 
       // Count results
@@ -300,17 +319,33 @@ async function sendBroadcast(client, contacts, options) {
         error.message.includes("msgChunks")
       ) {
 
-        console.log(
-          `Warning: Message sent but WPPConnect threw internal error`
-        );
+        const status =
+          mediaRequested
+            ? "success_with_warning"
+            : "success";
+
+        if (mediaRequested) {
+
+          console.log(
+            `Warning: Message sent but WPPConnect threw internal error`
+          );
+        }
 
         successCount++;
 
-        results.push({
+        const result = {
           phone: rawPhone,
-          status: "success_with_warning",
-          warning: error.message
-        });
+          status,
+          message
+        };
+
+        if (mediaRequested) {
+
+          result.warning =
+            error.message;
+        }
+
+        results.push(result);
 
         successContacts.push(contact);
 
