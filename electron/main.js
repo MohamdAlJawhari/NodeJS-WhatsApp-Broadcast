@@ -12,6 +12,7 @@ const {
 const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
+const XLSX = require("xlsx");
 
 require("dotenv").config({
   path: path.join(__dirname, "..", ".env"),
@@ -310,15 +311,432 @@ function archiveContactFile(filePath) {
   };
 }
 
-function findLatestLogFile(prefix) {
+function getContactMetaPath(filePath) {
+
+  return `${filePath}.meta.json`;
+}
+
+function readContactMeta(filePath) {
+
+  const metaPath =
+    getContactMetaPath(filePath);
+
+  if (!fs.existsSync(metaPath)) {
+
+    return {
+      description: ""
+    };
+  }
+
+  try {
+
+    return JSON.parse(
+      fs.readFileSync(metaPath, "utf8")
+    );
+
+  } catch {
+
+    return {
+      description: ""
+    };
+  }
+}
+
+function writeContactMeta(filePath, meta) {
+
+  fs.writeFileSync(
+    getContactMetaPath(filePath),
+    JSON.stringify(meta, null, 2)
+  );
+}
+
+function getContactFileStats(filePath) {
+
+  const stats =
+    fs.statSync(filePath);
+
+  return {
+    id: path.basename(filePath),
+    fileName: path.basename(filePath),
+    filePath,
+    size: stats.size,
+    modifiedAt:
+      stats.mtime.toISOString()
+  };
+}
+
+function readContactFileRows(filePath) {
+
+  const workbook =
+    XLSX.readFile(filePath);
+
+  const sheetName =
+    workbook.SheetNames[0];
+
+  const sheet =
+    workbook.Sheets[sheetName];
+
+  const rows =
+    XLSX.utils.sheet_to_json(
+      sheet,
+      {
+        header: 1,
+        defval: "",
+        raw: false
+      }
+    );
+
+  if (rows.length === 0) {
+
+    return [[
+      process.env.PHONE_COLUMN ||
+      "phone"
+    ]];
+  }
+
+  return rows.map(row => {
+    return row.map(cell => {
+      return String(cell ?? "");
+    });
+  });
+}
+
+function normalizeContactRows(rows) {
+
+  const normalized =
+    Array.isArray(rows)
+      ? rows.map(row => {
+        return Array.isArray(row)
+          ? row.map(cell => String(cell ?? ""))
+          : [];
+      })
+      : [];
+
+  if (normalized.length === 0) {
+
+    normalized.push([
+      process.env.PHONE_COLUMN ||
+      "phone"
+    ]);
+  }
+
+  const width =
+    Math.max(
+      1,
+      ...normalized.map(row => row.length)
+    );
+
+  return normalized.map(row => {
+
+    const nextRow =
+      [...row];
+
+    while (nextRow.length < width) {
+
+      nextRow.push("");
+    }
+
+    return nextRow;
+  });
+}
+
+function validateContactRows(rows) {
+
+  const phoneColumn =
+    process.env.PHONE_COLUMN || "phone";
+
+  const headers =
+    rows[0].map(header => {
+      return String(header).trim();
+    });
+
+  const hasPhoneColumn =
+    headers.some(header => {
+      return header.toLowerCase() ===
+        phoneColumn.toLowerCase();
+    });
+
+  if (!hasPhoneColumn) {
+
+    throw new Error(
+      `The '${phoneColumn}' column is required and cannot be removed or renamed.`
+    );
+  }
+
+  const usedHeaders =
+    new Set();
+
+  headers.forEach((header, index) => {
+
+    if (!header) {
+
+      throw new Error(
+        `Column ${index + 1} needs a name.`
+      );
+    }
+
+    const normalizedHeader =
+      header.toLowerCase();
+
+    if (usedHeaders.has(normalizedHeader)) {
+
+      throw new Error(
+        `Duplicate column name: ${header}`
+      );
+    }
+
+    usedHeaders.add(normalizedHeader);
+  });
+}
+
+function writeContactFileRows(filePath, rows) {
+
+  const normalizedRows =
+    normalizeContactRows(rows);
+
+  validateContactRows(normalizedRows);
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  const worksheet =
+    XLSX.utils.aoa_to_sheet(normalizedRows);
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Contacts"
+  );
+
+  const extension =
+    path.extname(filePath).toLowerCase();
+
+  const bookType =
+    extension === ".csv"
+      ? "csv"
+      : extension === ".xls"
+        ? "xls"
+        : "xlsx";
+
+  XLSX.writeFile(
+    workbook,
+    filePath,
+    {
+      bookType
+    }
+  );
+}
+
+function getSavedContactDetails(id) {
+
+  const filePath =
+    resolveSavedContactPath(id);
+
+  const rows =
+    normalizeContactRows(
+      readContactFileRows(filePath)
+    );
+
+  const phoneColumn =
+    process.env.PHONE_COLUMN || "phone";
+
+  const phoneColumnIndex =
+    rows[0].findIndex(header => {
+      return String(header).trim().toLowerCase() ===
+        phoneColumn.toLowerCase();
+    });
+
+  return {
+    ...getContactFileStats(filePath),
+    description:
+      readContactMeta(filePath).description || "",
+    rows,
+    rowCount:
+      Math.max(0, rows.length - 1),
+    columnCount:
+      rows[0].length,
+    phoneColumn,
+    phoneColumnIndex
+  };
+}
+
+function updateSavedContactDetails(data) {
+
+  const filePath =
+    resolveSavedContactPath(data.id);
+
+  const currentExtension =
+    path.extname(filePath).toLowerCase();
+
+  const requestedName =
+    String(data.fileName || path.basename(filePath))
+      .trim();
+
+  const requestedExtension =
+    path.extname(requestedName).toLowerCase();
+
+  if (
+    requestedExtension &&
+    requestedExtension !== currentExtension
+  ) {
+
+    throw new Error(
+      `Keep the file extension as '${currentExtension}'.`
+    );
+  }
+
+  const baseName =
+    sanitizeFileName(
+      path.basename(
+        requestedName,
+        requestedExtension || currentExtension
+      )
+    );
+
+  const newFileName =
+    `${baseName}${currentExtension}`;
+
+  const savedContactsDir =
+    ensureSavedContactsDir();
+
+  const newFilePath =
+    path.join(savedContactsDir, newFileName);
+
+  let finalFilePath =
+    filePath;
+
+  if (newFilePath !== filePath) {
+
+    if (fs.existsSync(newFilePath)) {
+
+      throw new Error(
+        "A saved contacts file with this name already exists."
+      );
+    }
+
+    const oldMetaPath =
+      getContactMetaPath(filePath);
+
+    fs.renameSync(filePath, newFilePath);
+
+    if (fs.existsSync(oldMetaPath)) {
+
+      fs.renameSync(
+        oldMetaPath,
+        getContactMetaPath(newFilePath)
+      );
+    }
+
+    finalFilePath =
+      newFilePath;
+  }
+
+  writeContactMeta(
+    finalFilePath,
+    {
+      description:
+        String(data.description || "")
+    }
+  );
+
+  return getSavedContactDetails(
+    path.basename(finalFilePath)
+  );
+}
+
+function deleteSavedContactFile(id) {
+
+  const filePath =
+    resolveSavedContactPath(id);
+
+  const metaPath =
+    getContactMetaPath(filePath);
+
+  fs.unlinkSync(filePath);
+
+  if (fs.existsSync(metaPath)) {
+
+    fs.unlinkSync(metaPath);
+  }
+}
+
+async function exportSavedContactFile(id) {
+
+  const filePath =
+    resolveSavedContactPath(id);
+
+  const result =
+    await dialog.showSaveDialog({
+      defaultPath:
+        path.basename(filePath),
+      filters: [
+        {
+          name: "Contact Files",
+          extensions: [
+            "xlsx",
+            "xls",
+            "csv"
+          ]
+        }
+      ]
+    });
+
+  if (result.canceled) {
+
+    return {
+      success: false
+    };
+  }
+
+  fs.copyFileSync(
+    filePath,
+    result.filePath
+  );
+
+  return {
+    success: true,
+    filePath:
+      result.filePath
+  };
+}
+
+function getLogType(kind) {
+
+  const logTypes = {
+    success: {
+      prefix: "success",
+      extension: ".csv"
+    },
+    failed: {
+      prefix: "failed",
+      extension: ".csv"
+    },
+    send: {
+      prefix: "send-log",
+      extension: ".json"
+    }
+  };
+
+  return logTypes[kind] || null;
+}
+
+function findLatestLogFile(kind) {
+
+  const logType =
+    getLogType(kind);
+
+  if (!logType) {
+
+    return null;
+  }
 
   const logsDir =
     ensureLogsDir();
 
   const files = fs.readdirSync(logsDir)
     .filter(file => {
-      return file.startsWith(`${prefix}-`) &&
-        file.endsWith(".csv");
+      return file.startsWith(`${logType.prefix}-`) &&
+        file.endsWith(logType.extension);
     })
     .map(file => {
       const filePath =
@@ -339,22 +757,8 @@ function findLatestLogFile(prefix) {
 
 async function openLogLocation(kind) {
 
-  const logTypes = {
-    success: {
-      prefix: "success",
-      extension: ".csv"
-    },
-    failed: {
-      prefix: "failed",
-      extension: ".csv"
-    },
-    send: {
-      prefix: "send-log",
-      extension: ".json"
-    }
-  };
-
-  const logType = logTypes[kind];
+  const logType =
+    getLogType(kind);
 
   if (!logType) {
 
@@ -365,7 +769,7 @@ async function openLogLocation(kind) {
   }
 
   const logFile =
-    findLatestLogFile(prefix);
+    findLatestLogFile(kind);
 
   if (logFile) {
 
@@ -399,14 +803,10 @@ async function openLogLocation(kind) {
 
 function deleteLogFiles(kind) {
 
-  const prefixes = {
-    success: "success",
-    failed: "failed"
-  };
+  const logType =
+    getLogType(kind);
 
-  const prefix = prefixes[kind];
-
-  if (!prefix) {
+  if (!logType) {
 
     return {
       success: false,
@@ -828,6 +1228,125 @@ ipcMain.handle(
         success: true,
         folderPath
       };
+
+    } catch (error) {
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+);
+
+// Read saved contact file for the editor page
+ipcMain.handle(
+  "get-saved-contact-details",
+  async (_, id) => {
+
+    try {
+
+      return {
+        success: true,
+        file:
+          getSavedContactDetails(id)
+      };
+
+    } catch (error) {
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+);
+
+// Save saved contact file name and description
+ipcMain.handle(
+  "save-saved-contact-details",
+  async (_, data) => {
+
+    try {
+
+      return {
+        success: true,
+        file:
+          updateSavedContactDetails(data)
+      };
+
+    } catch (error) {
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+);
+
+// Save edited contact table rows
+ipcMain.handle(
+  "save-saved-contact-content",
+  async (_, data) => {
+
+    try {
+
+      const filePath =
+        resolveSavedContactPath(data.id);
+
+      writeContactFileRows(
+        filePath,
+        data.rows
+      );
+
+      return {
+        success: true,
+        file:
+          getSavedContactDetails(data.id)
+      };
+
+    } catch (error) {
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+);
+
+// Delete saved contact file
+ipcMain.handle(
+  "delete-saved-contact-file",
+  async (_, id) => {
+
+    try {
+
+      deleteSavedContactFile(id);
+
+      return {
+        success: true
+      };
+
+    } catch (error) {
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+);
+
+// Export a saved contact file
+ipcMain.handle(
+  "export-saved-contact-file",
+  async (_, id) => {
+
+    try {
+
+      return await exportSavedContactFile(id);
 
     } catch (error) {
 

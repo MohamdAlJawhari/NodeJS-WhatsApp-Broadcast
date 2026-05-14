@@ -1,6 +1,6 @@
 <body>
 
-    <div class="container">
+    <div id="mainPage" class="container app-page">
 
         <h1>
             WhatsApp Broadcast Sender
@@ -226,6 +226,102 @@
         </h3>
 
         <div id="logs"></div>
+
+    </div>
+
+    <div id="contactEditorPage" class="container app-page hidden">
+
+        <div class="editor-hero">
+
+            <div class="editor-title-row">
+
+                <div class="editor-icon">
+                    File
+                </div>
+
+                <div>
+
+                    <h1>
+                        Contacts File Details
+                    </h1>
+
+                    <p>
+                        Review this file and edit its name, description, columns, and rows.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="editor-actions">
+
+                <button id="editorBackBtn">
+                    Back
+                </button>
+
+                <button id="editorSelectBtn" class="success-action">
+                    Select File Sender
+                </button>
+
+                <button id="editorExportBtn" class="warning-action">
+                    Download File
+                </button>
+
+                <button id="editorDeleteBtn" class="danger-action">
+                    Delete File
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="editor-body">
+
+            <p id="editorFileMeta"></p>
+
+            <div class="editor-details-grid">
+
+                <label>
+                    File Name
+                    <input id="editorFileNameInput" type="text">
+                </label>
+
+                <label>
+                    Description
+                    <textarea id="editorDescriptionInput" rows="4"></textarea>
+                </label>
+
+                <button id="editorSaveDetailsBtn" class="success-action">
+                    Save Details
+                </button>
+
+            </div>
+
+            <p id="editorTableSummary"></p>
+
+            <p class="editor-help">
+                Use the small [-] and [+] buttons inside each row and column to remove or insert exactly where you want. The main phone column name is locked.
+            </p>
+
+            <div class="editor-toolbar">
+
+                <button id="editorSaveContentBtn" class="success-action">
+                    Save File Content
+                </button>
+
+                <button id="editorAddRowBtn">
+                    Add Row
+                </button>
+
+                <button id="editorAddColumnBtn">
+                    Add Column
+                </button>
+
+            </div>
+
+            <div id="contactTableEditor" class="table-editor"></div>
+
+        </div>
 
     </div>
 

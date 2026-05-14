@@ -32,6 +32,36 @@ contextBridge.exposeInMainWorld(
         "open-saved-contacts-folder"
       ),
 
+    getSavedContactDetails: (id) =>
+      ipcRenderer.invoke(
+        "get-saved-contact-details",
+        id
+      ),
+
+    saveSavedContactDetails: (data) =>
+      ipcRenderer.invoke(
+        "save-saved-contact-details",
+        data
+      ),
+
+    saveSavedContactContent: (data) =>
+      ipcRenderer.invoke(
+        "save-saved-contact-content",
+        data
+      ),
+
+    deleteSavedContactFile: (id) =>
+      ipcRenderer.invoke(
+        "delete-saved-contact-file",
+        id
+      ),
+
+    exportSavedContactFile: (id) =>
+      ipcRenderer.invoke(
+        "export-saved-contact-file",
+        id
+      ),
+
     generatePreview: (data) =>
       ipcRenderer.invoke(
         "generate-preview",
