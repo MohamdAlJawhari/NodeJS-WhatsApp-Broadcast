@@ -128,9 +128,24 @@ const openSuccessLogsBtn =
         "openSuccessLogsBtn"
     );
 
+const cleanSuccessLogsBtn =
+    document.getElementById(
+        "cleanSuccessLogsBtn"
+    );
+
 const openFailedLogsBtn =
     document.getElementById(
         "openFailedLogsBtn"
+    );
+
+const cleanFailedLogsBtn =
+    document.getElementById(
+        "cleanFailedLogsBtn"
+    );
+
+const cleanSendLogsBtn =
+    document.getElementById(
+        "cleanSendLogsBtn"
     );
 
 const retryFailedBtn =
@@ -453,12 +468,42 @@ openSuccessLogsBtn.addEventListener(
     }
 );
 
+cleanSuccessLogsBtn.addEventListener(
+    "click",
+    async () => {
+
+        await cleanLogFiles(
+            "success"
+        );
+    }
+);
+
 openFailedLogsBtn.addEventListener(
     "click",
     async () => {
 
         await openLogFolder(
             "failed"
+        );
+    }
+);
+
+cleanFailedLogsBtn.addEventListener(
+    "click",
+    async () => {
+
+        await cleanLogFiles(
+            "failed"
+        );
+    }
+);
+
+cleanSendLogsBtn.addEventListener(
+    "click",
+    async () => {
+
+        await cleanLogFiles(
+            "send"
         );
     }
 );
@@ -867,6 +912,56 @@ async function openLogFolder(
 
     showToast(
         "Logs folder opened",
+        "success"
+    );
+}
+
+async function cleanLogFiles(
+    kind
+) {
+
+    const labels = {
+        success: "success",
+        failed: "failed",
+        send: "send"
+    };
+
+    const label =
+        labels[kind] ||
+        "selected";
+
+    const fileType =
+        kind === "send"
+            ? "JSON"
+            : "CSV";
+
+    const confirmed =
+        window.confirm(
+            `Delete all saved ${label} ${fileType} logs?`
+        );
+
+    if (!confirmed) {
+
+        return;
+    }
+
+    const result =
+        await window.electronAPI
+            .cleanLogFiles(kind);
+
+    if (!result.success) {
+
+        showToast(
+            result.error ||
+            `Could not clean ${label} logs`,
+            "error"
+        );
+
+        return;
+    }
+
+    showToast(
+        `Deleted ${result.deletedCount} ${label} log file(s)`,
         "success"
     );
 }
@@ -1338,7 +1433,10 @@ function setUnsafeControlsDisabled(
         mediaBtn,
         saveTemplateBtn,
         openSuccessLogsBtn,
-        openFailedLogsBtn
+        cleanSuccessLogsBtn,
+        openFailedLogsBtn,
+        cleanFailedLogsBtn,
+        cleanSendLogsBtn
     ].forEach(button => {
 
         button.disabled =

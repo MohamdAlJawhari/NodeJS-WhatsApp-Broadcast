@@ -103,6 +103,12 @@ contextBridge.exposeInMainWorld(
         kind
       ),
 
+    cleanLogFiles: (kind) =>
+      ipcRenderer.invoke(
+        "clean-log-files",
+        kind
+      ),
+
     loadLatestFailedContacts: () =>
       ipcRenderer.invoke(
         "load-latest-failed-contacts"

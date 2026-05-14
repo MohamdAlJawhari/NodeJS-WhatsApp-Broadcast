@@ -339,14 +339,24 @@ function findLatestLogFile(prefix) {
 
 async function openLogLocation(kind) {
 
-  const prefixes = {
-    success: "success",
-    failed: "failed"
+  const logTypes = {
+    success: {
+      prefix: "success",
+      extension: ".csv"
+    },
+    failed: {
+      prefix: "failed",
+      extension: ".csv"
+    },
+    send: {
+      prefix: "send-log",
+      extension: ".json"
+    }
   };
 
-  const prefix = prefixes[kind];
+  const logType = logTypes[kind];
 
-  if (!prefix) {
+  if (!logType) {
 
     return {
       success: false,
@@ -384,6 +394,69 @@ async function openLogLocation(kind) {
   return {
     success: true,
     folderPath: logsDir
+  };
+}
+
+function deleteLogFiles(kind) {
+
+  const prefixes = {
+    success: "success",
+    failed: "failed"
+  };
+
+  const prefix = prefixes[kind];
+
+  if (!prefix) {
+
+    return {
+      success: false,
+      error: "Unknown log type"
+    };
+  }
+
+  const logsDir =
+    ensureLogsDir();
+
+  const files = fs.readdirSync(logsDir)
+    .filter(file => {
+      return file.startsWith(`${logType.prefix}-`) &&
+        file.endsWith(logType.extension);
+    });
+
+  const errors = [];
+
+  files.forEach(file => {
+
+    const filePath =
+      path.join(logsDir, file);
+
+    try {
+
+      fs.unlinkSync(filePath);
+
+    } catch (error) {
+
+      errors.push(
+        `${file}: ${error.message}`
+      );
+    }
+  });
+
+  if (errors.length > 0) {
+
+    return {
+      success: false,
+      deletedCount:
+        files.length - errors.length,
+      error:
+        `Some logs could not be deleted: ${errors.join("; ")}`
+    };
+  }
+
+  return {
+    success: true,
+    deletedCount:
+      files.length
   };
 }
 
@@ -947,6 +1020,25 @@ ipcMain.handle(
     try {
 
       return await openLogLocation(kind);
+
+    } catch (error) {
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+);
+
+// Delete generated success/failed CSV logs
+ipcMain.handle(
+  "clean-log-files",
+  async (_, kind) => {
+
+    try {
+
+      return deleteLogFiles(kind);
 
     } catch (error) {
 
