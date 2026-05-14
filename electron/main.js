@@ -29,6 +29,15 @@ const {
   loadContacts
 } = require("../src/contacts");
 
+const {
+  validatePhone,
+  validateTemplateVariables
+} = require("../src/validator");
+
+const {
+  validateMediaFile
+} = require("../src/media");
+
 const broadcastController =
   require("../src/broadcastController");
 
@@ -39,25 +48,108 @@ const {
 
 let client = null;
 
-const logsDir = path.join(
+const appRootDir = path.join(
   __dirname,
-  "..",
-  "logs"
+  ".."
 );
 
-function ensureLogsDir() {
+function getWritableRootDir() {
 
-  if (!fs.existsSync(logsDir)) {
+  if (app.isPackaged) {
 
-    fs.mkdirSync(logsDir, {
+    return app.getPath("userData");
+  }
+
+  return appRootDir;
+}
+
+function getLogsDir() {
+
+  return path.join(
+    getWritableRootDir(),
+    "logs"
+  );
+}
+
+function getSavedContactsDir() {
+
+  return path.join(
+    getWritableRootDir(),
+    "data",
+    "saved-contacts"
+  );
+}
+
+function ensureDirectory(dirPath) {
+
+  if (!fs.existsSync(dirPath)) {
+
+    fs.mkdirSync(dirPath, {
       recursive: true
     });
   }
+
+  return dirPath;
+}
+
+function ensureLogsDir() {
+
+  return ensureDirectory(
+    getLogsDir()
+  );
+}
+
+function ensureSavedContactsDir() {
+
+  return ensureDirectory(
+    getSavedContactsDir()
+  );
+}
+
+function sanitizeFileName(name) {
+
+  return name
+    .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80) || "contacts";
+}
+
+function createTimestamp() {
+
+  return new Date()
+    .toISOString()
+    .replace(/[:.]/g, "-");
+}
+
+function archiveContactFile(filePath) {
+
+  const savedContactsDir =
+    ensureSavedContactsDir();
+
+  const parsed =
+    path.parse(filePath);
+
+  const fileName = [
+    createTimestamp(),
+    sanitizeFileName(parsed.name)
+  ].join("_") + parsed.ext.toLowerCase();
+
+  const savedFilePath =
+    path.join(savedContactsDir, fileName);
+
+  fs.copyFileSync(
+    filePath,
+    savedFilePath
+  );
+
+  return savedFilePath;
 }
 
 function findLatestLogFile(prefix) {
 
-  ensureLogsDir();
+  const logsDir =
+    ensureLogsDir();
 
   const files = fs.readdirSync(logsDir)
     .filter(file => {
@@ -111,7 +203,8 @@ async function openLogLocation(kind) {
     };
   }
 
-  ensureLogsDir();
+  const logsDir =
+    ensureLogsDir();
 
   const error =
     await shell.openPath(logsDir);
@@ -127,6 +220,186 @@ async function openLogLocation(kind) {
   return {
     success: true,
     folderPath: logsDir
+  };
+}
+
+function buildValidationWarnings(data = {}) {
+
+  const contacts =
+    Array.isArray(data.contacts)
+      ? data.contacts
+      : [];
+
+  const template =
+    String(data.template || "");
+
+  const mediaFile =
+    data.mediaFile || null;
+
+  const phoneField =
+    process.env.PHONE_COLUMN || "phone";
+
+  const warnings = [];
+  const invalidPhones = [];
+  const duplicatePhones = [];
+  const seenPhones = new Set();
+  const mediaValidation =
+    mediaFile
+      ? validateMediaFile(mediaFile)
+      : null;
+  const hasValidMedia =
+    Boolean(mediaValidation?.valid);
+
+  if (contacts.length === 0) {
+
+    warnings.push({
+      type: "error",
+      title: "No contacts loaded",
+      message:
+        "Load a contacts file before starting a broadcast."
+    });
+  }
+
+  contacts.forEach((contact, index) => {
+
+    const rawPhone =
+      contact[phoneField];
+
+    const validation =
+      validatePhone(rawPhone);
+
+    if (!validation.valid) {
+
+      invalidPhones.push({
+        row: index + 2,
+        phone: String(rawPhone || ""),
+        reason: validation.reason
+      });
+
+      return;
+    }
+
+    if (seenPhones.has(validation.phone)) {
+
+      duplicatePhones.push({
+        row: index + 2,
+        phone: String(rawPhone)
+      });
+
+      return;
+    }
+
+    seenPhones.add(validation.phone);
+  });
+
+  if (
+    contacts.length > 0 &&
+    seenPhones.size === 0
+  ) {
+
+    warnings.push({
+      type: "error",
+      title: "No valid phone numbers",
+      message:
+        "Fix the contacts file before starting a broadcast."
+    });
+  }
+
+  if (invalidPhones.length > 0) {
+
+    warnings.push({
+      type: "warning",
+      title: "Invalid phone numbers",
+      message:
+        `${invalidPhones.length} contact(s) will be skipped during sending.`,
+      details: invalidPhones
+        .slice(0, 5)
+        .map(item => {
+          return `Row ${item.row}: ${item.phone || "(blank)"} - ${item.reason}`;
+        })
+    });
+  }
+
+  if (duplicatePhones.length > 0) {
+
+    warnings.push({
+      type: "warning",
+      title: "Duplicate phone numbers",
+      message:
+        `${duplicatePhones.length} duplicate contact(s) may receive repeated messages.`,
+      details: duplicatePhones
+        .slice(0, 5)
+        .map(item => {
+          return `Row ${item.row}: ${item.phone}`;
+        })
+    });
+  }
+
+  if (!template.trim() && !hasValidMedia) {
+
+    warnings.push({
+      type: "error",
+      title: "Empty message",
+      message:
+        "Add a message template or choose a valid media file before sending."
+    });
+
+  } else if (!template.trim() && hasValidMedia) {
+
+    warnings.push({
+      type: "warning",
+      title: "Empty message template",
+      message:
+        "The selected media will be sent without a caption."
+    });
+  }
+
+  const templateValidation =
+    validateTemplateVariables(
+      template,
+      contacts
+    );
+
+  if (!templateValidation.valid) {
+
+    warnings.push({
+      type: "warning",
+      title: "Missing template variables",
+      message:
+        "Some placeholders are not present in the contacts file and will be blank.",
+      details: templateValidation.missing
+        .slice(0, 10)
+        .map(variable => {
+          return `{{${variable}}}`;
+        })
+    });
+  }
+
+  if (mediaFile && mediaValidation) {
+
+    if (!mediaValidation.valid) {
+
+      warnings.push({
+        type: "warning",
+        title: "Media file warning",
+        message:
+          `${mediaValidation.reason}. The sender will fall back to text only.`
+      });
+    }
+  }
+
+  return {
+    valid:
+      !warnings.some(warning => {
+        return warning.type === "error";
+      }),
+    warnings,
+    summary: {
+      totalContacts: contacts.length,
+      validPhones: seenPhones.size,
+      invalidPhones: invalidPhones.length,
+      duplicatePhones: duplicatePhones.length
+    }
   };
 }
 
@@ -198,9 +471,25 @@ ipcMain.handle(
       const contacts =
         loadContacts(filePath);
 
+      let savedFilePath = null;
+      let archiveError = null;
+
+      try {
+
+        savedFilePath =
+          archiveContactFile(filePath);
+
+      } catch (error) {
+
+        archiveError =
+          error.message;
+      }
+
       return {
         success: true,
         filePath,
+        savedFilePath,
+        archiveError,
         count: contacts.length,
         contacts
       };
@@ -376,6 +665,9 @@ ipcMain.handle(
   "stop-broadcast",
   async () => {
 
+    broadcastController.paused =
+      false;
+
     broadcastController.stopped =
       true;
 
@@ -443,6 +735,37 @@ ipcMain.handle(
   }
 );
 
+// Validate contacts, template, and media before sending
+ipcMain.handle(
+  "validate-broadcast-input",
+  async (_, data) => {
+
+    try {
+
+      return buildValidationWarnings(data);
+
+    } catch (error) {
+
+      return {
+        valid: false,
+        warnings: [
+          {
+            type: "error",
+            title: "Validation failed",
+            message: error.message
+          }
+        ],
+        summary: {
+          totalContacts: 0,
+          validPhones: 0,
+          invalidPhones: 0,
+          duplicatePhones: 0
+        }
+      };
+    }
+  }
+);
+
 // Start broadcast
 ipcMain.handle(
   "start-broadcast",
@@ -465,12 +788,38 @@ ipcMain.handle(
         mediaFile
       } = data;
 
+      const validation =
+        buildValidationWarnings({
+          contacts,
+          template,
+          mediaFile
+        });
+
+      if (!validation.valid) {
+
+        const error =
+          validation.warnings.find(warning => {
+            return warning.type === "error";
+          });
+
+        return {
+          success: false,
+          error:
+            error?.message ||
+            "Broadcast validation failed",
+          validation
+        };
+      }
+
       // Progress callback
       const options = {
 
         template,
 
         mediaFile,
+
+        logsDir:
+          ensureLogsDir(),
 
         delayMin: 10000,
 

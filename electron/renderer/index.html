@@ -77,6 +77,26 @@
 
         <hr>
 
+        <div id="validationPanel" class="validation-panel validation-panel-empty">
+
+            <div class="validation-header">
+
+                <h3>
+                    Validation Warnings
+                </h3>
+
+                <span id="validationSummary">
+                    No contacts loaded
+                </span>
+
+            </div>
+
+            <ul id="validationWarnings"></ul>
+
+        </div>
+
+        <hr>
+
         <h2>
             Sending
         </h2>
@@ -168,6 +188,8 @@
         <div id="logs"></div>
 
     </div>
+
+    <div id="toastContainer" aria-live="polite"></div>
 
     <script src="app.js"></script>
 

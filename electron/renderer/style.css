@@ -18,6 +18,14 @@ button {
   cursor: pointer;
 }
 
+button:disabled,
+textarea:disabled {
+
+  cursor: not-allowed;
+
+  opacity: 0.55;
+}
+
 .preview-card {
 
   background: #fafafa;
@@ -29,6 +37,103 @@ button {
   margin-bottom: 15px;
 
   border-radius: 8px;
+}
+
+.validation-panel {
+
+  border: 1px solid #d7dce2;
+
+  border-radius: 8px;
+
+  padding: 14px;
+
+  background: #f8fafc;
+}
+
+.validation-header {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+.validation-header h3 {
+
+  margin: 0;
+}
+
+#validationSummary {
+
+  color: #475569;
+
+  font-size: 14px;
+}
+
+#validationWarnings {
+
+  list-style: none;
+
+  margin: 12px 0 0;
+
+  padding: 0;
+}
+
+.validation-item {
+
+  border-left: 4px solid #64748b;
+
+  padding: 8px 10px;
+
+  margin-top: 8px;
+
+  background: white;
+}
+
+.validation-item p {
+
+  margin: 4px 0 0;
+}
+
+.validation-warning {
+
+  border-left-color: #f59e0b;
+}
+
+.validation-error {
+
+  border-left-color: #dc2626;
+}
+
+.validation-details {
+
+  margin: 8px 0 0 18px;
+
+  padding: 0;
+}
+
+.validation-panel-empty {
+
+  border-color: #bbf7d0;
+
+  background: #f0fdf4;
+}
+
+.validation-panel-warning {
+
+  border-color: #fde68a;
+
+  background: #fffbeb;
+}
+
+.validation-panel-error {
+
+  border-color: #fecaca;
+
+  background: #fef2f2;
 }
 
 #logs {
@@ -101,9 +206,79 @@ button {
   color: white;
 }
 
+.status-stopping {
+
+  background: #991b1b;
+
+  color: white;
+}
+
 .status-completed {
 
   background: blue;
 
   color: white;
+}
+
+#toastContainer {
+
+  position: fixed;
+
+  right: 20px;
+
+  bottom: 20px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+  z-index: 9999;
+}
+
+.toast {
+
+  min-width: 240px;
+
+  max-width: 360px;
+
+  padding: 12px 14px;
+
+  border-radius: 8px;
+
+  color: white;
+
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2);
+
+  overflow-wrap: anywhere;
+
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.toast-info {
+
+  background: #2563eb;
+}
+
+.toast-success {
+
+  background: #15803d;
+}
+
+.toast-warning {
+
+  background: #b45309;
+}
+
+.toast-error {
+
+  background: #b91c1c;
+}
+
+.toast-hide {
+
+  opacity: 0;
+
+  transform: translateY(8px);
 }

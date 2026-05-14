@@ -123,9 +123,39 @@ const retryFailedBtn =
         "retryFailedBtn"
     );
 
+const validationPanel =
+    document.getElementById(
+        "validationPanel"
+    );
+
+const validationSummary =
+    document.getElementById(
+        "validationSummary"
+    );
+
+const validationWarnings =
+    document.getElementById(
+        "validationWarnings"
+    );
+
+const toastContainer =
+    document.getElementById(
+        "toastContainer"
+    );
+
 let contacts = [];
 
 let mediaFile = null;
+
+let currentBroadcastState = "IDLE";
+
+let stopRequested = false;
+
+let broadcastStarting = false;
+
+let validationRequestId = 0;
+
+let validationTimer = null;
 
 loadBtn.addEventListener(
     "click",
@@ -144,6 +174,14 @@ loadBtn.addEventListener(
                 result.error ||
                 "File selection canceled";
 
+            if (result.error) {
+
+                showToast(
+                    result.error,
+                    "error"
+                );
+            }
+
             return;
         }
 
@@ -151,6 +189,28 @@ loadBtn.addEventListener(
 
         status.innerText =
             `Loaded ${result.count} contacts`;
+
+        showToast(
+            `Loaded ${result.count} contacts`,
+            "success"
+        );
+
+        if (result.savedFilePath) {
+
+            showToast(
+                "Contact file saved",
+                "success"
+            );
+
+        } else if (result.archiveError) {
+
+            showToast(
+                `Contact file was not saved: ${result.archiveError}`,
+                "warning"
+            );
+        }
+
+        await refreshValidationWarnings();
     }
 );
 
@@ -160,8 +220,9 @@ previewBtn.addEventListener(
 
         if (contacts.length === 0) {
 
-            alert(
-                "Load contacts first"
+            showToast(
+                "Load contacts first",
+                "warning"
             );
 
             return;
@@ -225,6 +286,13 @@ mediaBtn.addEventListener(
 
         mediaStatus.innerText =
             mediaFile;
+
+        showToast(
+            "Media file selected",
+            "success"
+        );
+
+        await refreshValidationWarnings();
     }
 );
 
@@ -243,6 +311,11 @@ connectBtn.addEventListener(
 
             connectionStatus.innerText =
                 result.error;
+
+            showToast(
+                result.error,
+                "error"
+            );
         }
     }
 );
@@ -270,6 +343,11 @@ window.electronAPI
 
                 qrImage.style.display =
                     "none";
+
+                showToast(
+                    "WhatsApp connected",
+                    "success"
+                );
             }
         }
     );
@@ -290,8 +368,9 @@ startBtn.addEventListener(
 
         if (contacts.length === 0) {
 
-            alert(
-                "Load contacts first"
+            showToast(
+                "Load contacts first",
+                "warning"
             );
 
             return;
@@ -333,9 +412,10 @@ retryFailedBtn.addEventListener(
 
         if (!result.success) {
 
-            alert(
+            showToast(
                 result.error ||
-                "No failed contacts found"
+                "No failed contacts found",
+                "warning"
             );
 
             return;
@@ -346,6 +426,13 @@ retryFailedBtn.addEventListener(
 
         status.innerText =
             `Loaded ${result.count} failed contacts for retry`;
+
+        showToast(
+            `Loaded ${result.count} failed contacts for retry`,
+            "success"
+        );
+
+        await refreshValidationWarnings();
 
         await runBroadcast(
             contacts
@@ -367,6 +454,11 @@ pauseBtn.addEventListener(
         updateButtons(
             "PAUSED"
         );
+
+        showToast(
+            "Broadcast paused",
+            "info"
+        );
     }
 );
 
@@ -384,6 +476,11 @@ resumeBtn.addEventListener(
         updateButtons(
             "RUNNING"
         );
+
+        showToast(
+            "Broadcast resumed",
+            "info"
+        );
     }
 );
 
@@ -394,12 +491,20 @@ stopBtn.addEventListener(
         await window.electronAPI
             .stopBroadcast();
 
+        stopRequested =
+            true;
+
         setBroadcastStatus(
-            "STOPPED"
+            "STOPPING"
         );
 
         updateButtons(
-            "STOPPED"
+            "STOPPING"
+        );
+
+        showToast(
+            "Stopping broadcast",
+            "warning"
         );
     }
 );
@@ -450,11 +555,20 @@ saveTemplateBtn
                     template
                 );
 
-            alert(
-                "Default template saved"
+            showToast(
+                "Default template saved",
+                "success"
             );
         }
     );
+
+templateInput.addEventListener(
+    "input",
+    () => {
+
+        scheduleValidationRefresh();
+    }
+);
 
 async function openLogFolder(
     kind
@@ -466,11 +580,19 @@ async function openLogFolder(
 
     if (!result.success) {
 
-        alert(
+        showToast(
             result.error ||
-            "Could not open logs folder"
+            "Could not open logs folder",
+            "error"
         );
+
+        return;
     }
+
+    showToast(
+        "Logs folder opened",
+        "success"
+    );
 }
 
 async function runBroadcast(
@@ -479,8 +601,66 @@ async function runBroadcast(
 
     if (targetContacts.length === 0) {
 
-        alert(
-            "Load contacts first"
+        showToast(
+            "Load contacts first",
+            "warning"
+        );
+
+        return;
+    }
+
+    if (
+        broadcastStarting ||
+        [
+            "RUNNING",
+            "PAUSED",
+            "STOPPING"
+        ].includes(currentBroadcastState)
+    ) {
+
+        showToast(
+            "A broadcast is already active",
+            "warning"
+        );
+
+        return;
+    }
+
+    broadcastStarting =
+        true;
+
+    startBtn.disabled =
+        true;
+
+    retryFailedBtn.disabled =
+        true;
+
+    setUnsafeControlsDisabled(
+        true
+    );
+
+    clearTimeout(validationTimer);
+
+    const validation =
+        await refreshValidationWarnings(
+            targetContacts
+        );
+
+    if (
+        !validation ||
+        !validation.valid
+    ) {
+
+        showToast(
+            "Fix validation errors before sending",
+            "error"
+        );
+
+        broadcastStarting =
+            false;
+
+        updateButtons(
+            currentBroadcastState
         );
 
         return;
@@ -495,6 +675,9 @@ async function runBroadcast(
 
     progressText.innerText =
         "0%";
+
+    stopRequested =
+        false;
 
     setBroadcastStatus(
         "RUNNING"
@@ -513,18 +696,39 @@ async function runBroadcast(
         skipped: 0
     });
 
-    const result =
-        await window.electronAPI
-            .startBroadcast({
+    showToast(
+        "Broadcast started",
+        "info"
+    );
 
-                contacts: targetContacts,
-                template,
-                mediaFile
-            });
+    let result;
+
+    try {
+
+        result =
+            await window.electronAPI
+                .startBroadcast({
+
+                    contacts: targetContacts,
+                    template,
+                    mediaFile
+                });
+
+    } catch (error) {
+
+        result = {
+            success: false,
+            error: error.message
+        };
+    }
 
     if (!result.success) {
 
-        alert(result.error);
+        showToast(
+            result.error ||
+            "Broadcast failed",
+            "error"
+        );
 
         setBroadcastStatus(
             "IDLE"
@@ -534,15 +738,282 @@ async function runBroadcast(
             "IDLE"
         );
 
+        broadcastStarting =
+            false;
+
         return;
     }
 
-    setBroadcastStatus(
-        "COMPLETED"
-    );
+    if (stopRequested) {
+
+        setBroadcastStatus(
+            "STOPPED"
+        );
+
+        showToast(
+            "Broadcast stopped",
+            "warning"
+        );
+
+    } else {
+
+        setBroadcastStatus(
+            "COMPLETED"
+        );
+
+        const counters =
+            result.counters;
+
+        if (counters) {
+
+            showToast(
+                `Broadcast completed: ${counters.success} success, ${counters.failed} failed, ${counters.skipped} skipped`,
+                "success"
+            );
+
+        } else {
+
+            showToast(
+                "Broadcast completed",
+                "success"
+            );
+        }
+    }
 
     updateButtons(
-        "COMPLETED"
+        currentBroadcastState
+    );
+
+    broadcastStarting =
+        false;
+
+    await refreshValidationWarnings();
+}
+
+function scheduleValidationRefresh() {
+
+    clearTimeout(validationTimer);
+
+    validationTimer =
+        setTimeout(
+            () => {
+                refreshValidationWarnings();
+            },
+            300
+        );
+}
+
+async function refreshValidationWarnings(
+    targetContacts = contacts
+) {
+
+    const requestId =
+        ++validationRequestId;
+
+    try {
+
+        const result =
+            await window.electronAPI
+                .validateBroadcastInput({
+
+                    contacts: targetContacts,
+                    template:
+                        templateInput.value,
+                    mediaFile
+                });
+
+        if (
+            requestId !==
+            validationRequestId
+        ) {
+
+            return null;
+        }
+
+        renderValidationWarnings(
+            result
+        );
+
+        return result;
+
+    } catch (error) {
+
+        const result = {
+            valid: false,
+            warnings: [
+                {
+                    type: "error",
+                    title: "Validation failed",
+                    message: error.message
+                }
+            ],
+            summary: {
+                totalContacts:
+                    targetContacts.length,
+                validPhones: 0,
+                invalidPhones: 0,
+                duplicatePhones: 0
+            }
+        };
+
+        renderValidationWarnings(
+            result
+        );
+
+        return result;
+    }
+}
+
+function renderValidationWarnings(
+    result
+) {
+
+    const warnings =
+        result.warnings || [];
+
+    const summary =
+        result.summary || {
+            totalContacts: 0,
+            validPhones: 0,
+            invalidPhones: 0,
+            duplicatePhones: 0
+        };
+
+    validationWarnings.innerHTML =
+        "";
+
+    validationPanel.className =
+        "validation-panel";
+
+    if (warnings.length === 0) {
+
+        validationPanel.classList.add(
+            "validation-panel-empty"
+        );
+
+        validationSummary.innerText =
+            summary.totalContacts > 0
+                ? `${summary.totalContacts} contacts ready`
+                : "No contacts loaded";
+
+        return;
+    }
+
+    if (
+        warnings.some(warning => {
+            return warning.type === "error";
+        })
+    ) {
+
+        validationPanel.classList.add(
+            "validation-panel-error"
+        );
+
+    } else {
+
+        validationPanel.classList.add(
+            "validation-panel-warning"
+        );
+    }
+
+    validationSummary.innerText =
+        `${summary.totalContacts} contacts, ${summary.validPhones} valid, ${summary.invalidPhones} invalid, ${summary.duplicatePhones} duplicate`;
+
+    warnings.forEach(warning => {
+
+        const item =
+            document.createElement("li");
+
+        item.className =
+            `validation-item validation-${warning.type}`;
+
+        const title =
+            document.createElement("strong");
+
+        title.innerText =
+            warning.title;
+
+        const message =
+            document.createElement("p");
+
+        message.innerText =
+            warning.message;
+
+        item.appendChild(title);
+        item.appendChild(message);
+
+        if (
+            warning.details &&
+            warning.details.length > 0
+        ) {
+
+            const details =
+                document.createElement("ul");
+
+            details.className =
+                "validation-details";
+
+            warning.details.forEach(detail => {
+
+                const detailItem =
+                    document.createElement("li");
+
+                detailItem.innerText =
+                    detail;
+
+                details.appendChild(
+                    detailItem
+                );
+            });
+
+            item.appendChild(details);
+        }
+
+        validationWarnings.appendChild(
+            item
+        );
+    });
+}
+
+function showToast(
+    message,
+    type = "info"
+) {
+
+    const toast =
+        document.createElement("div");
+
+    toast.className =
+        `toast toast-${type}`;
+
+    toast.innerText =
+        message;
+
+    toast.addEventListener(
+        "click",
+        () => {
+            toast.remove();
+        }
+    );
+
+    toastContainer.appendChild(
+        toast
+    );
+
+    setTimeout(
+        () => {
+            toast.classList.add(
+                "toast-hide"
+            );
+
+            setTimeout(
+                () => {
+                    toast.remove();
+                },
+                200
+            );
+        },
+        4500
     );
 }
 
@@ -554,11 +1025,16 @@ async function loadAppSettings() {
 
     templateInput.value =
         settings.defaultTemplate;
+
+    await refreshValidationWarnings();
 }
 
 function setBroadcastStatus(
     status
 ) {
+
+    currentBroadcastState =
+        status;
 
     broadcastStatus.innerText =
         status;
@@ -571,9 +1047,41 @@ function setBroadcastStatus(
     );
 }
 
+function setUnsafeControlsDisabled(
+    disabled
+) {
+
+    [
+        loadBtn,
+        connectBtn,
+        previewBtn,
+        mediaBtn,
+        saveTemplateBtn,
+        openSuccessLogsBtn,
+        openFailedLogsBtn
+    ].forEach(button => {
+
+        button.disabled =
+            disabled;
+    });
+
+    templateInput.disabled =
+        disabled;
+}
+
 function updateButtons(
     state
 ) {
+
+    const activeSendStates = [
+        "RUNNING",
+        "PAUSED",
+        "STOPPING"
+    ];
+
+    setUnsafeControlsDisabled(
+        activeSendStates.includes(state)
+    );
 
     if (state === "IDLE") {
 
@@ -624,6 +1132,24 @@ function updateButtons(
 
         stopBtn.disabled =
             false;
+
+        retryFailedBtn.disabled =
+            true;
+    }
+
+    if (state === "STOPPING") {
+
+        startBtn.disabled =
+            true;
+
+        pauseBtn.disabled =
+            true;
+
+        resumeBtn.disabled =
+            true;
+
+        stopBtn.disabled =
+            true;
 
         retryFailedBtn.disabled =
             true;

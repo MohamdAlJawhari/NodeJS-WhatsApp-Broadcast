@@ -17,14 +17,20 @@ async function sendBroadcast(client, contacts, options) {
     batchSize,
     batchPause,
     onProgress,
-    onCountersUpdate
+    onCountersUpdate,
+    logsDir:
+      customLogsDir
   } = options;
 
   // Ensure logs directory exists
-  const logsDir = path.join(__dirname, "..", "logs");
+  const logsDir =
+    customLogsDir ||
+    path.join(__dirname, "..", "logs");
 
   if (!fs.existsSync(logsDir)) {
-    fs.mkdirSync(logsDir);
+    fs.mkdirSync(logsDir, {
+      recursive: true
+    });
   }
 
   const logFile = path.join(
@@ -125,6 +131,14 @@ async function sendBroadcast(client, contacts, options) {
         "Broadcast paused. Waiting to resume..."
       );
       await sleep(1000);
+    }
+
+    if (broadcastController.stopped) {
+      console.log(
+        "Broadcast stopped"
+      );
+
+      break;
     }
 
     const contact = contacts[i];

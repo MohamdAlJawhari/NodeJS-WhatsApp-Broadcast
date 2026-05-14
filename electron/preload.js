@@ -91,6 +91,12 @@ contextBridge.exposeInMainWorld(
       ipcRenderer.invoke(
         "load-latest-failed-contacts"
       ),
+
+    validateBroadcastInput: (data) =>
+      ipcRenderer.invoke(
+        "validate-broadcast-input",
+        data
+      ),
     
     loadSettings: () =>
       ipcRenderer.invoke(
