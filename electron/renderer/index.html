@@ -1,327 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Broadcast Sender</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
 <body>
 
-    <div id="mainPage" class="container app-page">
+    <div class="app-shell">
 
-        <h1>
-            WhatsApp Broadcast Sender
-        </h1>
+        <header class="app-header">
 
-        <button id="loadContactsBtn">
-            Load Contacts File
-        </button>
+            <div class="brand-block">
 
-        <p id="status">
-            No file selected
-        </p>
+                <p class="eyebrow">
+                    WhatsApp Broadcast
+                </p>
 
-        <div id="savedContactsPanel">
+                <h1>
+                    Sender Control Center
+                </h1>
 
-            <div id="savedContactsHeader">
+                <p>
+                    Prepare contacts, validate messages, send broadcasts, and review logs from one workspace.
+                </p>
 
-                <h2>
-                    Saved Contact Files
-                </h2>
+            </div>
 
-                <div id="savedContactsActions">
+            <nav class="app-nav" aria-label="Main navigation">
 
-                    <button id="refreshSavedContactsBtn">
-                        Refresh
-                    </button>
+                <button id="senderNavBtn" class="nav-tab active" type="button">
+                    Sender
+                </button>
 
-                    <button id="openSavedContactsBtn">
-                        Open Folder
-                    </button>
+                <button id="contactsNavBtn" class="nav-tab" type="button">
+                    Contacts
+                </button>
+
+            </nav>
+
+        </header>
+
+        <main>
+
+            <section id="mainPage" class="container app-page">
+
+                <div class="page-title-row">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            Main Sender
+                        </p>
+
+                        <h2>
+                            Build and send a broadcast
+                        </h2>
+
+                        <p>
+                            Load contacts, connect WhatsApp, preview messages, then send with live counters and logs.
+                        </p>
+
+                    </div>
+
+                    <div class="page-actions">
+
+                        <button id="loadContactsBtn" class="primary-action" type="button">
+                            Load Contacts File
+                        </button>
+
+                        <button id="manageContactsBtn" type="button">
+                            Manage Contacts
+                        </button>
+
+                    </div>
 
                 </div>
 
-            </div>
+                <div class="status-strip">
 
-            <div id="savedContactsList">
-                No saved contact files
-            </div>
+                    <div class="metric-tile">
 
-        </div>
+                        <span>
+                            Contacts
+                        </span>
 
-        <hr>
+                        <strong id="status">
+                            No file selected
+                        </strong>
 
-        <h2>
-            WhatsApp Connection
-        </h2>
+                    </div>
 
-        <button id="connectBtn">
-            Connect WhatsApp
-        </button>
+                    <div class="metric-tile">
 
-        <p id="connectionStatus">
-            Not connected
-        </p>
+                        <span>
+                            WhatsApp
+                        </span>
 
-        <img id="qrImage" style="
-    max-width: 300px;
-    display: none;
-    margin-top: 20px;
-  ">
-        <h2>
-            Message Template
-        </h2>
+                        <strong id="connectionStatus">
+                            Not connected
+                        </strong>
 
-        <textarea id="templateInput" rows="8" placeholder="Write your message template here..."></textarea>
+                    </div>
 
-        <br><br>
+                    <div class="metric-tile">
 
-        <button id="saveTemplateBtn">
-            Save As Default Template
-        </button>
+                        <span>
+                            Broadcast
+                        </span>
 
-        <br><br>
+                        <strong id="broadcastStatus">
+                            IDLE
+                        </strong>
 
-        <h2>
-            Media File (Optional)
-        </h2>
+                    </div>
 
-        <button id="mediaBtn">
-            Choose Media File
-        </button>
-
-        <p id="mediaStatus">
-            No media selected
-        </p>
-
-        <br><br>
-
-        <button id="previewBtn">
-            Preview Messages
-        </button>
-
-        <hr>
-
-        <h2>
-            Preview
-        </h2>
-
-        <div id="previewContainer">
-
-        </div>
-
-        <hr>
-
-        <div id="validationPanel" class="validation-panel validation-panel-empty">
-
-            <div class="validation-header">
-
-                <h3>
-                    Validation Warnings
-                </h3>
-
-                <span id="validationSummary">
-                    No contacts loaded
-                </span>
-
-            </div>
-
-            <ul id="validationWarnings"></ul>
-
-        </div>
-
-        <hr>
-
-        <h2>
-            Sending
-        </h2>
-
-        <p>
-            Status:
-            <span id="broadcastStatus">
-                IDLE
-            </span>
-        </p>
-
-
-        <button id="startBtn">
-            Start Sending
-        </button>
-
-        <button id="pauseBtn">
-            Pause
-        </button>
-
-        <button id="resumeBtn">
-            Resume
-        </button>
-
-        <button id="stopBtn">
-            Stop
-        </button>
-
-        <div id="progressContainer" style="
-    margin-top: 20px;
-  ">
-
-            <progress id="progressBar" value="0" max="100" style="
-      width: 100%;
-      height: 30px;
-    "></progress>
-
-            <p id="progressText">
-                0%
-            </p>
-
-            <div id="counterContainer">
-
-                <p>
-                    Success:
-                    <span id="successCount">
-                        0
-                    </span>
-                </p>
-
-                <p>
-                    Failed:
-                    <span id="failedCount">
-                        0
-                    </span>
-                </p>
-
-                <p>
-                    Skipped:
-                    <span id="skippedCount">
-                        0
-                    </span>
-                </p>
-
-            </div>
-
-            <div id="logActionContainer">
-
-                <button id="openSuccessLogsBtn">
-                    Open Success Logs
-                </button>
-
-                <button id="cleanSuccessLogsBtn">
-                    Clean Success Logs
-                </button>
-
-                <button id="openFailedLogsBtn">
-                    Open Failed Logs
-                </button>
-
-                <button id="cleanFailedLogsBtn">
-                    Clean Failed Logs
-                </button>
-
-                <button id="cleanSendLogsBtn">
-                    Clean Send Logs
-                </button>
-
-                <button id="retryFailedBtn">
-                    Retry Failed
-                </button>
-
-            </div>
-
-        </div>
-
-        <h3>
-            Live Logs
-        </h3>
-
-        <div id="logs"></div>
-
-    </div>
-
-    <div id="contactEditorPage" class="container app-page hidden">
-
-        <div class="editor-hero">
-
-            <div class="editor-title-row">
-
-                <div class="editor-icon">
-                    File
                 </div>
 
-                <div>
+                <div class="sender-grid">
 
-                    <h1>
-                        Contacts File Details
-                    </h1>
+                    <section class="panel">
 
-                    <p>
-                        Review this file and edit its name, description, columns, and rows.
+                        <div class="panel-heading">
+
+                            <h3>
+                                WhatsApp Connection
+                            </h3>
+
+                        </div>
+
+                        <div class="button-row">
+
+                            <button id="connectBtn" type="button">
+                                Connect WhatsApp
+                            </button>
+
+                        </div>
+
+                        <img id="qrImage" class="qr-image">
+
+                    </section>
+
+                    <section class="panel">
+
+                        <div class="panel-heading">
+
+                            <h3>
+                                Media File
+                            </h3>
+
+                            <span>
+                                Optional
+                            </span>
+
+                        </div>
+
+                        <div class="button-row">
+
+                            <button id="mediaBtn" type="button">
+                                Choose Media File
+                            </button>
+
+                        </div>
+
+                        <p id="mediaStatus" class="muted-text">
+                            No media selected
+                        </p>
+
+                    </section>
+
+                    <section class="panel panel-wide">
+
+                        <div class="panel-heading">
+
+                            <h3>
+                                Message Template
+                            </h3>
+
+                        </div>
+
+                        <textarea id="templateInput" rows="8" placeholder="Write your message template here..."></textarea>
+
+                        <div class="button-row">
+
+                            <button id="saveTemplateBtn" type="button">
+                                Save As Default Template
+                            </button>
+
+                            <button id="previewBtn" type="button">
+                                Preview Messages
+                            </button>
+
+                        </div>
+
+                    </section>
+
+                    <section class="panel panel-wide">
+
+                        <div class="panel-heading">
+
+                            <h3>
+                                Preview
+                            </h3>
+
+                        </div>
+
+                        <div id="previewContainer" class="preview-list"></div>
+
+                    </section>
+
+                    <section class="panel panel-wide">
+
+                        <div id="validationPanel" class="validation-panel validation-panel-empty">
+
+                            <div class="validation-header">
+
+                                <h3>
+                                    Validation Warnings
+                                </h3>
+
+                                <span id="validationSummary">
+                                    No contacts loaded
+                                </span>
+
+                            </div>
+
+                            <ul id="validationWarnings"></ul>
+
+                        </div>
+
+                    </section>
+
+                    <section class="panel panel-wide">
+
+                        <div class="panel-heading">
+
+                            <h3>
+                                Sending
+                            </h3>
+
+                        </div>
+
+                        <div class="button-row">
+
+                            <button id="startBtn" class="primary-action" type="button">
+                                Start Sending
+                            </button>
+
+                            <button id="pauseBtn" type="button">
+                                Pause
+                            </button>
+
+                            <button id="resumeBtn" type="button">
+                                Resume
+                            </button>
+
+                            <button id="stopBtn" class="danger-action" type="button">
+                                Stop
+                            </button>
+
+                            <button id="retryFailedBtn" class="warning-action" type="button">
+                                Retry Failed
+                            </button>
+
+                        </div>
+
+                        <div id="progressContainer" class="progress-panel">
+
+                            <progress id="progressBar" value="0" max="100"></progress>
+
+                            <p id="progressText">
+                                0%
+                            </p>
+
+                            <div id="counterContainer" class="counter-grid">
+
+                                <div class="counter-tile success-counter">
+                                    <span>
+                                        Success
+                                    </span>
+                                    <strong id="successCount">
+                                        0
+                                    </strong>
+                                </div>
+
+                                <div class="counter-tile failed-counter">
+                                    <span>
+                                        Failed
+                                    </span>
+                                    <strong id="failedCount">
+                                        0
+                                    </strong>
+                                </div>
+
+                                <div class="counter-tile skipped-counter">
+                                    <span>
+                                        Skipped
+                                    </span>
+                                    <strong id="skippedCount">
+                                        0
+                                    </strong>
+                                </div>
+
+                            </div>
+
+                            <div id="logActionContainer">
+
+                                <button id="openSuccessLogsBtn" type="button">
+                                    Open Success Logs
+                                </button>
+
+                                <button id="cleanSuccessLogsBtn" type="button">
+                                    Clean Success Logs
+                                </button>
+
+                                <button id="openFailedLogsBtn" type="button">
+                                    Open Failed Logs
+                                </button>
+
+                                <button id="cleanFailedLogsBtn" type="button">
+                                    Clean Failed Logs
+                                </button>
+
+                                <button id="cleanSendLogsBtn" type="button">
+                                    Clean Send Logs
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                    <section class="panel panel-wide">
+
+                        <div class="panel-heading">
+
+                            <h3>
+                                Live Logs
+                            </h3>
+
+                        </div>
+
+                        <div id="logs"></div>
+
+                    </section>
+
+                </div>
+
+            </section>
+
+            <section id="contactsPage" class="container app-page hidden">
+
+                <div class="page-title-row">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            Contacts Control
+                        </p>
+
+                        <h2>
+                            Saved contact files
+                        </h2>
+
+                        <p>
+                            Add, select, edit, download, or delete stored contact files without crowding the sender page.
+                        </p>
+
+                    </div>
+
+                    <div class="page-actions">
+
+                        <button id="addContactsFileBtn" class="primary-action" type="button">
+                            Add Contacts File
+                        </button>
+
+                        <button id="contactsBackToSenderBtn" type="button">
+                            Back to Sender
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <section id="savedContactsPanel" class="panel">
+
+                    <div id="savedContactsHeader" class="panel-heading">
+
+                        <div>
+
+                            <h3>
+                                Contact Library
+                            </h3>
+
+                            <p>
+                                Select a file for sending, or open it to edit rows and columns.
+                            </p>
+
+                        </div>
+
+                        <div id="savedContactsActions">
+
+                            <button id="refreshSavedContactsBtn" type="button">
+                                Refresh
+                            </button>
+
+                            <button id="openSavedContactsBtn" type="button">
+                                Open Folder
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <div id="savedContactsList">
+                        No saved contact files
+                    </div>
+
+                </section>
+
+            </section>
+
+            <section id="contactEditorPage" class="container app-page hidden">
+
+                <div class="editor-hero">
+
+                    <div class="editor-title-row">
+
+                        <div class="editor-icon">
+                            File
+                        </div>
+
+                        <div>
+
+                            <p class="eyebrow">
+                                Contacts Control
+                            </p>
+
+                            <h2>
+                                Contacts File Details
+                            </h2>
+
+                            <p>
+                                Review this file and edit its name, description, columns, and rows.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="editor-actions">
+
+                        <button id="editorBackBtn" type="button">
+                            Back
+                        </button>
+
+                        <button id="editorSelectBtn" class="success-action" type="button">
+                            Select for Sender
+                        </button>
+
+                        <button id="editorExportBtn" class="warning-action" type="button">
+                            Download File
+                        </button>
+
+                        <button id="editorDeleteBtn" class="danger-action" type="button">
+                            Delete File
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="editor-body">
+
+                    <p id="editorFileMeta"></p>
+
+                    <div class="editor-details-grid">
+
+                        <label>
+                            File Name
+                            <input id="editorFileNameInput" type="text">
+                        </label>
+
+                        <label>
+                            Description
+                            <textarea id="editorDescriptionInput" rows="4"></textarea>
+                        </label>
+
+                        <button id="editorSaveDetailsBtn" class="success-action" type="button">
+                            Save Details
+                        </button>
+
+                    </div>
+
+                    <p id="editorTableSummary"></p>
+
+                    <p class="editor-help">
+                        Use the small [-] and [+] buttons inside each row and column to remove or insert exactly where you want. The main phone column name is locked.
                     </p>
 
+                    <div class="editor-toolbar">
+
+                        <button id="editorSaveContentBtn" class="success-action" type="button">
+                            Save File Content
+                        </button>
+
+                        <button id="editorAddRowBtn" type="button">
+                            Add Row
+                        </button>
+
+                        <button id="editorAddColumnBtn" type="button">
+                            Add Column
+                        </button>
+
+                    </div>
+
+                    <div id="contactTableEditor" class="table-editor"></div>
+
                 </div>
 
-            </div>
+            </section>
 
-            <div class="editor-actions">
-
-                <button id="editorBackBtn">
-                    Back
-                </button>
-
-                <button id="editorSelectBtn" class="success-action">
-                    Select File Sender
-                </button>
-
-                <button id="editorExportBtn" class="warning-action">
-                    Download File
-                </button>
-
-                <button id="editorDeleteBtn" class="danger-action">
-                    Delete File
-                </button>
-
-            </div>
-
-        </div>
-
-        <div class="editor-body">
-
-            <p id="editorFileMeta"></p>
-
-            <div class="editor-details-grid">
-
-                <label>
-                    File Name
-                    <input id="editorFileNameInput" type="text">
-                </label>
-
-                <label>
-                    Description
-                    <textarea id="editorDescriptionInput" rows="4"></textarea>
-                </label>
-
-                <button id="editorSaveDetailsBtn" class="success-action">
-                    Save Details
-                </button>
-
-            </div>
-
-            <p id="editorTableSummary"></p>
-
-            <p class="editor-help">
-                Use the small [-] and [+] buttons inside each row and column to remove or insert exactly where you want. The main phone column name is locked.
-            </p>
-
-            <div class="editor-toolbar">
-
-                <button id="editorSaveContentBtn" class="success-action">
-                    Save File Content
-                </button>
-
-                <button id="editorAddRowBtn">
-                    Add Row
-                </button>
-
-                <button id="editorAddColumnBtn">
-                    Add Column
-                </button>
-
-            </div>
-
-            <div id="contactTableEditor" class="table-editor"></div>
-
-        </div>
+        </main>
 
     </div>
 
@@ -331,3 +535,5 @@
     <script src="app.js"></script>
 
 </body>
+
+</html>

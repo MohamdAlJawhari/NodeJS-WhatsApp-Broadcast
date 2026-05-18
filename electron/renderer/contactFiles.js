@@ -11,6 +11,9 @@
         refreshValidationWarnings,
         setContacts,
         setStatusText,
+        showContactsPage,
+        showEditorPage,
+        showSenderPage,
         showToast
     }) {
 
@@ -27,16 +30,6 @@
         const openSavedContactsBtn =
             document.getElementById(
                 "openSavedContactsBtn"
-            );
-
-        const mainPage =
-            document.getElementById(
-                "mainPage"
-            );
-
-        const contactEditorPage =
-            document.getElementById(
-                "contactEditorPage"
             );
 
         const editorBackBtn =
@@ -147,9 +140,7 @@
             "click",
             async () => {
 
-                showMainPage();
-
-                await loadSavedContactFiles();
+                await showContactsPage();
             }
         );
 
@@ -166,7 +157,7 @@
                     editorFile.id
                 );
 
-                showMainPage();
+                await showSenderPage();
             }
         );
 
@@ -269,9 +260,7 @@
                 editorRows =
                     [];
 
-                showMainPage();
-
-                await loadSavedContactFiles();
+                await showContactsPage();
             }
         );
 
@@ -557,26 +546,9 @@
             await refreshValidationWarnings();
         }
 
-        function showMainPage() {
-
-            mainPage.classList.remove(
-                "hidden"
-            );
-
-            contactEditorPage.classList.add(
-                "hidden"
-            );
-        }
-
         function showContactEditorPage() {
 
-            mainPage.classList.add(
-                "hidden"
-            );
-
-            contactEditorPage.classList.remove(
-                "hidden"
-            );
+            showEditorPage();
         }
 
         async function openContactEditor(

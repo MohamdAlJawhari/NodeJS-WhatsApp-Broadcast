@@ -23,6 +23,46 @@ const status =
         "status"
     );
 
+const senderNavBtn =
+    document.getElementById(
+        "senderNavBtn"
+    );
+
+const contactsNavBtn =
+    document.getElementById(
+        "contactsNavBtn"
+    );
+
+const mainPage =
+    document.getElementById(
+        "mainPage"
+    );
+
+const contactsPage =
+    document.getElementById(
+        "contactsPage"
+    );
+
+const contactEditorPage =
+    document.getElementById(
+        "contactEditorPage"
+    );
+
+const manageContactsBtn =
+    document.getElementById(
+        "manageContactsBtn"
+    );
+
+const addContactsFileBtn =
+    document.getElementById(
+        "addContactsFileBtn"
+    );
+
+const contactsBackToSenderBtn =
+    document.getElementById(
+        "contactsBackToSenderBtn"
+    );
+
 const previewBtn =
     document.getElementById(
         "previewBtn"
@@ -185,6 +225,12 @@ const contactFilesUI =
             status.innerText =
                 text;
         },
+        showContactsPage: () =>
+            showPage("contacts"),
+        showEditorPage: () =>
+            showPage("editor"),
+        showSenderPage: () =>
+            showPage("sender"),
         showToast
     });
 
@@ -192,72 +238,158 @@ loadBtn.addEventListener(
     "click",
     async () => {
 
+        await loadContactsFile();
+    }
+);
+
+addContactsFileBtn.addEventListener(
+    "click",
+    async () => {
+
+        await loadContactsFile({
+            showContactsPageAfterLoad: true
+        });
+    }
+);
+
+senderNavBtn.addEventListener(
+    "click",
+    () => {
+        showPage("sender");
+    }
+);
+
+contactsNavBtn.addEventListener(
+    "click",
+    async () => {
+        await showPage("contacts");
+    }
+);
+
+manageContactsBtn.addEventListener(
+    "click",
+    async () => {
+        await showPage("contacts");
+    }
+);
+
+contactsBackToSenderBtn.addEventListener(
+    "click",
+    () => {
+        showPage("sender");
+    }
+);
+
+async function loadContactsFile({
+    showContactsPageAfterLoad = false
+} = {}) {
+
+    status.innerText =
+        "Loading contacts...";
+
+    const result =
+        await window.electronAPI
+            .selectContactsFile();
+
+    if (!result.success) {
+
         status.innerText =
-            "Loading contacts...";
+            result.error ||
+            "File selection canceled";
 
-        const result =
-            await window.electronAPI
-                .selectContactsFile();
-
-        if (!result.success) {
-
-            status.innerText =
-                result.error ||
-                "File selection canceled";
-
-            if (result.error) {
-
-                showToast(
-                    result.error,
-                    "error"
-                );
-            }
-
-            return;
-        }
-
-        contacts = result.contacts;
-
-        contactFilesUI.clearSelectedContactFile();
-
-        status.innerText =
-            `Loaded ${result.count} contacts`;
-
-        showToast(
-            `Loaded ${result.count} contacts`,
-            "success"
-        );
-
-        if (result.savedFilePath) {
-
-            if (result.savedDuplicate) {
-
-                showToast(
-                    "Contact file already saved",
-                    "info"
-                );
-
-            } else {
-
-                showToast(
-                    "Contact file saved",
-                    "success"
-                );
-            }
-
-        } else if (result.archiveError) {
+        if (result.error) {
 
             showToast(
-                `Contact file was not saved: ${result.archiveError}`,
-                "warning"
+                result.error,
+                "error"
             );
         }
 
-        await contactFilesUI.loadSavedContactFiles();
-
-        await refreshValidationWarnings();
+        return;
     }
-);
+
+    contacts = result.contacts;
+
+    contactFilesUI.clearSelectedContactFile();
+
+    status.innerText =
+        `Loaded ${result.count} contacts`;
+
+    showToast(
+        `Loaded ${result.count} contacts`,
+        "success"
+    );
+
+    if (result.savedFilePath) {
+
+        if (result.savedDuplicate) {
+
+            showToast(
+                "Contact file already saved",
+                "info"
+            );
+
+        } else {
+
+            showToast(
+                "Contact file saved",
+                "success"
+            );
+        }
+
+    } else if (result.archiveError) {
+
+        showToast(
+            `Contact file was not saved: ${result.archiveError}`,
+            "warning"
+        );
+    }
+
+    await contactFilesUI.loadSavedContactFiles();
+
+    await refreshValidationWarnings();
+
+    if (showContactsPageAfterLoad) {
+
+        await showPage("contacts");
+    }
+}
+
+async function showPage(
+    page
+) {
+
+    mainPage.classList.toggle(
+        "hidden",
+        page !== "sender"
+    );
+
+    contactsPage.classList.toggle(
+        "hidden",
+        page !== "contacts"
+    );
+
+    contactEditorPage.classList.toggle(
+        "hidden",
+        page !== "editor"
+    );
+
+    senderNavBtn.classList.toggle(
+        "active",
+        page === "sender"
+    );
+
+    contactsNavBtn.classList.toggle(
+        "active",
+        page === "contacts" ||
+        page === "editor"
+    );
+
+    if (page === "contacts") {
+
+        await contactFilesUI.loadSavedContactFiles();
+    }
+}
 
 previewBtn.addEventListener(
     "click",
@@ -1182,6 +1314,7 @@ function setUnsafeControlsDisabled(
 
     [
         loadBtn,
+        addContactsFileBtn,
         connectBtn,
         previewBtn,
         mediaBtn,
