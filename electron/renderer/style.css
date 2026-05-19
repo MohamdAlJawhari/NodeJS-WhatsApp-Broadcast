@@ -330,6 +330,8 @@ h3 {
 .template-panel textarea {
   min-height: 180px;
   resize: vertical;
+  text-align: start;
+  unicode-bidi: plaintext;
 }
 
 .panel {
@@ -391,6 +393,9 @@ h3 {
 
 .preview-card p {
   margin-bottom: 0;
+  white-space: pre-wrap;
+  text-align: start;
+  unicode-bidi: plaintext;
 }
 
 .progress-panel {
