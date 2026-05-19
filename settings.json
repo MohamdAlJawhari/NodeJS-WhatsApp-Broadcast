@@ -1,3 +1,3 @@
 {
-  "defaultTemplate": "Hello {{name}}, your password is {{password}}."
+  "defaultTemplate": "Hello {{name}}, your password is {{password}}, your user name was {{username}}."
 }

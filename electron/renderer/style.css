@@ -296,6 +296,12 @@ h3 {
   border-radius: 8px;
 }
 
+.connection-timer {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .preview-list {
   display: grid;
   gap: 10px;

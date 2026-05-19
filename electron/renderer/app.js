@@ -13,6 +13,11 @@ const connectionStatus =
         "connectionStatus"
     );
 
+const connectionTimer =
+    document.getElementById(
+        "connectionTimer"
+    );
+
 const loadBtn =
     document.getElementById(
         "loadContactsBtn"
@@ -201,6 +206,12 @@ const toastContainer =
 let contacts = [];
 
 let mediaFile = null;
+
+let isWhatsAppConnecting = false;
+
+let connectionStartedAt = null;
+
+let connectionTimerId = null;
 
 let currentBroadcastState = "IDLE";
 
@@ -477,14 +488,44 @@ connectBtn.addEventListener(
     "click",
     async () => {
 
+        if (isWhatsAppConnecting) {
+
+            return;
+        }
+
+        isWhatsAppConnecting =
+            true;
+
+        connectBtn.disabled =
+            true;
+
         connectionStatus.innerText =
             "Connecting...";
 
-        const result =
-            await window.electronAPI
-                .connectWhatsApp();
+        startConnectionTimer();
+
+        let result;
+
+        try {
+
+            result =
+                await window.electronAPI
+                    .connectWhatsApp();
+
+        } catch (error) {
+
+            result = {
+                success: false,
+                error:
+                    error.message
+            };
+        }
 
         if (!result.success) {
+
+            stopConnectionTimer(
+                "Failed"
+            );
 
             connectionStatus.innerText =
                 result.error;
@@ -493,7 +534,20 @@ connectBtn.addEventListener(
                 result.error,
                 "error"
             );
+
+        } else {
+
+            stopConnectionTimer(
+                "Connected"
+            );
         }
+
+        isWhatsAppConnecting =
+            false;
+
+        updateButtons(
+            currentBroadcastState
+        );
     }
 );
 
@@ -518,6 +572,10 @@ window.electronAPI
                 status === "CONNECTED"
             ) {
 
+                stopConnectionTimer(
+                    "Connected"
+                );
+
                 qrImage.style.display =
                     "none";
 
@@ -528,6 +586,86 @@ window.electronAPI
             }
         }
     );
+
+function startConnectionTimer() {
+
+    connectionStartedAt =
+        Date.now();
+
+    updateConnectionTimer(
+        "Connecting"
+    );
+
+    clearInterval(
+        connectionTimerId
+    );
+
+    connectionTimerId =
+        setInterval(
+            () => {
+                updateConnectionTimer(
+                    "Connecting"
+                );
+            },
+            1000
+        );
+}
+
+function stopConnectionTimer(
+    label
+) {
+
+    if (connectionTimerId) {
+
+        clearInterval(
+            connectionTimerId
+        );
+
+        connectionTimerId =
+            null;
+    }
+
+    updateConnectionTimer(
+        label
+    );
+}
+
+function updateConnectionTimer(
+    label
+) {
+
+    const elapsedMs =
+        connectionStartedAt
+            ? Date.now() - connectionStartedAt
+            : 0;
+
+    connectionTimer.innerText =
+        `${label}: ${formatConnectionElapsed(elapsedMs)}`;
+}
+
+function formatConnectionElapsed(
+    elapsedMs
+) {
+
+    const totalSeconds =
+        Math.max(
+            0,
+            Math.floor(elapsedMs / 1000)
+        );
+
+    const minutes =
+        Math.floor(totalSeconds / 60);
+
+    const seconds =
+        totalSeconds % 60;
+
+    return [
+        minutes,
+        seconds
+    ].map(value => {
+        return String(value).padStart(2, "0");
+    }).join(":");
+}
 
 window.electronAPI
     .onBroadcastCounters(
@@ -1329,6 +1467,10 @@ function setUnsafeControlsDisabled(
         button.disabled =
             disabled;
     });
+
+    connectBtn.disabled =
+        disabled ||
+        isWhatsAppConnecting;
 
     templateInput.disabled =
         disabled;
