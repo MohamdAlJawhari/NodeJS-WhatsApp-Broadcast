@@ -48,37 +48,39 @@
 
             <section id="mainPage" class="container app-page">
 
-                <div class="page-title-row">
+                <section class="quick-connect-panel">
 
-                    <div>
+                    <div class="quick-connect-copy">
 
                         <p class="eyebrow">
-                            Main Sender
+                            Start Here
                         </p>
 
                         <h2>
-                            Build and send a broadcast
+                            Connect WhatsApp
                         </h2>
 
                         <p>
-                            Load contacts, connect WhatsApp, preview messages, then send with live counters and logs.
+                            Start the WhatsApp session first, then prepare contacts, media, and message while it connects.
                         </p>
 
                     </div>
 
-                    <div class="page-actions">
+                    <div class="quick-connect-actions">
 
-                        <button id="loadContactsBtn" class="primary-action" type="button">
-                            Load Contacts File
+                        <button id="connectBtn" class="primary-action" type="button">
+                            Connect WhatsApp
                         </button>
 
-                        <button id="manageContactsBtn" type="button">
-                            Manage Contacts
-                        </button>
+                        <p id="connectionTimer" class="connection-timer">
+                            Connection time: 00:00
+                        </p>
 
                     </div>
 
-                </div>
+                    <img id="qrImage" class="qr-image">
+
+                </section>
 
                 <div class="status-strip">
 
@@ -94,7 +96,7 @@
 
                     </div>
 
-                    <div class="metric-tile">
+                    <div id="connectionTile" class="metric-tile connection-waiting">
 
                         <span>
                             WhatsApp
@@ -106,49 +108,11 @@
 
                     </div>
 
-                    <div class="metric-tile">
-
-                        <span>
-                            Broadcast
-                        </span>
-
-                        <strong id="broadcastStatus">
-                            IDLE
-                        </strong>
-
-                    </div>
-
                 </div>
 
                 <div class="sender-grid">
 
-                    <section class="panel">
-
-                        <div class="panel-heading">
-
-                            <h3>
-                                WhatsApp Connection
-                            </h3>
-
-                        </div>
-
-                        <div class="button-row">
-
-                            <button id="connectBtn" type="button">
-                                Connect WhatsApp
-                            </button>
-
-                        </div>
-
-                        <p id="connectionTimer" class="connection-timer">
-                            Connection time: 00:00
-                        </p>
-
-                        <img id="qrImage" class="qr-image">
-
-                    </section>
-
-                    <section class="panel">
+                    <section class="panel media-panel">
 
                         <div class="panel-heading">
 
@@ -176,7 +140,7 @@
 
                     </section>
 
-                    <section class="panel panel-wide">
+                    <section class="panel template-panel">
 
                         <div class="panel-heading">
 
@@ -245,6 +209,10 @@
                             <h3>
                                 Sending
                             </h3>
+
+                            <span id="broadcastStatus" class="status-idle">
+                                Ready
+                            </span>
 
                         </div>
 

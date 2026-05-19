@@ -13,14 +13,14 @@ const connectionStatus =
         "connectionStatus"
     );
 
+const connectionTile =
+    document.getElementById(
+        "connectionTile"
+    );
+
 const connectionTimer =
     document.getElementById(
         "connectionTimer"
-    );
-
-const loadBtn =
-    document.getElementById(
-        "loadContactsBtn"
     );
 
 const status =
@@ -51,11 +51,6 @@ const contactsPage =
 const contactEditorPage =
     document.getElementById(
         "contactEditorPage"
-    );
-
-const manageContactsBtn =
-    document.getElementById(
-        "manageContactsBtn"
     );
 
 const addContactsFileBtn =
@@ -223,6 +218,22 @@ let validationRequestId = 0;
 
 let validationTimer = null;
 
+const broadcastStatusLabels = {
+    IDLE: "Ready",
+    RUNNING: "Sending",
+    PAUSED: "Paused",
+    STOPPING: "Stopping",
+    STOPPED: "Stopped",
+    COMPLETED: "Completed"
+};
+
+const connectionStateClasses = [
+    "connection-connected",
+    "connection-connecting",
+    "connection-waiting",
+    "connection-error"
+];
+
 const contactFilesUI =
     window.createContactFilesUI({
         getBroadcastState: () => currentBroadcastState,
@@ -245,14 +256,6 @@ const contactFilesUI =
         showToast
     });
 
-loadBtn.addEventListener(
-    "click",
-    async () => {
-
-        await loadContactsFile();
-    }
-);
-
 addContactsFileBtn.addEventListener(
     "click",
     async () => {
@@ -271,13 +274,6 @@ senderNavBtn.addEventListener(
 );
 
 contactsNavBtn.addEventListener(
-    "click",
-    async () => {
-        await showPage("contacts");
-    }
-);
-
-manageContactsBtn.addEventListener(
     "click",
     async () => {
         await showPage("contacts");
@@ -409,7 +405,7 @@ previewBtn.addEventListener(
         if (contacts.length === 0) {
 
             showToast(
-                "Load contacts first",
+                "Add or select contacts first",
                 "warning"
             );
 
@@ -499,8 +495,9 @@ connectBtn.addEventListener(
         connectBtn.disabled =
             true;
 
-        connectionStatus.innerText =
-            "Connecting...";
+        setConnectionStatus(
+            "Connecting..."
+        );
 
         startConnectionTimer();
 
@@ -527,8 +524,9 @@ connectBtn.addEventListener(
                 "Failed"
             );
 
-            connectionStatus.innerText =
-                result.error;
+            setConnectionStatus(
+                result.error
+            );
 
             showToast(
                 result.error,
@@ -565,8 +563,9 @@ window.electronAPI
     .onConnectionStatus(
         (status) => {
 
-            connectionStatus.innerText =
-                status;
+            setConnectionStatus(
+                status
+            );
 
             if (
                 status === "CONNECTED"
@@ -667,6 +666,79 @@ function formatConnectionElapsed(
     }).join(":");
 }
 
+function setConnectionStatus(
+    text
+) {
+
+    const nextText =
+        text ||
+        "Not connected";
+
+    connectionStatus.innerText =
+        nextText;
+
+    connectionTile.classList.remove(
+        ...connectionStateClasses
+    );
+
+    connectionTile.classList.add(
+        `connection-${getConnectionState(nextText)}`
+    );
+}
+
+function getConnectionState(
+    text
+) {
+
+    const normalized =
+        String(text)
+            .toLowerCase();
+
+    if (
+        normalized.includes("not connected") ||
+        normalized.includes("not_connected") ||
+        normalized.includes("notconnected") ||
+        normalized.includes("not logged")
+    ) {
+
+        return "waiting";
+    }
+
+    if (
+        normalized.includes("failed") ||
+        normalized.includes("error") ||
+        normalized.includes("disconnect") ||
+        normalized.includes("closed") ||
+        normalized.includes("timeout")
+    ) {
+
+        return "error";
+    }
+
+    if (
+        normalized.includes("connecting") ||
+        normalized.includes("qr") ||
+        normalized.includes("scan") ||
+        normalized.includes("loading") ||
+        normalized.includes("starting")
+    ) {
+
+        return "connecting";
+    }
+
+    if (
+        normalized === "connected" ||
+        normalized.includes(" connected") ||
+        normalized.includes("inchat") ||
+        normalized.includes("islogged")
+    ) {
+
+        return "connected";
+    }
+
+    return "waiting";
+}
+
 window.electronAPI
     .onBroadcastCounters(
         (counters) => {
@@ -684,7 +756,7 @@ startBtn.addEventListener(
         if (contacts.length === 0) {
 
             showToast(
-                "Load contacts first",
+                "Add or select contacts first",
                 "warning"
             );
 
@@ -999,7 +1071,7 @@ async function runBroadcast(
     if (targetContacts.length === 0) {
 
         showToast(
-            "Load contacts first",
+            "Add or select contacts first",
             "warning"
         );
 
@@ -1436,6 +1508,7 @@ function setBroadcastStatus(
         status;
 
     broadcastStatus.innerText =
+        broadcastStatusLabels[status] ||
         status;
 
     broadcastStatus.className =
@@ -1451,7 +1524,6 @@ function setUnsafeControlsDisabled(
 ) {
 
     [
-        loadBtn,
         addContactsFileBtn,
         connectBtn,
         previewBtn,
@@ -1603,5 +1675,6 @@ function updateCounters(
 }
 
 loadAppSettings();
+setConnectionStatus("Not connected");
 setBroadcastStatus("IDLE");
 updateButtons("IDLE");

@@ -124,6 +124,7 @@ h3 {
 }
 
 .brand-block p,
+.quick-connect-copy p,
 .page-title-row p,
 .panel-heading p {
   margin-bottom: 0;
@@ -194,6 +195,28 @@ h3 {
   justify-content: flex-end;
 }
 
+.quick-connect-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.quick-connect-actions {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.quick-connect-actions .connection-timer {
+  margin: 0;
+}
+
 .primary-action {
   border-color: var(--primary);
   background: var(--primary);
@@ -226,7 +249,7 @@ h3 {
 
 .status-strip {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin-top: 14px;
 }
@@ -256,11 +279,57 @@ h3 {
   font-size: 18px;
 }
 
+.metric-tile.connection-connected {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.metric-tile.connection-connected strong {
+  color: #166534;
+}
+
+.metric-tile.connection-connecting {
+  border-color: #fdba74;
+  background: #fff7ed;
+}
+
+.metric-tile.connection-connecting strong {
+  color: #9a3412;
+}
+
+.metric-tile.connection-waiting {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.metric-tile.connection-waiting strong {
+  color: #854d0e;
+}
+
+.metric-tile.connection-error {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.metric-tile.connection-error strong {
+  color: var(--danger);
+}
+
 .sender-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.7fr);
   gap: 14px;
   margin-top: 14px;
+}
+
+.template-panel {
+  display: grid;
+  grid-template-rows: auto minmax(180px, 1fr) auto;
+}
+
+.template-panel textarea {
+  min-height: 180px;
+  resize: vertical;
 }
 
 .panel {
@@ -294,6 +363,12 @@ h3 {
   margin-top: 16px;
   border: 1px solid var(--border);
   border-radius: 8px;
+}
+
+.quick-connect-panel .qr-image {
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin-top: 0;
 }
 
 .connection-timer {
@@ -702,10 +777,15 @@ progress {
   }
 
   .app-header,
+  .quick-connect-panel,
   .page-title-row,
   .editor-title-row {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .quick-connect-panel {
+    display: flex;
   }
 
   .app-nav,
@@ -716,6 +796,15 @@ progress {
   .nav-tab,
   .page-actions button {
     flex: 1;
+  }
+
+  .quick-connect-actions {
+    justify-items: stretch;
+  }
+
+  .quick-connect-panel .qr-image {
+    justify-self: stretch;
+    margin-top: 8px;
   }
 
   .status-strip,

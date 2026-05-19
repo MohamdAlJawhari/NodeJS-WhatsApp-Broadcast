@@ -294,7 +294,7 @@ function buildValidationWarnings(data = {}) {
       type: "error",
       title: "No contacts loaded",
       message:
-        "Load a contacts file before starting a broadcast."
+        "Add or select a contacts file before starting a broadcast."
     });
   }
 
