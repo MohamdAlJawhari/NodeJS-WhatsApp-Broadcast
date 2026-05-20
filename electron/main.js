@@ -632,6 +632,34 @@ ipcMain.handle(
   "connect-whatsapp",
   async (event) => {
 
+    if (client) {
+
+      const connected =
+        typeof client.isConnected === "function"
+          ? await client.isConnected()
+            .catch(() => false)
+          : true;
+
+      if (connected) {
+
+        event.sender.send(
+          "connection-status",
+          "CONNECTED"
+        );
+
+        return {
+          success: true,
+          alreadyConnected: true
+        };
+      }
+
+      return {
+        success: false,
+        error:
+          "WhatsApp is already open. Log out or restart the app before reconnecting."
+      };
+    }
+
     try {
 
       client =

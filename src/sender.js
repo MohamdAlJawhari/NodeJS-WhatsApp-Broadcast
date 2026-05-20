@@ -35,9 +35,12 @@ async function sendBroadcast(client, contacts, options) {
     });
   }
 
+  const runId =
+    createLogRunId();
+
   const logFile = path.join(
     logsDir,
-    `send-log-${Date.now()}.json`
+    `send-log-${runId}.json`
   );
 
   let failedFile = null;
@@ -449,7 +452,7 @@ async function sendBroadcast(client, contacts, options) {
 
     failedFile = path.join(
       logsDir,
-      `failed-${Date.now()}.csv`
+      `failed-${runId}.csv`
     );
 
     XLSX.writeFile(
@@ -470,7 +473,7 @@ async function sendBroadcast(client, contacts, options) {
     successFile =
       path.join(
         logsDir,
-        `success-${Date.now()}.csv`
+        `success-${runId}.csv`
       );
 
     const headers =
@@ -546,6 +549,32 @@ async function sendMediaMessage(
     path.basename(normalizedMediaPath),
     message
   );
+}
+
+function createLogRunId() {
+
+  const now =
+    new Date();
+
+  const pad = value => {
+    return String(value).padStart(2, "0");
+  };
+
+  const date =
+    [
+      now.getFullYear(),
+      pad(now.getMonth() + 1),
+      pad(now.getDate())
+    ].join("-");
+
+  const time =
+    [
+      pad(now.getHours()),
+      pad(now.getMinutes()),
+      pad(now.getSeconds())
+    ].join("-");
+
+  return `${date}_${time}`;
 }
 
 module.exports = {

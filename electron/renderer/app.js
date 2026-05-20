@@ -194,6 +194,10 @@ let mediaFile = null;
 
 let isWhatsAppConnecting = false;
 
+let isWhatsAppConnected = false;
+
+let unsafeControlsDisabled = false;
+
 let connectionStartedAt = null;
 
 let connectionTimerId = null;
@@ -492,11 +496,20 @@ connectBtn.addEventListener(
             return;
         }
 
+        if (isWhatsAppConnected) {
+
+            showToast(
+                "WhatsApp is already connected",
+                "info"
+            );
+
+            return;
+        }
+
         isWhatsAppConnecting =
             true;
 
-        connectBtn.disabled =
-            true;
+        updateConnectButton();
 
         setConnectionStatus(
             "Connecting..."
@@ -541,6 +554,21 @@ connectBtn.addEventListener(
             stopConnectionTimer(
                 "Connected"
             );
+
+            if (result.alreadyConnected) {
+
+                setConnectionStatus(
+                    "CONNECTED"
+                );
+
+                qrImage.style.display =
+                    "none";
+
+                showToast(
+                    "WhatsApp is already connected",
+                    "info"
+                );
+            }
         }
 
         isWhatsAppConnecting =
@@ -684,9 +712,48 @@ function setConnectionStatus(
         ...connectionStateClasses
     );
 
+    const connectionState =
+        getConnectionState(nextText);
+
     connectionTile.classList.add(
-        `connection-${getConnectionState(nextText)}`
+        `connection-${connectionState}`
     );
+
+    isWhatsAppConnected =
+        connectionState === "connected";
+
+    updateConnectButton();
+}
+
+function updateConnectButton() {
+
+    if (isWhatsAppConnected) {
+
+        connectBtn.innerText =
+            "WhatsApp Connected";
+
+        connectBtn.disabled =
+            true;
+
+        return;
+    }
+
+    if (isWhatsAppConnecting) {
+
+        connectBtn.innerText =
+            "Connecting...";
+
+        connectBtn.disabled =
+            true;
+
+        return;
+    }
+
+    connectBtn.innerText =
+        "Connect WhatsApp";
+
+    connectBtn.disabled =
+        unsafeControlsDisabled;
 }
 
 function getConnectionState(
@@ -1523,9 +1590,11 @@ function setUnsafeControlsDisabled(
     disabled
 ) {
 
+    unsafeControlsDisabled =
+        disabled;
+
     [
         addContactsFileBtn,
-        connectBtn,
         previewBtn,
         mediaBtn,
         saveTemplateBtn,
@@ -1538,9 +1607,7 @@ function setUnsafeControlsDisabled(
             disabled;
     });
 
-    connectBtn.disabled =
-        disabled ||
-        isWhatsAppConnecting;
+    updateConnectButton();
 
     templateInput.disabled =
         disabled;
