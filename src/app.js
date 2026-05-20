@@ -115,7 +115,9 @@ Hello {{name}}, your password is {{password}}. Your username is {{username}}.
     delayMin: Number(process.env.MESSAGE_DELAY_MIN || 8000),
     delayMax: Number(process.env.MESSAGE_DELAY_MAX || 15000),
     batchSize: Number(process.env.BATCH_SIZE || 10),
-    batchPause: Number(process.env.BATCH_PAUSE || 60000)
+    batchPause: Number(process.env.BATCH_PAUSE || 60000),
+    mediaRetryAttempts: Number(process.env.MEDIA_RETRY_ATTEMPTS || 3),
+    mediaRetryDelay: Number(process.env.MEDIA_RETRY_DELAY || 15000)
   });
 }
 

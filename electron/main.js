@@ -896,6 +896,14 @@ ipcMain.handle(
 
         batchPause: 30000,
 
+        mediaRetryAttempts: Number(
+          process.env.MEDIA_RETRY_ATTEMPTS || 3
+        ),
+
+        mediaRetryDelay: Number(
+          process.env.MEDIA_RETRY_DELAY || 15000
+        ),
+
         onProgress: (
           current,
           total

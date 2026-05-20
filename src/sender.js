@@ -16,6 +16,8 @@ async function sendBroadcast(client, contacts, options) {
     delayMax,
     batchSize,
     batchPause,
+    mediaRetryAttempts = 3,
+    mediaRetryDelay = 15000,
     onProgress,
     onCountersUpdate,
     logsDir:
@@ -199,6 +201,7 @@ async function sendBroadcast(client, contacts, options) {
     const mediaRequested =
       Boolean(mediaFile);
     let mediaSendFailed = false;
+    let mediaErrorMessage = null;
 
     try {
 
@@ -207,60 +210,91 @@ async function sendBroadcast(client, contacts, options) {
       let mediaSent = false;
       let textSent = false;
 
-      // Try sending media first
+      if (
+        mediaRequested &&
+        !hasValidMedia
+      ) {
+
+        mediaSendFailed = true;
+        mediaErrorMessage =
+          mediaValidation.reason;
+
+        console.log(
+          `Media invalid for ${rawPhone}`
+        );
+
+        console.log(
+          `Media path: ${mediaFile}`
+        );
+
+        console.log(
+          `Error: ${mediaErrorMessage}`
+        );
+      }
+
+      // Try sending media first. If media is selected, do not fall back to text-only.
       if (hasValidMedia) {
 
-        try {
+        const maxAttempts =
+          Math.max(
+            1,
+            Number(mediaRetryAttempts) || 1
+          );
 
-          if (isImage(mediaValidation.extension)) {
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 
-            const normalizedMediaPath =
-              path.resolve(mediaFile);
+          try {
 
-            await client.sendImage(
+            await sendMediaMessage(
+              client,
               chatId,
-              normalizedMediaPath,
-              path.basename(normalizedMediaPath),
+              mediaFile,
+              mediaValidation,
               message
             );
 
-          } else {
+            mediaSent = true;
+            mediaSendFailed = false;
+            mediaErrorMessage = null;
 
-            const normalizedMediaPath =
-              path.resolve(mediaFile);
+            break;
 
-            await client.sendFile(
-              chatId,
-              normalizedMediaPath,
-              path.basename(normalizedMediaPath),
-              message
+          } catch (mediaError) {
+
+            mediaSendFailed = true;
+            mediaErrorMessage =
+              mediaError.message;
+
+            console.log(
+              `Media failed for ${rawPhone} (attempt ${attempt}/${maxAttempts})`
             );
 
+            console.log(
+              `Media path: ${mediaFile}`
+            );
+
+            console.log(
+              `Error: ${mediaErrorMessage}`
+            );
+
+            if (attempt < maxAttempts) {
+
+              console.log(
+                `Retrying media in ${mediaRetryDelay / 1000}s...`
+              );
+
+              await sleep(mediaRetryDelay);
+            }
           }
-
-          mediaSent = true;
-
-        } catch (mediaError) {
-
-          mediaSendFailed = true;
-
-          console.log(
-            `Media failed for ${rawPhone}`
-          );
-
-          console.log(
-            `Media path: ${mediaFile}`
-          );
-
-          console.log(
-            `Error: ${mediaError.message}`
-          );
 
         }
       }
 
-      // Send text when no media was selected, or fall back to text if media failed
-      if (!mediaSent) {
+      // Send text only when no media was selected.
+      if (
+        !mediaRequested &&
+        !mediaSent
+      ) {
 
         await client.sendText(chatId, message);
 
@@ -272,14 +306,6 @@ async function sendBroadcast(client, contacts, options) {
 
       if (mediaSent) {
         status = "success";
-      }
-
-      if (
-        textSent &&
-        !mediaSent &&
-        mediaSendFailed
-      ) {
-        status = "partial_success";
       }
 
       if (
@@ -306,7 +332,15 @@ async function sendBroadcast(client, contacts, options) {
       results.push({
         phone: rawPhone,
         status,
-        message
+        message,
+        mediaFile:
+          mediaRequested
+            ? mediaFile
+            : undefined,
+        error:
+          mediaSendFailed
+            ? mediaErrorMessage
+            : undefined
       });
 
       console.log(`${status}: ${rawPhone}`);
@@ -481,6 +515,37 @@ async function sendBroadcast(client, contacts, options) {
     successFile,
     counters: getCounters()
   };
+}
+
+async function sendMediaMessage(
+  client,
+  chatId,
+  mediaFile,
+  mediaValidation,
+  message
+) {
+
+  const normalizedMediaPath =
+    path.resolve(mediaFile);
+
+  if (isImage(mediaValidation.extension)) {
+
+    await client.sendImage(
+      chatId,
+      normalizedMediaPath,
+      path.basename(normalizedMediaPath),
+      message
+    );
+
+    return;
+  }
+
+  await client.sendFile(
+    chatId,
+    normalizedMediaPath,
+    path.basename(normalizedMediaPath),
+    message
+  );
 }
 
 module.exports = {
