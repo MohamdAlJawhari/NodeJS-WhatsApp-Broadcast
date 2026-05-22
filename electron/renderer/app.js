@@ -1066,7 +1066,7 @@ async function cleanAllLogFiles() {
 
     const confirmed =
         window.confirm(
-            "Delete all saved success, failed, and send logs?"
+            "Delete all saved success, failed, retry, and send logs?"
         );
 
     if (!confirmed) {
@@ -1082,6 +1082,10 @@ async function cleanAllLogFiles() {
         {
             kind: "failed",
             label: "failed"
+        },
+        {
+            kind: "failedRetry",
+            label: "retry"
         },
         {
             kind: "send",

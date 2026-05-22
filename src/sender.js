@@ -63,11 +63,13 @@ async function sendBroadcast(client, contacts, options) {
   );
 
   let failedFile = null;
+  let failedRetryFile = null;
   let successFile = null;
 
   const results = [];
-  const failedContacts = [];
-  const successContacts = [];
+  const failedLogRows = [];
+  const failedRetryContacts = [];
+  const successLogRows = [];
 
   let successCount = 0;
   let failedCount = 0;
@@ -170,6 +172,9 @@ async function sendBroadcast(client, contacts, options) {
     const rawPhone =
       getPhoneValue(contact);
 
+    const logPhone =
+      formatLogPhone(rawPhone);
+
 
     const progress = (
       ((i + 1) / contacts.length) * 100
@@ -184,19 +189,32 @@ async function sendBroadcast(client, contacts, options) {
 
     if (!phoneValidation.valid) {
 
-      console.log(`Skipped: ${rawPhone}`);
-      console.log(phoneValidation.reason);
+      const reason =
+        sanitizeLogText(phoneValidation.reason);
+
+      console.log(`Skipped: ${logPhone}`);
+      console.log(reason);
 
       skippedCount++;
 
+      const logEntry =
+        createContactLogEntry({
+          contact,
+          index: i,
+          rawPhone,
+          status: "skipped",
+          reason
+        });
+
       results.push({
-        phone: rawPhone,
+        ...logEntry,
         status: "skipped",
-        reason: phoneValidation.reason
+        reason
       });
 
-      // Save invalid contacts for retry/fixing
-      failedContacts.push(contact);
+      failedLogRows.push(logEntry);
+
+      failedRetryContacts.push(contact);
 
       emitCounters();
       emitProgress(i + 1, contacts.length);
@@ -226,7 +244,7 @@ async function sendBroadcast(client, contacts, options) {
 
     try {
 
-      console.log(`Sending to ${rawPhone}...`);
+      console.log(`Sending to ${logPhone}...`);
 
       let mediaSent = false;
       let textSent = false;
@@ -241,15 +259,15 @@ async function sendBroadcast(client, contacts, options) {
           mediaValidation.reason;
 
         console.log(
-          `Media invalid for ${rawPhone}`
+          `Media invalid for ${logPhone}`
         );
 
         console.log(
-          `Media path: ${mediaFile}`
+          `Media type: ${getMediaType(mediaFile)}`
         );
 
         console.log(
-          `Error: ${mediaErrorMessage}`
+          `Error: ${sanitizeLogText(mediaErrorMessage)}`
         );
       }
 
@@ -287,15 +305,15 @@ async function sendBroadcast(client, contacts, options) {
               mediaError.message;
 
             console.log(
-              `Media failed for ${rawPhone} (attempt ${attempt}/${maxAttempts})`
+              `Media failed for ${logPhone} (attempt ${attempt}/${maxAttempts})`
             );
 
             console.log(
-              `Media path: ${mediaFile}`
+              `Media type: ${getMediaType(mediaFile)}`
             );
 
             console.log(
-              `Error: ${mediaErrorMessage}`
+              `Error: ${sanitizeLogText(mediaErrorMessage)}`
             );
 
             if (attempt < maxAttempts) {
@@ -340,33 +358,48 @@ async function sendBroadcast(client, contacts, options) {
       // Count results
       if (mediaSent || textSent) {
 
-        successContacts.push(contact);
         successCount++;
 
       } else {
 
         failedCount++;
 
-        failedContacts.push(contact);
+        failedRetryContacts.push(contact);
       }
 
-      results.push({
-        phone: rawPhone,
-        status,
-        message,
-        mediaFile:
-          mediaRequested
-            ? mediaFile
-            : undefined,
-        error:
-          mediaSendFailed
-            ? mediaErrorMessage
-            : undefined
-      });
+      const logEntry =
+        createContactLogEntry({
+          contact,
+          index: i,
+          rawPhone,
+          status,
+          error:
+            mediaSendFailed
+              ? mediaErrorMessage
+              : undefined,
+          mediaSelected:
+            mediaRequested,
+          mediaType:
+            getMediaType(mediaFile)
+        });
 
-      console.log(`${status}: ${rawPhone}`);
+      results.push(logEntry);
+
+      if (mediaSent || textSent) {
+
+        successLogRows.push(logEntry);
+
+      } else {
+
+        failedLogRows.push(logEntry);
+      }
+
+      console.log(`${status}: ${logPhone}`);
 
     } catch (error) {
+
+      const errorMessage =
+        sanitizeLogText(error.message);
 
       // WPPConnect internal bug
       // Message was actually sent
@@ -388,43 +421,59 @@ async function sendBroadcast(client, contacts, options) {
 
         successCount++;
 
-        const result = {
-          phone: rawPhone,
-          status,
-          message
-        };
-
-        if (mediaRequested) {
-
-          result.warning =
-            error.message;
-        }
+        const result =
+          createContactLogEntry({
+            contact,
+            index: i,
+            rawPhone,
+            status,
+            warning:
+              mediaRequested
+                ? errorMessage
+                : undefined,
+            mediaSelected:
+              mediaRequested,
+            mediaType:
+              getMediaType(mediaFile)
+          });
 
         results.push(result);
 
-        successContacts.push(contact);
+        successLogRows.push(result);
 
       } else {
 
         failedCount++;
 
-        failedContacts.push(contact);
+        failedRetryContacts.push(contact);
 
-        results.push({
-          phone: rawPhone,
-          status: "failed",
-          error: error.message
-        });
+        const result =
+          createContactLogEntry({
+            contact,
+            index: i,
+            rawPhone,
+            status: "failed",
+            error:
+              errorMessage,
+            mediaSelected:
+              mediaRequested,
+            mediaType:
+              getMediaType(mediaFile)
+          });
 
-        console.log(`Failed: ${rawPhone}`);
-        console.log(error.message);
+        results.push(result);
+
+        failedLogRows.push(result);
+
+        console.log(`Failed: ${logPhone}`);
+        console.log(errorMessage);
       }
     }
 
     emitCounters();
     emitProgress(i + 1, contacts.length);
 
-    // Save logs continuously
+    // Save sanitized logs continuously
     fs.writeFileSync(
       logFile,
       JSON.stringify(results, null, 2)
@@ -451,42 +500,59 @@ async function sendBroadcast(client, contacts, options) {
     }
   }
 
-  // Save failed contacts to Excel
-  if (failedContacts.length > 0) {
-
-    const failedWorkbook =
-      XLSX.utils.book_new();
-
-    const failedWorksheet =
-      XLSX.utils.json_to_sheet(
-        failedContacts
-      );
-
-    XLSX.utils.book_append_sheet(
-      failedWorkbook,
-      failedWorksheet,
-      "Failed Contacts"
-    );
+  if (failedLogRows.length > 0) {
 
     failedFile = path.join(
       logsDir,
       `failed-${runId}.csv`
     );
 
-    XLSX.writeFile(
-      failedWorkbook,
+    await writeSanitizedCsvLog(
       failedFile,
+      failedLogRows
+    );
+
+    console.log(
+      `Failed summary saved: ${path.basename(failedFile)}`
+    );
+  }
+
+  // Retry needs the original contact fields to regenerate personalized messages.
+  if (failedRetryContacts.length > 0) {
+
+    const failedRetryWorkbook =
+      XLSX.utils.book_new();
+
+    const failedRetryWorksheet =
+      XLSX.utils.json_to_sheet(
+        failedRetryContacts
+      );
+
+    XLSX.utils.book_append_sheet(
+      failedRetryWorkbook,
+      failedRetryWorksheet,
+      "Retry Failed Contacts"
+    );
+
+    failedRetryFile = path.join(
+      logsDir,
+      `retry-failed-${runId}.csv`
+    );
+
+    XLSX.writeFile(
+      failedRetryWorkbook,
+      failedRetryFile,
       {
         bookType: "csv"
       }
     );
 
     console.log(
-      `Failed contacts saved to: ${failedFile}`
+      `Retry contacts saved: ${path.basename(failedRetryFile)}`
     );
   }
 
-  if (successContacts.length > 0) {
+  if (successLogRows.length > 0) {
 
     successFile =
       path.join(
@@ -494,27 +560,13 @@ async function sendBroadcast(client, contacts, options) {
         `success-${runId}.csv`
       );
 
-    const headers =
-      Object.keys(successContacts[0])
-        .map(key => ({
-          id: key,
-          title: key
-        }));
-
-    const csvWriter =
-      createObjectCsvWriter({
-
-        path: successFile,
-
-        header: headers
-      });
-
-    await csvWriter.writeRecords(
-      successContacts
+    await writeSanitizedCsvLog(
+      successFile,
+      successLogRows
     );
 
     console.log(
-      `Success contacts saved: ${successFile}`
+      `Success summary saved: ${path.basename(successFile)}`
     );
   }
 
@@ -528,11 +580,12 @@ async function sendBroadcast(client, contacts, options) {
   console.log("=============================\n");
 
   console.log("Broadcast finished.");
-  console.log(`Log saved to: ${logFile}`);
+  console.log(`Log saved: ${path.basename(logFile)}`);
 
   return {
     logFile,
     failedFile,
+    failedRetryFile,
     successFile,
     counters: getCounters()
   };
@@ -567,6 +620,151 @@ async function sendMediaMessage(
     path.basename(normalizedMediaPath),
     message
   );
+}
+
+function createContactLogEntry({
+  contact,
+  index,
+  rawPhone,
+  status,
+  reason,
+  error,
+  warning,
+  mediaSelected = false,
+  mediaType = ""
+}) {
+
+  return {
+    timestamp:
+      new Date().toISOString(),
+    rowNumber:
+      index + 2,
+    contactId:
+      getContactId(contact),
+    phone:
+      formatLogPhone(rawPhone),
+    status,
+    reason:
+      sanitizeLogText(reason),
+    error:
+      sanitizeLogText(error),
+    warning:
+      sanitizeLogText(warning),
+    mediaSelected:
+      Boolean(mediaSelected),
+    mediaType:
+      mediaSelected
+        ? mediaType
+        : ""
+  };
+}
+
+function getContactId(contact = {}) {
+
+  const keys = [
+    "id",
+    "ID",
+    "contactId",
+    "contact_id",
+    "Contact ID"
+  ];
+
+  const key =
+    keys.find(candidate => {
+      return Object.prototype.hasOwnProperty.call(
+        contact,
+        candidate
+      );
+    });
+
+  if (!key) {
+
+    return "";
+  }
+
+  return String(contact[key] ?? "")
+    .trim();
+}
+
+function sanitizeLogText(value) {
+
+  if (!value) {
+
+    return "";
+  }
+
+  return String(value);
+}
+
+function formatLogPhone(phone) {
+
+  return String(phone ?? "");
+}
+
+function getMediaType(mediaFile) {
+
+  if (!mediaFile) {
+
+    return "";
+  }
+
+  return path.extname(mediaFile)
+    .toLowerCase() || "unknown";
+}
+
+async function writeSanitizedCsvLog(
+  filePath,
+  rows
+) {
+
+  const csvWriter =
+    createObjectCsvWriter({
+      path: filePath,
+      header: [
+        {
+          id: "timestamp",
+          title: "timestamp"
+        },
+        {
+          id: "rowNumber",
+          title: "rowNumber"
+        },
+        {
+          id: "contactId",
+          title: "contactId"
+        },
+        {
+          id: "phone",
+          title: "phone"
+        },
+        {
+          id: "status",
+          title: "status"
+        },
+        {
+          id: "reason",
+          title: "reason"
+        },
+        {
+          id: "error",
+          title: "error"
+        },
+        {
+          id: "warning",
+          title: "warning"
+        },
+        {
+          id: "mediaSelected",
+          title: "mediaSelected"
+        },
+        {
+          id: "mediaType",
+          title: "mediaType"
+        }
+      ]
+    });
+
+  await csvWriter.writeRecords(rows);
 }
 
 function createLogRunId() {

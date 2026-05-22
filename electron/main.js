@@ -340,6 +340,10 @@ function getLogType(kind) {
       prefix: "failed",
       extension: ".csv"
     },
+    failedRetry: {
+      prefix: "retry-failed",
+      extension: ".csv"
+    },
     send: {
       prefix: "send-log",
       extension: ".json"
@@ -1028,6 +1032,7 @@ ipcMain.handle(
     try {
 
       const failedFile =
+        findLatestLogFile("failedRetry") ||
         findLatestLogFile("failed");
 
       if (!failedFile) {
