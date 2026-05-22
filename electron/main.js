@@ -46,6 +46,8 @@ const broadcastController =
   require("../src/broadcastController");
 
 const {
+  configureSettingsPath,
+  getDefaultSettings,
   loadSettings,
   saveSettings
 } = require("../src/settings");
@@ -86,6 +88,38 @@ function getLogsDir() {
   );
 }
 
+function getDataDir() {
+
+  return path.join(
+    getWritableRootDir(),
+    "data"
+  );
+}
+
+function getSavedContactsDir() {
+
+  return path.join(
+    getDataDir(),
+    "saved-contacts"
+  );
+}
+
+function getTokensDir() {
+
+  return path.join(
+    getWritableRootDir(),
+    "tokens"
+  );
+}
+
+function getWritableSettingsPath() {
+
+  return path.join(
+    getWritableRootDir(),
+    "settings.json"
+  );
+}
+
 function ensureDirectory(dirPath) {
 
   if (!fs.existsSync(dirPath)) {
@@ -103,6 +137,196 @@ function ensureLogsDir() {
   return ensureDirectory(
     getLogsDir()
   );
+}
+
+function ensureRuntimePaths() {
+
+  ensureDirectory(
+    getWritableRootDir()
+  );
+
+  ensureDirectory(
+    getDataDir()
+  );
+
+  ensureDirectory(
+    getSavedContactsDir()
+  );
+
+  ensureLogsDir();
+
+  ensureDirectory(
+    getTokensDir()
+  );
+}
+
+function configureRuntimePaths() {
+
+  ensureRuntimePaths();
+
+  configureSettingsPath(
+    getWritableSettingsPath()
+  );
+}
+
+function getRuntimeSettings() {
+
+  configureRuntimePaths();
+
+  return loadSettings();
+}
+
+function getConfiguredText(
+  settingsValue,
+  envName,
+  fallbackValue
+) {
+
+  const envValue =
+    process.env[envName];
+
+  if (
+    typeof envValue === "string" &&
+    envValue.trim()
+  ) {
+
+    return envValue.trim();
+  }
+
+  if (
+    typeof settingsValue === "string" &&
+    settingsValue.trim()
+  ) {
+
+    return settingsValue.trim();
+  }
+
+  return fallbackValue;
+}
+
+function getConfiguredNumber(
+  settingsValue,
+  envName,
+  fallbackValue,
+  {
+    integer = true,
+    minimum = 0
+  } = {}
+) {
+
+  const envValue =
+    process.env[envName];
+
+  const rawValue =
+    envValue !== undefined &&
+    String(envValue).trim() !== ""
+      ? envValue
+      : settingsValue;
+
+  const parsedValue =
+    Number(rawValue);
+
+  if (
+    Number.isFinite(parsedValue) &&
+    parsedValue >= minimum
+  ) {
+
+    return integer
+      ? Math.floor(parsedValue)
+      : parsedValue;
+  }
+
+  const parsedFallback =
+    Number(fallbackValue);
+
+  if (Number.isFinite(parsedFallback)) {
+
+    return parsedFallback;
+  }
+
+  return minimum;
+}
+
+function getSessionName() {
+
+  const settings =
+    getRuntimeSettings();
+
+  const defaults =
+    getDefaultSettings();
+
+  return getConfiguredText(
+    settings.whatsappSessionName,
+    "SESSION_NAME",
+    defaults.whatsappSessionName
+  );
+}
+
+function getSendingSettings() {
+
+  const settings =
+    getRuntimeSettings();
+
+  const defaults =
+    getDefaultSettings();
+
+  const sending =
+    settings.sending || {};
+
+  const defaultSending =
+    defaults.sending;
+
+  const delayMin =
+    getConfiguredNumber(
+      sending.delayMin,
+      "MESSAGE_DELAY_MIN",
+      defaultSending.delayMin
+    );
+
+  const delayMax =
+    Math.max(
+      delayMin,
+      getConfiguredNumber(
+        sending.delayMax,
+        "MESSAGE_DELAY_MAX",
+        defaultSending.delayMax
+      )
+    );
+
+  return {
+    delayMin,
+    delayMax,
+    batchSize:
+      getConfiguredNumber(
+        sending.batchSize,
+        "BATCH_SIZE",
+        defaultSending.batchSize,
+        {
+          minimum: 1
+        }
+      ),
+    batchPause:
+      getConfiguredNumber(
+        sending.batchPause,
+        "BATCH_PAUSE",
+        defaultSending.batchPause
+      ),
+    mediaRetryAttempts:
+      getConfiguredNumber(
+        sending.mediaRetryAttempts,
+        "MEDIA_RETRY_ATTEMPTS",
+        defaultSending.mediaRetryAttempts,
+        {
+          minimum: 1
+        }
+      ),
+    mediaRetryDelay:
+      getConfiguredNumber(
+        sending.mediaRetryDelay,
+        "MEDIA_RETRY_DELAY",
+        defaultSending.mediaRetryDelay
+      )
+  };
 }
 
 function getLogType(kind) {
@@ -419,10 +643,10 @@ function buildValidationWarnings(data = {}) {
     if (!mediaValidation.valid) {
 
       warnings.push({
-        type: "warning",
-        title: "Media file warning",
+        type: "error",
+        title: "Media file cannot be sent",
         message:
-          `${mediaValidation.reason}. The sender will fall back to text only.`
+          `${mediaValidation.reason}. Remove the selected media or choose a supported file before starting.`
       });
     }
   }
@@ -468,6 +692,8 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+
+  configureRuntimePaths();
 
   createWindow();
 });
@@ -630,6 +856,8 @@ ipcMain.handle(
   "connect-whatsapp",
   async (event) => {
 
+    configureRuntimePaths();
+
     if (client) {
 
       const connected =
@@ -664,7 +892,10 @@ ipcMain.handle(
         await wppconnect.create({
 
           session:
-            "employee-session",
+            getSessionName(),
+
+          folderNameToken:
+            getTokensDir(),
 
           headless: true,
 
@@ -904,6 +1135,9 @@ ipcMain.handle(
         };
       }
 
+      const sendingSettings =
+        getSendingSettings();
+
       // Progress callback
       const options = {
 
@@ -914,21 +1148,23 @@ ipcMain.handle(
         logsDir:
           ensureLogsDir(),
 
-        delayMin: 10000,
+        delayMin:
+          sendingSettings.delayMin,
 
-        delayMax: 20000,
+        delayMax:
+          sendingSettings.delayMax,
 
-        batchSize: 5,
+        batchSize:
+          sendingSettings.batchSize,
 
-        batchPause: 30000,
+        batchPause:
+          sendingSettings.batchPause,
 
-        mediaRetryAttempts: Number(
-          process.env.MEDIA_RETRY_ATTEMPTS || 3
-        ),
+        mediaRetryAttempts:
+          sendingSettings.mediaRetryAttempts,
 
-        mediaRetryDelay: Number(
-          process.env.MEDIA_RETRY_DELAY || 15000
-        ),
+        mediaRetryDelay:
+          sendingSettings.mediaRetryDelay,
 
         onProgress: (
           current,
@@ -1016,6 +1252,8 @@ ipcMain.handle(
   "load-settings",
   async () => {
 
+    configureRuntimePaths();
+
     return loadSettings();
   }
 );
@@ -1024,6 +1262,8 @@ ipcMain.handle(
 ipcMain.handle(
   "save-template",
   async (_, template) => {
+
+    configureRuntimePaths();
 
     const settings =
       loadSettings();

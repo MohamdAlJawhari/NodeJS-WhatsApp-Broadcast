@@ -1,28 +1,101 @@
 const fs = require("fs");
 const path = require("path");
 
-const settingsPath =
-  path.join(
+const defaultSettings = {
+
+  defaultTemplate:
+`Hello {{name}}, your password is {{password}}, your user name was {{username}}.
+مرحباً {{name}}، كلمة مرورك هي {{password}}، واسم المستخدم الخاص بك هو {{username}}.`,
+
+  whatsappSessionName:
+    "employee-session",
+
+  sending: {
+    delayMin: 10000,
+    delayMax: 20000,
+    batchSize: 5,
+    batchPause: 30000,
+    mediaRetryAttempts: 3,
+    mediaRetryDelay: 15000
+  }
+};
+
+let settingsPath =
+  getDefaultSettingsPath();
+
+function getDefaultSettingsPath() {
+
+  return path.join(
     __dirname,
     "..",
     "settings.json"
   );
+}
 
-const defaultSettings = {
+function configureSettingsPath(filePath) {
 
-  defaultTemplate:
-`Hello {{name}}, your password is {{password}}.`
-};
+  settingsPath =
+    filePath ||
+    getDefaultSettingsPath();
+}
+
+function getSettingsPath() {
+
+  return settingsPath;
+}
+
+function ensureSettingsDirectory() {
+
+  fs.mkdirSync(
+    path.dirname(settingsPath),
+    {
+      recursive: true
+    }
+  );
+}
+
+function normalizeSettings(settings = {}) {
+
+  const incomingSending =
+    settings &&
+    typeof settings.sending === "object" &&
+    settings.sending !== null
+      ? settings.sending
+      : {};
+
+  return {
+    ...defaultSettings,
+    ...settings,
+    sending: {
+      ...defaultSettings.sending,
+      ...incomingSending
+    }
+  };
+}
+
+function getDefaultSettings() {
+
+  return normalizeSettings();
+}
 
 function loadSettings() {
+
+  ensureSettingsDirectory();
 
   if (
     !fs.existsSync(settingsPath)
   ) {
 
-    saveSettings(defaultSettings);
+    const settings = {
+      ...defaultSettings,
+      sending: {
+        ...defaultSettings.sending
+      }
+    };
 
-    return defaultSettings;
+    saveSettings(settings);
+
+    return settings;
   }
 
   const raw =
@@ -31,10 +104,26 @@ function loadSettings() {
       "utf8"
     );
 
-  return JSON.parse(raw);
+  const parsedSettings =
+    JSON.parse(raw);
+
+  const settings =
+    normalizeSettings(parsedSettings);
+
+  if (
+    JSON.stringify(settings) !==
+    JSON.stringify(parsedSettings)
+  ) {
+
+    saveSettings(settings);
+  }
+
+  return settings;
 }
 
 function saveSettings(settings) {
+
+  ensureSettingsDirectory();
 
   fs.writeFileSync(
     settingsPath,
@@ -47,6 +136,14 @@ function saveSettings(settings) {
 }
 
 module.exports = {
+
+  configureSettingsPath,
+
+  getSettingsPath,
+
+  getDefaultSettings,
+
+  normalizeSettings,
 
   loadSettings,
 

@@ -36,6 +36,24 @@ async function sendBroadcast(client, contacts, options) {
     });
   }
 
+  const mediaRequested =
+    Boolean(mediaFile);
+
+  const selectedMediaValidation =
+    mediaRequested
+      ? validateMediaFile(mediaFile)
+      : null;
+
+  if (
+    mediaRequested &&
+    !selectedMediaValidation.valid
+  ) {
+
+    throw new Error(
+      `Selected media cannot be sent: ${selectedMediaValidation.reason}. Remove the media or choose a supported file before starting.`
+    );
+  }
+
   const runId =
     createLogRunId();
 
@@ -196,11 +214,13 @@ async function sendBroadcast(client, contacts, options) {
     // Generate personalized message
     const message = generateMessage(template, contact);
 
-    const mediaValidation = validateMediaFile(mediaFile);
+    const mediaValidation =
+      selectedMediaValidation ||
+      validateMediaFile(mediaFile);
+
     const hasValidMedia =
       mediaValidation.valid;
-    const mediaRequested =
-      Boolean(mediaFile);
+
     let mediaSendFailed = false;
     let mediaErrorMessage = null;
 
