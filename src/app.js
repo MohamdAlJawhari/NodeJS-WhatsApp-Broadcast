@@ -77,7 +77,7 @@ Hello {{name}}, your password is {{password}}. Your username is {{username}}.
 
     console.log("\n----------------");
     const phoneField =
-      process.env.PHONE_COLUMN || "phone";
+      process.env.PHONE_COLUMN || "phone" || "NUMBERS";
 
     const validation = validatePhone(
       contact[phoneField]

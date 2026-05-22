@@ -149,7 +149,7 @@ async function sendBroadcast(client, contacts, options) {
     const contact = contacts[i];
 
     const phoneField =
-      process.env.PHONE_COLUMN || "phone";
+      process.env.PHONE_COLUMN || "phone" || "NUMBERS";
 
     const rawPhone =
       contact[phoneField];

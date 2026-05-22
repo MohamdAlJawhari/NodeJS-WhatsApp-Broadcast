@@ -1,11 +1,14 @@
 {
   "name": "whatsapp",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Internal WhatsApp broadcast sender desktop app",
+  "productName": "WhatsApp Broadcast Sender",
+  "main": "electron/main.js",
   "scripts": {
-    "start": "node src/app.js",
-    "electron": "electron electron/main.js"
+    "start": "electron .",
+    "electron": "electron .",
+    "cli": "node src/app.js",
+    "build:win": "electron-builder --win --x64"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +23,52 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "electron": "^42.0.1"
+    "electron": "^42.0.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.internal.whatsapp-broadcast-sender",
+    "productName": "WhatsApp Broadcast Sender",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "package.json",
+      "electron/**/*",
+      "src/**/*",
+      "settings.json",
+      "!AI_PROJECT_CONTEXT.md",
+      "!README.md",
+      "!data{,/**/*}",
+      "!media{,/**/*}",
+      "!logs{,/**/*}",
+      "!tokens{,/**/*}",
+      "!.env",
+      "!.env.*",
+      "!.git{,/**/*}",
+      "!node_modules/.cache{,/**/*}",
+      "!release{,/**/*}"
+    ],
+    "asar": false,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signAndEditExecutable": false,
+      "artifactName": "${productName} Setup ${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "${productName}"
+    }
   }
 }

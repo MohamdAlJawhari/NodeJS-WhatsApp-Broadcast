@@ -43,7 +43,7 @@ function loadContacts(filePath) {
   }
 
   const phoneColumn =
-    process.env.PHONE_COLUMN || "phone";
+    process.env.PHONE_COLUMN || "phone" || "NUMBERS";
 
   const actualPhoneColumn =
     headers.includes(phoneColumn)

@@ -338,7 +338,7 @@ function createContactFileService({
 
       return [[
         process.env.PHONE_COLUMN ||
-        "phone"
+        "phone" || "NUMBERS"
       ]];
     }
 
@@ -364,7 +364,7 @@ function createContactFileService({
 
       normalized.push([
         process.env.PHONE_COLUMN ||
-        "phone"
+        "phone" || "NUMBERS"
       ]);
     }
 
@@ -391,7 +391,7 @@ function createContactFileService({
   function validateContactRows(rows) {
 
     const phoneColumn =
-      process.env.PHONE_COLUMN || "phone";
+      process.env.PHONE_COLUMN || "phone" || "NUMBERS";
 
     const headers =
       rows[0].map(header => {
@@ -486,7 +486,7 @@ function createContactFileService({
       );
 
     const phoneColumn =
-      process.env.PHONE_COLUMN || "phone";
+      process.env.PHONE_COLUMN || "phone" || "NUMBERS";
 
     const phoneColumnIndex =
       rows[0].findIndex(header => {

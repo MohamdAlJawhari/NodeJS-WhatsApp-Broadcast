@@ -21,6 +21,7 @@ logs/
 # Build, test, and coverage output
 dist/
 build/
+release/
 coverage/
 .nyc_output/
 

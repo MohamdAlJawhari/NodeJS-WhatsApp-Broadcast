@@ -275,7 +275,7 @@ function buildValidationWarnings(data = {}) {
     data.mediaFile || null;
 
   const phoneField =
-    process.env.PHONE_COLUMN || "phone";
+    process.env.PHONE_COLUMN || "phone" || "NUMBERS";
 
   const warnings = [];
   const invalidPhones = [];
@@ -572,7 +572,7 @@ ipcMain.handle(
           phone:
             contact[
             process.env.PHONE_COLUMN ||
-            "phone"
+            "phone" || "NUMBERS"
             ],
 
           message:
