@@ -38,6 +38,10 @@ const {
   validateMediaFile
 } = require("../src/media");
 
+const {
+  getPhoneValue
+} = require("../src/phoneColumn");
+
 const broadcastController =
   require("../src/broadcastController");
 
@@ -274,9 +278,6 @@ function buildValidationWarnings(data = {}) {
   const mediaFile =
     data.mediaFile || null;
 
-  const phoneField =
-    process.env.PHONE_COLUMN || "phone" || "NUMBERS";
-
   const warnings = [];
   const invalidPhones = [];
   const duplicatePhones = [];
@@ -301,7 +302,7 @@ function buildValidationWarnings(data = {}) {
   contacts.forEach((contact, index) => {
 
     const rawPhone =
-      contact[phoneField];
+      getPhoneValue(contact);
 
     const validation =
       validatePhone(rawPhone);
@@ -570,10 +571,7 @@ ipcMain.handle(
         return {
 
           phone:
-            contact[
-            process.env.PHONE_COLUMN ||
-            "phone" || "NUMBERS"
-            ],
+            getPhoneValue(contact),
 
           message:
             generateMessage(

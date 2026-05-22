@@ -838,7 +838,7 @@
         function getEditorPhoneColumnIndex() {
 
             const phoneColumn =
-                editorFile?.phoneColumn || "phone" || "NUMBERS";
+                editorFile?.phoneColumn || "phone";
 
             const index =
                 editorRows[0]?.findIndex(header => {

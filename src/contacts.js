@@ -1,4 +1,9 @@
 const xlsx = require("xlsx");
+const {
+  findPhoneColumn,
+  getConfiguredPhoneColumn,
+  getPhoneColumnRequirementLabel
+} = require("./phoneColumn");
 
 function loadContacts(filePath) {
   const workbook = xlsx.readFile(filePath);
@@ -43,20 +48,15 @@ function loadContacts(filePath) {
   }
 
   const phoneColumn =
-    process.env.PHONE_COLUMN || "phone" || "NUMBERS";
+    getConfiguredPhoneColumn();
 
   const actualPhoneColumn =
-    headers.includes(phoneColumn)
-      ? phoneColumn
-      : headers.find(header => {
-        return header.toLowerCase() ===
-          phoneColumn.toLowerCase();
-      });
+    findPhoneColumn(headers);
 
   if (!actualPhoneColumn) {
 
     throw new Error(
-      `Contacts file must contain a '${phoneColumn}' column. Available columns: ${headers.join(", ")}.`
+      `Contacts file must contain ${getPhoneColumnRequirementLabel()} column. Available columns: ${headers.join(", ")}.`
     );
   }
 

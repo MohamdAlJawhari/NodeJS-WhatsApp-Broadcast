@@ -7,6 +7,12 @@ const {
   loadContacts
 } = require("../src/contacts");
 
+const {
+  findPhoneColumn,
+  getConfiguredPhoneColumn,
+  getPhoneColumnRequirementLabel
+} = require("../src/phoneColumn");
+
 function createContactFileService({
   app,
   dialog,
@@ -337,8 +343,7 @@ function createContactFileService({
     if (rows.length === 0) {
 
       return [[
-        process.env.PHONE_COLUMN ||
-        "phone" || "NUMBERS"
+        getConfiguredPhoneColumn()
       ]];
     }
 
@@ -363,8 +368,7 @@ function createContactFileService({
     if (normalized.length === 0) {
 
       normalized.push([
-        process.env.PHONE_COLUMN ||
-        "phone" || "NUMBERS"
+        getConfiguredPhoneColumn()
       ]);
     }
 
@@ -390,24 +394,18 @@ function createContactFileService({
 
   function validateContactRows(rows) {
 
-    const phoneColumn =
-      process.env.PHONE_COLUMN || "phone" || "NUMBERS";
-
     const headers =
       rows[0].map(header => {
         return String(header).trim();
       });
 
     const hasPhoneColumn =
-      headers.some(header => {
-        return header.toLowerCase() ===
-          phoneColumn.toLowerCase();
-      });
+      Boolean(findPhoneColumn(headers));
 
     if (!hasPhoneColumn) {
 
       throw new Error(
-        `The '${phoneColumn}' column is required and cannot be removed or renamed.`
+        `A phone column (${getPhoneColumnRequirementLabel()}) is required and cannot be removed or renamed.`
       );
     }
 
@@ -486,7 +484,8 @@ function createContactFileService({
       );
 
     const phoneColumn =
-      process.env.PHONE_COLUMN || "phone" || "NUMBERS";
+      findPhoneColumn(rows[0]) ||
+      getConfiguredPhoneColumn();
 
     const phoneColumnIndex =
       rows[0].findIndex(header => {

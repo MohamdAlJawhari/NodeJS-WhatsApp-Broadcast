@@ -4,6 +4,7 @@ const { loadContacts } = require("./contacts");
 const { createClient } = require("./whatsapp");
 const { sendBroadcast } = require("./sender");
 const { validatePhone, validateTemplateVariables } = require("./validator");
+const { getPhoneValue } = require("./phoneColumn");
 
 async function main() {
   const sessionName = process.env.SESSION_NAME || "employee-session";
@@ -76,11 +77,8 @@ Hello {{name}}, your password is {{password}}. Your username is {{username}}.
       .replace(/\{\{password\}\}/g, contact.password);
 
     console.log("\n----------------");
-    const phoneField =
-      process.env.PHONE_COLUMN || "phone" || "NUMBERS";
-
     const validation = validatePhone(
-      contact[phoneField]
+      getPhoneValue(contact)
     );
 
     console.log(

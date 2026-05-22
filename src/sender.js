@@ -5,6 +5,7 @@ const { generateMessage } = require("./template");
 const { sleep, randomDelay, formatPhone } = require("./utils");
 const { validateMediaFile, isImage } = require("./media");
 const { validatePhone } = require("./validator");
+const { getPhoneValue } = require("./phoneColumn");
 const broadcastController = require("./broadcastController");
 const { createObjectCsvWriter } = require("csv-writer");
 
@@ -148,11 +149,8 @@ async function sendBroadcast(client, contacts, options) {
 
     const contact = contacts[i];
 
-    const phoneField =
-      process.env.PHONE_COLUMN || "phone" || "NUMBERS";
-
     const rawPhone =
-      contact[phoneField];
+      getPhoneValue(contact);
 
 
     const progress = (
