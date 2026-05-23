@@ -24,7 +24,8 @@
   },
   "devDependencies": {
     "electron": "^42.0.1",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "rcedit": "^5.0.2"
   },
   "build": {
     "appId": "com.internal.whatsapp-broadcast-sender",
@@ -51,6 +52,7 @@
       "!release{,/**/*}"
     ],
     "asar": false,
+    "afterPack": "scripts/afterPack.cjs",
     "win": {
       "icon": "build/icon.ico",
       "target": [
