@@ -1,3 +1,12 @@
 {
-  "defaultTemplate": "Hello {{name}}, your password is {{password}}, your user name was {{username}}.\nمرحباً {{name}}، كلمة مرورك هي {{password}}، واسم المستخدم الخاص بك هو {{username}}."
+  "defaultTemplate": "Hello {{name}}, your password is {{password}}, your user name was {{username}}.\nمرحباً {{name}}، كلمة مرورك هي {{password}}، واسم المستخدم الخاص بك هو {{username}}.",
+  "whatsappSessionName": "employee-session",
+  "sending": {
+    "delayMin": 10000,
+    "delayMax": 20000,
+    "batchSize": 5,
+    "batchPause": 30000,
+    "mediaRetryAttempts": 3,
+    "mediaRetryDelay": 15000
+  }
 }
