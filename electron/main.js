@@ -53,6 +53,11 @@ const {
 } = require("../src/settings");
 
 const {
+  createBrowserLaunchConfig,
+  getMissingBrowserMessage
+} = require("../src/browserRuntime");
+
+const {
   createContactFileService
 } = require("./contactFiles");
 
@@ -899,6 +904,23 @@ ipcMain.handle(
 
     try {
 
+      const browserLaunchConfig =
+        createBrowserLaunchConfig();
+
+      if (browserLaunchConfig.browser) {
+
+        console.log(
+          `Using ${browserLaunchConfig.browser.name}: ${browserLaunchConfig.browser.executablePath}`
+        );
+
+      } else if (app.isPackaged && process.platform === "win32") {
+
+        return {
+          success: false,
+          error: getMissingBrowserMessage()
+        };
+      }
+
       client =
         await wppconnect.create({
 
@@ -911,6 +933,8 @@ ipcMain.handle(
           headless: true,
 
           autoClose: 0,
+
+          ...browserLaunchConfig.options,
 
           catchQR: (base64Qr) => {
 

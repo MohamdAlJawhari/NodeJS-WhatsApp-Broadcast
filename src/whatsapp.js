@@ -1,5 +1,9 @@
 const wppconnect = require("@wppconnect-team/wppconnect");
 
+const {
+  createBrowserLaunchConfig
+} = require("./browserRuntime");
+
 async function waitUntilReady(client) {
   console.log("Waiting for WhatsApp to be fully ready...");
 
@@ -35,6 +39,15 @@ async function waitUntilReady(client) {
 }
 
 async function createClient(sessionName) {
+  const browserLaunchConfig =
+    createBrowserLaunchConfig();
+
+  if (browserLaunchConfig.browser) {
+    console.log(
+      `Using ${browserLaunchConfig.browser.name}: ${browserLaunchConfig.browser.executablePath}`
+    );
+  }
+
   const client = await wppconnect.create({
     session: sessionName,
     catchQR: (base64Qr, asciiQR) => {
@@ -46,7 +59,7 @@ async function createClient(sessionName) {
     },
     headless: true,
     devtools: false,
-    useChrome: true,
+    ...browserLaunchConfig.options,
     debug: false,
     logQR: true
   });
