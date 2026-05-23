@@ -34,6 +34,7 @@
     },
     "files": [
       "package.json",
+      "build/icon.ico",
       "electron/**/*",
       "src/**/*",
       "settings.json",
@@ -51,6 +52,7 @@
     ],
     "asar": false,
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         {
           "target": "nsis",

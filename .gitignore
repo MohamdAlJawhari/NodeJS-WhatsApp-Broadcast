@@ -20,10 +20,14 @@ logs/
 
 # Build, test, and coverage output
 dist/
-build/
 release/
 coverage/
 .nyc_output/
+
+# Electron packaging source assets
+build/*
+!build/icon.ico
+!build/icon.svg
 
 # Package manager logs
 npm-debug.log*
