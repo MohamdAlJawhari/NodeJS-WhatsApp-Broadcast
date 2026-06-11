@@ -4,6 +4,10 @@ Internal Electron desktop app for sending personalized WhatsApp broadcast messag
 
 This is an internal tool. Do not commit real contact files, logs, tokens, or `.env` files.
 
+## 🎥 Demo Video
+
+[![Watch the video](https://img.youtube.com/vi/2F2NlaBmnTg/0.jpg)](https://youtu.be/2F2NlaBmnTg)
+
 ## Requirements
 
 - Windows 10/11 for the packaged `.exe` workflow.
