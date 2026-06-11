@@ -585,7 +585,6 @@ function buildValidationWarnings(data = {}) {
       message:
         `${invalidPhones.length} contact(s) will be skipped during sending.`,
       details: invalidPhones
-        .slice(0, 5)
         .map(item => {
           return `Row ${item.row}: ${item.phone || "(blank)"} - ${item.reason}`;
         })
@@ -600,7 +599,6 @@ function buildValidationWarnings(data = {}) {
       message:
         `${duplicatePhones.length} duplicate contact(s) may receive repeated messages.`,
       details: duplicatePhones
-        .slice(0, 5)
         .map(item => {
           return `Row ${item.row}: ${item.phone}`;
         })
@@ -640,7 +638,6 @@ function buildValidationWarnings(data = {}) {
       message:
         "Some placeholders are not present in the contacts file and will be blank.",
       details: templateValidation.missing
-        .slice(0, 10)
         .map(variable => {
           return `{{${variable}}}`;
         })

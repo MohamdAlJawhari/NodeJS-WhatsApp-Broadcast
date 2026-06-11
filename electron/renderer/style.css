@@ -601,6 +601,26 @@ progress {
   font-weight: 800;
 }
 
+.editor-toolbar {
+  align-items: center;
+}
+
+.editor-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 260px;
+  max-width: 420px;
+}
+
+.editor-search input {
+  min-width: 180px;
+}
+
+.editor-search .mini-btn {
+  flex: 0 0 auto;
+}
+
 .editor-help,
 #editorTableSummary {
   color: var(--muted);
@@ -716,6 +736,24 @@ progress {
 .validation-details {
   margin: 8px 0 0 18px;
   padding: 0;
+}
+
+.validation-toggle-item {
+  margin-top: 8px;
+}
+
+.validation-toggle {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.validation-toggle:hover {
+  text-decoration: underline;
 }
 
 .validation-panel-empty {

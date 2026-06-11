@@ -1,6 +1,6 @@
 {
   "name": "whatsapp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Internal WhatsApp broadcast sender desktop app",
   "productName": "WhatsApp Broadcast Sender",
   "main": "electron/main.js",

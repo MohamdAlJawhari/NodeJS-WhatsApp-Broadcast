@@ -212,6 +212,12 @@ let validationRequestId = 0;
 
 let validationTimer = null;
 
+let validationWarningsExpanded = false;
+
+let currentValidationResult = null;
+
+const validationWarningPreviewLimit = 5;
+
 const broadcastStatusLabels = {
     IDLE: "Ready",
     RUNNING: "Sending",
@@ -236,6 +242,7 @@ const contactFilesUI =
         setContacts: (nextContacts) => {
             contacts =
                 nextContacts;
+            resetValidationWarningDisplay();
         },
         setStatusText: (text) => {
             status.innerText =
@@ -310,6 +317,8 @@ async function loadContactsFile({
     }
 
     contacts = result.contacts;
+
+    resetValidationWarningDisplay();
 
     contactFilesUI.clearSelectedContactFile();
 
@@ -889,6 +898,8 @@ retryFailedBtn.addEventListener(
         contacts =
             result.contacts;
 
+        resetValidationWarningDisplay();
+
         contactFilesUI.clearSelectedContactFile();
 
         status.innerText =
@@ -1408,6 +1419,9 @@ function renderValidationWarnings(
     result
 ) {
 
+    currentValidationResult =
+        result;
+
     const warnings =
         result.warnings || [];
 
@@ -1493,7 +1507,15 @@ function renderValidationWarnings(
             details.className =
                 "validation-details";
 
-            warning.details.forEach(detail => {
+            const visibleDetails =
+                validationWarningsExpanded
+                    ? warning.details
+                    : warning.details.slice(
+                        0,
+                        validationWarningPreviewLimit
+                    );
+
+            visibleDetails.forEach(detail => {
 
                 const detailItem =
                     document.createElement("li");
@@ -1513,6 +1535,93 @@ function renderValidationWarnings(
             item
         );
     });
+
+    if (hasHiddenValidationWarnings(warnings)) {
+
+        const toggleItem =
+            document.createElement("li");
+
+        toggleItem.className =
+            "validation-toggle-item";
+
+        const toggleButton =
+            document.createElement("button");
+
+        toggleButton.type =
+            "button";
+
+        toggleButton.className =
+            "validation-toggle";
+
+        toggleButton.innerText =
+            validationWarningsExpanded
+                ? "Show fewer warnings"
+                : `Show all warnings (${getExpandableWarningCount(warnings)})`;
+
+        toggleButton.addEventListener(
+            "click",
+            () => {
+
+                validationWarningsExpanded =
+                    !validationWarningsExpanded;
+
+                renderValidationWarnings(
+                    currentValidationResult
+                );
+            }
+        );
+
+        toggleItem.appendChild(
+            toggleButton
+        );
+
+        validationWarnings.appendChild(
+            toggleItem
+        );
+    }
+}
+
+function resetValidationWarningDisplay() {
+
+    validationWarningsExpanded =
+        false;
+}
+
+function hasHiddenValidationWarnings(
+    warnings
+) {
+
+    return warnings.some(warning => {
+
+        return (
+            warning.details &&
+            warning.details.length >
+                validationWarningPreviewLimit
+        );
+    });
+}
+
+function getExpandableWarningCount(
+    warnings
+) {
+
+    return warnings.reduce(
+        (total, warning) => {
+
+            if (
+                warning.details &&
+                warning.details.length >
+                    validationWarningPreviewLimit
+            ) {
+
+                return total +
+                    warning.details.length;
+            }
+
+            return total;
+        },
+        0
+    );
 }
 
 function showToast(

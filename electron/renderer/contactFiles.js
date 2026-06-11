@@ -92,6 +92,16 @@
                 "editorAddColumnBtn"
             );
 
+        const editorSearchInput =
+            document.getElementById(
+                "editorSearchInput"
+            );
+
+        const editorClearSearchBtn =
+            document.getElementById(
+                "editorClearSearchBtn"
+            );
+
         const contactTableEditor =
             document.getElementById(
                 "contactTableEditor"
@@ -100,6 +110,7 @@
         let selectedContactFileId = null;
         let editorFile = null;
         let editorRows = [];
+        let editorSearchQuery = "";
         let controlsDisabled = false;
 
         refreshSavedContactsBtn.addEventListener(
@@ -297,6 +308,33 @@
                 insertEditorColumn(
                     editorRows[0]?.length || 0
                 );
+            }
+        );
+
+        editorSearchInput.addEventListener(
+            "input",
+            () => {
+
+                editorSearchQuery =
+                    editorSearchInput.value;
+
+                renderContactTableEditor();
+            }
+        );
+
+        editorClearSearchBtn.addEventListener(
+            "click",
+            () => {
+
+                editorSearchQuery =
+                    "";
+
+                editorSearchInput.value =
+                    "";
+
+                renderContactTableEditor();
+
+                editorSearchInput.focus();
             }
         );
 
@@ -581,6 +619,9 @@
             file
         ) {
 
+            const isNewEditorFile =
+                editorFile?.id !== file.id;
+
             editorFile =
                 file;
 
@@ -589,17 +630,27 @@
                     return [...row];
                 });
 
+            if (isNewEditorFile) {
+
+                editorSearchQuery =
+                    "";
+
+                editorSearchInput.value =
+                    "";
+            }
+
             editorFileNameInput.value =
                 file.fileName;
 
             editorDescriptionInput.value =
                 file.description || "";
 
-            renderEditorMeta();
             renderContactTableEditor();
         }
 
-        function renderEditorMeta() {
+        function renderEditorMeta(
+            matchingRowIndexes = getMatchingEditorRowIndexes()
+        ) {
 
             if (!editorFile) {
 
@@ -620,7 +671,7 @@
                 ].join("\n");
 
             editorTableSummary.innerText =
-                `Table rows: ${Math.max(0, editorRows.length - 1)}. Columns: ${editorRows[0]?.length || 0}.`;
+                getEditorTableSummary(matchingRowIndexes);
         }
 
         function renderContactTableEditor() {
@@ -714,10 +765,13 @@
             const tbody =
                 document.createElement("tbody");
 
-            editorRows.slice(1).forEach((row, rowIndex) => {
+            const matchingRowIndexes =
+                getMatchingEditorRowIndexes();
 
-                const actualRowIndex =
-                    rowIndex + 1;
+            matchingRowIndexes.forEach(actualRowIndex => {
+
+                const row =
+                    editorRows[actualRowIndex];
 
                 const tr =
                     document.createElement("tr");
@@ -767,10 +821,83 @@
             table.appendChild(tbody);
             contactTableEditor.appendChild(table);
 
-            renderEditorMeta();
+            renderEditorMeta(
+                matchingRowIndexes
+            );
+
+            editorClearSearchBtn.disabled =
+                !editorSearchQuery.trim();
+
             setUnsafeControlsDisabled(
                 controlsDisabled
             );
+        }
+
+        function getMatchingEditorRowIndexes() {
+
+            const indexes = [];
+            const query =
+                editorSearchQuery.trim().toLowerCase();
+            const queryDigits =
+                editorSearchQuery.replace(/\D/g, "");
+
+            editorRows.slice(1).forEach((row, rowIndex) => {
+
+                if (
+                    !query ||
+                    rowMatchesEditorSearch(
+                        row,
+                        query,
+                        queryDigits
+                    )
+                ) {
+
+                    indexes.push(rowIndex + 1);
+                }
+            });
+
+            return indexes;
+        }
+
+        function rowMatchesEditorSearch(
+            row,
+            query,
+            queryDigits
+        ) {
+
+            return row.some(value => {
+
+                const text =
+                    String(value || "");
+                const normalizedText =
+                    text.toLowerCase();
+
+                if (normalizedText.includes(query)) {
+
+                    return true;
+                }
+
+                if (!queryDigits) {
+
+                    return false;
+                }
+
+                return text
+                    .replace(/\D/g, "")
+                    .includes(queryDigits);
+            });
+        }
+
+        function getEditorTableSummary(
+            matchingRowIndexes
+        ) {
+
+            const totalRows =
+                Math.max(0, editorRows.length - 1);
+            const columnCount =
+                editorRows[0]?.length || 0;
+
+            return `Showing ${matchingRowIndexes.length} of ${totalRows} contacts. Columns: ${columnCount}.`;
         }
 
         function createInlineControls(
