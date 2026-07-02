@@ -3,10 +3,12 @@ const path = require("path");
 const XLSX = require("xlsx");
 const { generateMessage } = require("./template");
 const { sleep, randomDelay, formatPhone } = require("./utils");
-const { validateMediaFile, isImage } = require("./media");
+const { validateMediaFile } = require("./media");
 const { validatePhone } = require("./validator");
 const { getPhoneValue } = require("./phoneColumn");
 const broadcastController = require("./broadcastController");
+const defaultMessagingService =
+  require("./services/whatsappService");
 const { createObjectCsvWriter } = require("csv-writer");
 
 async function sendBroadcast(client, contacts, options) {
@@ -22,7 +24,9 @@ async function sendBroadcast(client, contacts, options) {
     onProgress,
     onCountersUpdate,
     logsDir:
-      customLogsDir
+      customLogsDir,
+    messagingService =
+      defaultMessagingService
   } = options;
 
   // Ensure logs directory exists
@@ -284,7 +288,7 @@ async function sendBroadcast(client, contacts, options) {
 
           try {
 
-            await sendMediaMessage(
+            await messagingService.sendMedia(
               client,
               chatId,
               mediaFile,
@@ -335,7 +339,11 @@ async function sendBroadcast(client, contacts, options) {
         !mediaSent
       ) {
 
-        await client.sendText(chatId, message);
+        await messagingService.sendText(
+          client,
+          chatId,
+          message
+        );
 
         textSent = true;
       }
@@ -589,37 +597,6 @@ async function sendBroadcast(client, contacts, options) {
     successFile,
     counters: getCounters()
   };
-}
-
-async function sendMediaMessage(
-  client,
-  chatId,
-  mediaFile,
-  mediaValidation,
-  message
-) {
-
-  const normalizedMediaPath =
-    path.resolve(mediaFile);
-
-  if (isImage(mediaValidation.extension)) {
-
-    await client.sendImage(
-      chatId,
-      normalizedMediaPath,
-      path.basename(normalizedMediaPath),
-      message
-    );
-
-    return;
-  }
-
-  await client.sendFile(
-    chatId,
-    normalizedMediaPath,
-    path.basename(normalizedMediaPath),
-    message
-  );
 }
 
 function createContactLogEntry({
