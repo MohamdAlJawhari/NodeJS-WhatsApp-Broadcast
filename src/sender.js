@@ -26,7 +26,9 @@ async function sendBroadcast(client, contacts, options) {
     logsDir:
       customLogsDir,
     messagingService =
-      defaultMessagingService
+      defaultMessagingService,
+    recipientResolver =
+      resolveWhatsAppRecipient
   } = options;
 
   // Ensure logs directory exists
@@ -173,8 +175,11 @@ async function sendBroadcast(client, contacts, options) {
 
     const contact = contacts[i];
 
+    const recipient =
+      recipientResolver(contact);
+
     const rawPhone =
-      getPhoneValue(contact);
+      recipient.rawRecipient;
 
     const logPhone =
       formatLogPhone(rawPhone);
@@ -188,13 +193,10 @@ async function sendBroadcast(client, contacts, options) {
       `\n[${progress}%] Processing ${i + 1}/${contacts.length}`
     );
 
-    // Validate phone number
-    const phoneValidation = validatePhone(rawPhone);
-
-    if (!phoneValidation.valid) {
+    if (!recipient.valid) {
 
       const reason =
-        sanitizeLogText(phoneValidation.reason);
+        sanitizeLogText(recipient.reason);
 
       console.log(`Skipped: ${logPhone}`);
       console.log(reason);
@@ -231,7 +233,7 @@ async function sendBroadcast(client, contacts, options) {
       continue;
     }
 
-    const chatId = formatPhone(phoneValidation.phone);
+    const chatId = recipient.chatId;
 
     // Generate personalized message
     const message = generateMessage(template, contact);
@@ -596,6 +598,34 @@ async function sendBroadcast(client, contacts, options) {
     failedRetryFile,
     successFile,
     counters: getCounters()
+  };
+}
+
+function resolveWhatsAppRecipient(contact) {
+
+  const rawPhone =
+    getPhoneValue(contact);
+
+  const phoneValidation =
+    validatePhone(rawPhone);
+
+  if (!phoneValidation.valid) {
+
+    return {
+      valid: false,
+      rawRecipient:
+        rawPhone,
+      reason:
+        phoneValidation.reason
+    };
+  }
+
+  return {
+    valid: true,
+    rawRecipient:
+      rawPhone,
+    chatId:
+      formatPhone(phoneValidation.phone)
   };
 }
 

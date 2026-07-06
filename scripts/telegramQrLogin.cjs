@@ -45,7 +45,8 @@ async function main() {
       config.apiId,
       config.apiHash,
       {
-        connectionRetries: 5
+        connectionRetries: 5,
+        useWSS: true
       }
     );
 
@@ -236,11 +237,20 @@ function createTelegramLoginUrl(token) {
   return `tg://login?token=${toBase64Url(token)}`;
 }
 
-main().catch(error => {
+if (require.main === module) {
 
-  console.error(
-    `Telegram QR login failed: ${error.message}`
-  );
+  main().catch(error => {
 
-  process.exitCode = 1;
-});
+    console.error(
+      `Telegram QR login failed: ${error.message}`
+    );
+
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  createTelegramLoginUrl,
+  main,
+  toBase64Url
+};
