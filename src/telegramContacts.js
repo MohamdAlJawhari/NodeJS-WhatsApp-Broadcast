@@ -1,7 +1,8 @@
 const XLSX = require("xlsx");
 
 const {
-  TELEGRAM_RECIPIENT_COLUMN
+  getTelegramRecipientRequirementLabel,
+  hasTelegramRecipientHeader
 } = require("./telegramRecipient");
 
 function loadTelegramContacts(filePath) {
@@ -37,10 +38,10 @@ function loadTelegramContacts(filePath) {
       return String(header).trim();
     });
 
-  if (!headers.includes(TELEGRAM_RECIPIENT_COLUMN)) {
+  if (!hasTelegramRecipientHeader(headers)) {
 
     throw new Error(
-      `Telegram contacts file must contain ${TELEGRAM_RECIPIENT_COLUMN} column. Available columns: ${headers.join(", ")}.`
+      `Telegram contacts file must contain ${getTelegramRecipientRequirementLabel()}. Available columns: ${headers.join(", ")}.`
     );
   }
 

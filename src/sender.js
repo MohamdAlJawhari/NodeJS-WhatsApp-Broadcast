@@ -176,7 +176,12 @@ async function sendBroadcast(client, contacts, options) {
     const contact = contacts[i];
 
     const recipient =
-      recipientResolver(contact);
+      await recipientResolver(contact, {
+        client,
+        contact,
+        index: i,
+        messagingService
+      });
 
     const rawPhone =
       recipient.rawRecipient;

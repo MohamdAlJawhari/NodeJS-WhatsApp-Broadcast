@@ -6,6 +6,10 @@ const {
   TELEGRAM_RECIPIENT_COLUMN
 } = require("./telegramRecipient");
 
+const {
+  resolveTelegramSendRecipient
+} = require("./telegramRecipientResolver");
+
 async function sendTelegramBroadcast(
   client,
   contacts,
@@ -20,7 +24,10 @@ async function sendTelegramBroadcast(
       messagingService:
         telegramService,
       recipientResolver:
-        resolveTelegramRecipient
+        contact => resolveTelegramSendRecipient(
+          client,
+          contact
+        )
     }
   );
 }
@@ -28,5 +35,6 @@ async function sendTelegramBroadcast(
 module.exports = {
   sendTelegramBroadcast,
   resolveTelegramRecipient,
+  resolveTelegramSendRecipient,
   TELEGRAM_RECIPIENT_COLUMN
 };

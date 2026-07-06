@@ -7,6 +7,7 @@ const {
   loadTelegramContacts
 } = require("../src/telegramContacts");
 const {
+  getTelegramRecipientRequirementLabel,
   TELEGRAM_RECIPIENT_COLUMN
 } = require("../src/telegramRecipient");
 const {
@@ -207,7 +208,7 @@ function printUsage() {
       "  node scripts\\telegramBroadcastTest.cjs --contacts path\\to\\telegram-contacts.xlsx",
       "",
       "Contacts file must include:",
-      `  ${TELEGRAM_RECIPIENT_COLUMN}`,
+      `  ${getTelegramRecipientRequirementLabel()}`,
       "",
       "Default recipient is me."
     ].join("\n")

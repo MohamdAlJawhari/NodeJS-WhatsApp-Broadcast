@@ -34,8 +34,9 @@ const {
 } = require("../src/telegramSender");
 
 const {
-  resolveTelegramRecipient,
-  TELEGRAM_RECIPIENT_COLUMN
+  getTelegramRecipientLabel,
+  getTelegramRecipientRequirementLabel,
+  resolveTelegramRecipient
 } = require("../src/telegramRecipient");
 
 const {
@@ -841,7 +842,7 @@ function buildTelegramRecipientValidationSummary(
     invalidTitle:
       "Invalid Telegram recipients",
     noValidMessage:
-      `Fix the contacts file before starting a Telegram broadcast. It must contain ${TELEGRAM_RECIPIENT_COLUMN}.`,
+      `Fix the contacts file before starting a Telegram broadcast. It must contain ${getTelegramRecipientRequirementLabel()}.`,
     noValidTitle:
       "No valid Telegram recipients",
     validCount:
@@ -1000,7 +1001,7 @@ ipcMain.handle(
 
           phone:
             provider === MESSAGING_PROVIDERS.TELEGRAM
-              ? contact[TELEGRAM_RECIPIENT_COLUMN]
+              ? getTelegramRecipientLabel(contact)
               : getPhoneValue(contact),
 
           message:
