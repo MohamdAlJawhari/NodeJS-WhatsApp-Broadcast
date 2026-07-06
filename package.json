@@ -20,6 +20,7 @@
     "dotenv": "^17.4.2",
     "libphonenumber-js": "^1.12.43",
     "puppeteer": "^24.43.0",
+    "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0",
     "telegram": "^2.26.22",
     "xlsx": "^0.18.5"

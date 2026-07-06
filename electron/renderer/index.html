@@ -57,11 +57,11 @@
                         </p>
 
                         <h2>
-                            Connect WhatsApp
+                            Connect Channels
                         </h2>
 
                         <p>
-                            Start the WhatsApp session first, then prepare contacts, media, and message while it connects.
+                            Connect WhatsApp or Telegram, then prepare contacts, media, and message.
                         </p>
 
                     </div>
@@ -72,13 +72,31 @@
                             Connect WhatsApp
                         </button>
 
+                        <button id="connectTelegramBtn" type="button">
+                            Connect Telegram
+                        </button>
+
                         <p id="connectionTimer" class="connection-timer">
                             Connection time: 00:00
+                        </p>
+
+                        <p id="telegramConnectionStatus" class="connection-timer">
+                            Telegram not connected
                         </p>
 
                     </div>
 
                     <img id="qrImage" class="qr-image">
+
+                    <div id="telegramQrPanel" class="telegram-qr-panel hidden">
+
+                        <img id="telegramQrImage" class="qr-image">
+
+                        <a id="telegramLoginLink" href="#" target="_blank" rel="noreferrer">
+                            Open Telegram login link
+                        </a>
+
+                    </div>
 
                 </section>
 

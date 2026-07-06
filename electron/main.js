@@ -11,6 +11,7 @@ const {
 
 const path = require("path");
 const fs = require("fs");
+const qrcode = require("qrcode");
 
 require("dotenv").config({
   path: path.join(__dirname, "..", ".env"),
@@ -23,6 +24,10 @@ const {
 
 const telegramService =
   require("../src/services/telegramService");
+
+const {
+  loginWithTelegramQr
+} = require("../src/services/telegramLoginService");
 
 const {
   sendTelegramBroadcast
@@ -1146,6 +1151,93 @@ ipcMain.handle(
       };
 
     } catch (error) {
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+);
+
+// Connect to Telegram
+ipcMain.handle(
+  "connect-telegram",
+  async (event) => {
+
+    try {
+
+      const result =
+        await loginWithTelegramQr({
+
+          onError: async (error) => {
+
+            event.sender.send(
+              "telegram-connection-status",
+              `Telegram login error: ${error.message}`
+            );
+
+            return false;
+          },
+
+          onPassword: async () => {
+
+            throw new Error(
+              "Telegram two-step verification is enabled. Run node scripts\\telegramQrLogin.cjs to connect this account."
+            );
+          },
+
+          onQrCode: async (qrCode) => {
+
+            const qrDataUrl =
+              await qrcode.toDataURL(
+                qrCode.loginUrl,
+                {
+                  margin: 1,
+                  width: 260
+                }
+              );
+
+            event.sender.send(
+              "telegram-qr-code",
+              {
+                expiresAt:
+                  qrCode.expiresAt.toISOString(),
+                loginUrl:
+                  qrCode.loginUrl,
+                qrDataUrl
+              }
+            );
+          },
+
+          onStatus: async (message) => {
+
+            event.sender.send(
+              "telegram-connection-status",
+              message
+            );
+          }
+        });
+
+      event.sender.send(
+        "telegram-connection-status",
+        "CONNECTED"
+      );
+
+      return {
+        success: true,
+        alreadyConnected:
+          result.alreadyAuthorized,
+        sessionPath:
+          result.sessionPath
+      };
+
+    } catch (error) {
+
+      event.sender.send(
+        "telegram-connection-status",
+        "ERROR"
+      );
 
       return {
         success: false,

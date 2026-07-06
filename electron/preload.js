@@ -74,15 +74,32 @@ contextBridge.exposeInMainWorld(
         "connect-whatsapp"
       ),
 
+    connectTelegram: () =>
+      ipcRenderer.invoke(
+        "connect-telegram"
+      ),
+
     onQRCode: (callback) =>
       ipcRenderer.on(
         "qr-code",
         (_, qr) => callback(qr)
       ),
 
+    onTelegramQRCode: (callback) =>
+      ipcRenderer.on(
+        "telegram-qr-code",
+        (_, qr) => callback(qr)
+      ),
+
     onConnectionStatus: (callback) =>
       ipcRenderer.on(
         "connection-status",
+        (_, status) => callback(status)
+      ),
+
+    onTelegramConnectionStatus: (callback) =>
+      ipcRenderer.on(
+        "telegram-connection-status",
         (_, status) => callback(status)
       ),
 

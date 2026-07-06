@@ -3,9 +3,34 @@ const connectBtn =
         "connectBtn"
     );
 
+const connectTelegramBtn =
+    document.getElementById(
+        "connectTelegramBtn"
+    );
+
 const qrImage =
     document.getElementById(
         "qrImage"
+    );
+
+const telegramQrPanel =
+    document.getElementById(
+        "telegramQrPanel"
+    );
+
+const telegramQrImage =
+    document.getElementById(
+        "telegramQrImage"
+    );
+
+const telegramLoginLink =
+    document.getElementById(
+        "telegramLoginLink"
+    );
+
+const telegramConnectionStatus =
+    document.getElementById(
+        "telegramConnectionStatus"
     );
 
 const connectionStatus =
@@ -200,6 +225,10 @@ let mediaFile = null;
 let isWhatsAppConnecting = false;
 
 let isWhatsAppConnected = false;
+
+let isTelegramConnecting = false;
+
+let isTelegramConnected = false;
 
 let unsafeControlsDisabled = false;
 
@@ -617,6 +646,89 @@ connectBtn.addEventListener(
     }
 );
 
+connectTelegramBtn.addEventListener(
+    "click",
+    async () => {
+
+        if (isTelegramConnecting) {
+
+            return;
+        }
+
+        if (isTelegramConnected) {
+
+            showToast(
+                "Telegram is already connected",
+                "info"
+            );
+
+            return;
+        }
+
+        isTelegramConnecting =
+            true;
+
+        updateTelegramConnectButton();
+
+        setTelegramConnectionStatus(
+            "Connecting..."
+        );
+
+        let result;
+
+        try {
+
+            result =
+                await window.electronAPI
+                    .connectTelegram();
+
+        } catch (error) {
+
+            result = {
+                success: false,
+                error:
+                    error.message
+            };
+        }
+
+        if (!result.success) {
+
+            setTelegramConnectionStatus(
+                result.error
+            );
+
+            showToast(
+                result.error,
+                "error"
+            );
+
+        } else {
+
+            setTelegramConnectionStatus(
+                "CONNECTED"
+            );
+
+            telegramQrPanel.classList.add(
+                "hidden"
+            );
+
+            showToast(
+                result.alreadyConnected
+                    ? "Telegram is already connected"
+                    : "Telegram connected",
+                "success"
+            );
+        }
+
+        isTelegramConnecting =
+            false;
+
+        updateButtons(
+            currentBroadcastState
+        );
+    }
+);
+
 window.electronAPI.onQRCode(
     (qr) => {
 
@@ -624,6 +736,28 @@ window.electronAPI.onQRCode(
 
         qrImage.style.display =
             "block";
+    }
+);
+
+window.electronAPI.onTelegramQRCode(
+    (qr) => {
+
+        telegramQrImage.src =
+            qr.qrDataUrl;
+
+        telegramLoginLink.href =
+            qr.loginUrl;
+
+        telegramLoginLink.innerText =
+            "Open Telegram login link";
+
+        telegramQrPanel.classList.remove(
+            "hidden"
+        );
+
+        setTelegramConnectionStatus(
+            "Scan Telegram QR"
+        );
     }
 );
 
@@ -649,6 +783,23 @@ window.electronAPI
                 showToast(
                     "WhatsApp connected",
                     "success"
+                );
+            }
+        }
+    );
+
+window.electronAPI
+    .onTelegramConnectionStatus(
+        (status) => {
+
+            setTelegramConnectionStatus(
+                status
+            );
+
+            if (status === "CONNECTED") {
+
+                telegramQrPanel.classList.add(
+                    "hidden"
                 );
             }
         }
@@ -790,6 +941,54 @@ function updateConnectButton() {
         "Connect WhatsApp";
 
     connectBtn.disabled =
+        unsafeControlsDisabled;
+}
+
+function setTelegramConnectionStatus(
+    text
+) {
+
+    const nextText =
+        text ||
+        "Telegram not connected";
+
+    telegramConnectionStatus.innerText =
+        nextText;
+
+    isTelegramConnected =
+        nextText === "CONNECTED";
+
+    updateTelegramConnectButton();
+}
+
+function updateTelegramConnectButton() {
+
+    if (isTelegramConnected) {
+
+        connectTelegramBtn.innerText =
+            "Telegram Connected";
+
+        connectTelegramBtn.disabled =
+            true;
+
+        return;
+    }
+
+    if (isTelegramConnecting) {
+
+        connectTelegramBtn.innerText =
+            "Connecting Telegram...";
+
+        connectTelegramBtn.disabled =
+            true;
+
+        return;
+    }
+
+    connectTelegramBtn.innerText =
+        "Connect Telegram";
+
+    connectTelegramBtn.disabled =
         unsafeControlsDisabled;
 }
 
@@ -1774,6 +1973,7 @@ function setUnsafeControlsDisabled(
     });
 
     updateConnectButton();
+    updateTelegramConnectButton();
 
     templateInput.disabled =
         disabled;
