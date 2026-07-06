@@ -11,9 +11,10 @@ contextBridge.exposeInMainWorld(
         "select-media-file"
       ),
 
-    selectContactsFile: () =>
+    selectContactsFile: (options) =>
       ipcRenderer.invoke(
-        "select-contacts-file"
+        "select-contacts-file",
+        options
       ),
 
     listSavedContactFiles: () =>

@@ -28,6 +28,11 @@ const status =
         "status"
     );
 
+const providerSelect =
+    document.getElementById(
+        "providerSelect"
+    );
+
 const senderNavBtn =
     document.getElementById(
         "senderNavBtn"
@@ -218,6 +223,8 @@ let currentValidationResult = null;
 
 const validationWarningPreviewLimit = 5;
 
+const DEFAULT_PROVIDER = "whatsapp";
+
 const broadcastStatusLabels = {
     IDLE: "Ready",
     RUNNING: "Sending",
@@ -288,6 +295,22 @@ contactsBackToSenderBtn.addEventListener(
     }
 );
 
+providerSelect.addEventListener(
+    "change",
+    async () => {
+
+        resetValidationWarningDisplay();
+
+        await refreshValidationWarnings();
+    }
+);
+
+function getSelectedProvider() {
+
+    return providerSelect.value ||
+        DEFAULT_PROVIDER;
+}
+
 async function loadContactsFile({
     showContactsPageAfterLoad = false
 } = {}) {
@@ -297,7 +320,10 @@ async function loadContactsFile({
 
     const result =
         await window.electronAPI
-            .selectContactsFile();
+            .selectContactsFile({
+                provider:
+                    getSelectedProvider()
+            });
 
     if (!result.success) {
 
@@ -424,7 +450,9 @@ previewBtn.addEventListener(
 
                     contacts,
                     template,
-                    mediaFile
+                    mediaFile,
+                    provider:
+                        getSelectedProvider()
                 });
 
         previewContainer.innerHTML =
@@ -1260,6 +1288,8 @@ async function runBroadcast(
             await window.electronAPI
                 .startBroadcast({
 
+                    provider:
+                        getSelectedProvider(),
                     contacts: targetContacts,
                     template,
                     mediaFile
@@ -1367,6 +1397,8 @@ async function refreshValidationWarnings(
             await window.electronAPI
                 .validateBroadcastInput({
 
+                    provider:
+                        getSelectedProvider(),
                     contacts: targetContacts,
                     template:
                         templateInput.value,
@@ -1399,6 +1431,8 @@ async function refreshValidationWarnings(
                 }
             ],
             summary: {
+                provider:
+                    getSelectedProvider(),
                 totalContacts:
                     targetContacts.length,
                 validPhones: 0,
@@ -1427,6 +1461,8 @@ function renderValidationWarnings(
 
     const summary =
         result.summary || {
+            provider:
+                getSelectedProvider(),
             totalContacts: 0,
             validPhones: 0,
             invalidPhones: 0,
@@ -1453,6 +1489,23 @@ function renderValidationWarnings(
         return;
     }
 
+    const recipientLabel =
+        summary.provider === "telegram"
+            ? "recipients"
+            : "phones";
+
+    const validRecipients =
+        summary.validRecipients ??
+        summary.validPhones;
+
+    const invalidRecipients =
+        summary.invalidRecipients ??
+        summary.invalidPhones;
+
+    const duplicateRecipients =
+        summary.duplicateRecipients ??
+        summary.duplicatePhones;
+
     if (
         warnings.some(warning => {
             return warning.type === "error";
@@ -1471,7 +1524,7 @@ function renderValidationWarnings(
     }
 
     validationSummary.innerText =
-        `${summary.totalContacts} contacts, ${summary.validPhones} valid, ${summary.invalidPhones} invalid, ${summary.duplicatePhones} duplicate`;
+        `${summary.totalContacts} contacts, ${validRecipients} valid ${recipientLabel}, ${invalidRecipients} invalid, ${duplicateRecipients} duplicate`;
 
     warnings.forEach(warning => {
 
@@ -1723,6 +1776,9 @@ function setUnsafeControlsDisabled(
     updateConnectButton();
 
     templateInput.disabled =
+        disabled;
+
+    providerSelect.disabled =
         disabled;
 
     contactFilesUI.setUnsafeControlsDisabled(

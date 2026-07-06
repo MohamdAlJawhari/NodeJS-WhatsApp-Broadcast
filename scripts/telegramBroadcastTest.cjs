@@ -1,9 +1,14 @@
 const path = require("path");
 
 const dotenv = require("dotenv");
-const XLSX = require("xlsx");
 
 const telegramService = require("../src/services/telegramService");
+const {
+  loadTelegramContacts
+} = require("../src/telegramContacts");
+const {
+  TELEGRAM_RECIPIENT_COLUMN
+} = require("../src/telegramRecipient");
 const {
   sendTelegramBroadcast
 } = require("../src/telegramSender");
@@ -12,8 +17,6 @@ const DEFAULT_RECIPIENT = "me";
 const DEFAULT_NAME = "Telegram Test";
 const DEFAULT_TEMPLATE =
   "Telegram broadcast test for {{name}}";
-const TELEGRAM_RECIPIENT_COLUMN =
-  "telegram_recipient";
 
 const appRootDir =
   path.join(__dirname, "..");
@@ -191,82 +194,6 @@ function normalizeOptionalPath(filePath) {
   }
 
   return path.resolve(appRootDir, trimmed);
-}
-
-function loadTelegramContacts(filePath) {
-
-  const workbook =
-    XLSX.readFile(filePath);
-
-  const sheetName =
-    workbook.SheetNames[0];
-
-  const sheet =
-    workbook.Sheets[sheetName];
-
-  const rawRows =
-    XLSX.utils.sheet_to_json(
-      sheet,
-      {
-        header: 1,
-        defval: ""
-      }
-    );
-
-  if (rawRows.length < 2) {
-
-    throw new Error(
-      "Telegram contacts file is empty."
-    );
-  }
-
-  const headers =
-    rawRows[0].map(header => {
-      return String(header).trim();
-    });
-
-  if (!headers.includes(TELEGRAM_RECIPIENT_COLUMN)) {
-
-    throw new Error(
-      `Telegram contacts file must contain ${TELEGRAM_RECIPIENT_COLUMN} column.`
-    );
-  }
-
-  const contacts =
-    rawRows
-      .slice(1)
-      .map(row => {
-
-        const contact = {};
-
-        headers.forEach((header, index) => {
-
-          if (header) {
-
-            contact[header] =
-              String(row[index] ?? "").trim();
-          }
-        });
-
-        return contact;
-      })
-      .filter(contact => {
-
-        return Object
-          .values(contact)
-          .some(value => {
-            return String(value).trim() !== "";
-          });
-      });
-
-  if (!contacts.length) {
-
-    throw new Error(
-      "Telegram contacts file has no contacts."
-    );
-  }
-
-  return contacts;
 }
 
 function printUsage() {

@@ -21,6 +21,18 @@ const {
   sendBroadcast
 } = require("../src/sender");
 
+const telegramService =
+  require("../src/services/telegramService");
+
+const {
+  sendTelegramBroadcast
+} = require("../src/telegramSender");
+
+const {
+  resolveTelegramRecipient,
+  TELEGRAM_RECIPIENT_COLUMN
+} = require("../src/telegramRecipient");
+
 const {
   generateMessage
 } = require("../src/template");
@@ -28,6 +40,10 @@ const {
 const {
   loadContacts
 } = require("../src/contacts");
+
+const {
+  loadTelegramContacts
+} = require("../src/telegramContacts");
 
 const {
   validatePhone,
@@ -62,6 +78,38 @@ const {
 } = require("./contactFiles");
 
 let client = null;
+
+const MESSAGING_PROVIDERS = {
+  TELEGRAM: "telegram",
+  WHATSAPP: "whatsapp"
+};
+
+function normalizeMessagingProvider(provider) {
+
+  const normalized =
+    String(provider || "")
+      .trim()
+      .toLowerCase();
+
+  if (!normalized) {
+
+    return MESSAGING_PROVIDERS.WHATSAPP;
+  }
+
+  if (normalized === MESSAGING_PROVIDERS.TELEGRAM) {
+
+    return MESSAGING_PROVIDERS.TELEGRAM;
+  }
+
+  if (normalized === MESSAGING_PROVIDERS.WHATSAPP) {
+
+    return MESSAGING_PROVIDERS.WHATSAPP;
+  }
+
+  throw new Error(
+    `Unsupported messaging provider: ${provider}`
+  );
+}
 
 const contactFiles =
   createContactFileService({
@@ -500,6 +548,9 @@ function deleteLogFiles(kind) {
 
 function buildValidationWarnings(data = {}) {
 
+  const provider =
+    normalizeMessagingProvider(data.provider);
+
   const contacts =
     Array.isArray(data.contacts)
       ? data.contacts
@@ -512,9 +563,12 @@ function buildValidationWarnings(data = {}) {
     data.mediaFile || null;
 
   const warnings = [];
-  const invalidPhones = [];
-  const duplicatePhones = [];
-  const seenPhones = new Set();
+  const recipientValidation =
+    buildRecipientValidationSummary(
+      provider,
+      contacts
+    );
+
   const mediaValidation =
     mediaFile
       ? validateMediaFile(mediaFile)
@@ -532,75 +586,46 @@ function buildValidationWarnings(data = {}) {
     });
   }
 
-  contacts.forEach((contact, index) => {
-
-    const rawPhone =
-      getPhoneValue(contact);
-
-    const validation =
-      validatePhone(rawPhone);
-
-    if (!validation.valid) {
-
-      invalidPhones.push({
-        row: index + 2,
-        phone: String(rawPhone || ""),
-        reason: validation.reason
-      });
-
-      return;
-    }
-
-    if (seenPhones.has(validation.phone)) {
-
-      duplicatePhones.push({
-        row: index + 2,
-        phone: String(rawPhone)
-      });
-
-      return;
-    }
-
-    seenPhones.add(validation.phone);
-  });
-
   if (
     contacts.length > 0 &&
-    seenPhones.size === 0
+    recipientValidation.validCount === 0
   ) {
 
     warnings.push({
       type: "error",
-      title: "No valid phone numbers",
+      title:
+        recipientValidation.noValidTitle,
       message:
-        "Fix the contacts file before starting a broadcast."
+        recipientValidation.noValidMessage
     });
   }
 
-  if (invalidPhones.length > 0) {
+  if (recipientValidation.invalid.length > 0) {
 
     warnings.push({
       type: "warning",
-      title: "Invalid phone numbers",
+      title:
+        recipientValidation.invalidTitle,
       message:
-        `${invalidPhones.length} contact(s) will be skipped during sending.`,
-      details: invalidPhones
+        `${recipientValidation.invalid.length} contact(s) will be skipped during sending.`,
+      details: recipientValidation.invalid
         .map(item => {
-          return `Row ${item.row}: ${item.phone || "(blank)"} - ${item.reason}`;
+          return `Row ${item.row}: ${item.value || "(blank)"} - ${item.reason}`;
         })
     });
   }
 
-  if (duplicatePhones.length > 0) {
+  if (recipientValidation.duplicates.length > 0) {
 
     warnings.push({
       type: "warning",
-      title: "Duplicate phone numbers",
+      title:
+        recipientValidation.duplicateTitle,
       message:
-        `${duplicatePhones.length} duplicate contact(s) may receive repeated messages.`,
-      details: duplicatePhones
+        `${recipientValidation.duplicates.length} duplicate contact(s) may receive repeated messages.`,
+      details: recipientValidation.duplicates
         .map(item => {
-          return `Row ${item.row}: ${item.phone}`;
+          return `Row ${item.row}: ${item.value}`;
         })
     });
   }
@@ -664,11 +689,158 @@ function buildValidationWarnings(data = {}) {
       }),
     warnings,
     summary: {
+      provider,
       totalContacts: contacts.length,
-      validPhones: seenPhones.size,
-      invalidPhones: invalidPhones.length,
-      duplicatePhones: duplicatePhones.length
+      validPhones:
+        recipientValidation.validCount,
+      invalidPhones:
+        recipientValidation.invalid.length,
+      duplicatePhones:
+        recipientValidation.duplicates.length,
+      validRecipients:
+        recipientValidation.validCount,
+      invalidRecipients:
+        recipientValidation.invalid.length,
+      duplicateRecipients:
+        recipientValidation.duplicates.length
     }
+  };
+}
+
+function buildRecipientValidationSummary(
+  provider,
+  contacts
+) {
+
+  if (provider === MESSAGING_PROVIDERS.TELEGRAM) {
+
+    return buildTelegramRecipientValidationSummary(
+      contacts
+    );
+  }
+
+  return buildWhatsAppRecipientValidationSummary(
+    contacts
+  );
+}
+
+function buildWhatsAppRecipientValidationSummary(
+  contacts
+) {
+
+  const invalid = [];
+  const duplicates = [];
+  const seenPhones = new Set();
+
+  contacts.forEach((contact, index) => {
+
+    const rawPhone =
+      getPhoneValue(contact);
+
+    const validation =
+      validatePhone(rawPhone);
+
+    if (!validation.valid) {
+
+      invalid.push({
+        row: index + 2,
+        value: String(rawPhone || ""),
+        reason: validation.reason
+      });
+
+      return;
+    }
+
+    if (seenPhones.has(validation.phone)) {
+
+      duplicates.push({
+        row: index + 2,
+        value: String(rawPhone)
+      });
+
+      return;
+    }
+
+    seenPhones.add(validation.phone);
+  });
+
+  return {
+    duplicateTitle:
+      "Duplicate phone numbers",
+    duplicates,
+    invalid,
+    invalidTitle:
+      "Invalid phone numbers",
+    noValidMessage:
+      "Fix the contacts file before starting a broadcast.",
+    noValidTitle:
+      "No valid phone numbers",
+    validCount:
+      seenPhones.size
+  };
+}
+
+function buildTelegramRecipientValidationSummary(
+  contacts
+) {
+
+  const invalid = [];
+  const duplicates = [];
+  const seenRecipients = new Set();
+
+  contacts.forEach((contact, index) => {
+
+    const validation =
+      resolveTelegramRecipient(contact);
+
+    const rawRecipient =
+      validation.rawRecipient;
+
+    if (!validation.valid) {
+
+      invalid.push({
+        row: index + 2,
+        value:
+          String(rawRecipient || ""),
+        reason:
+          validation.reason
+      });
+
+      return;
+    }
+
+    const recipientKey =
+      String(validation.chatId)
+        .trim()
+        .toLowerCase();
+
+    if (seenRecipients.has(recipientKey)) {
+
+      duplicates.push({
+        row: index + 2,
+        value:
+          String(rawRecipient)
+      });
+
+      return;
+    }
+
+    seenRecipients.add(recipientKey);
+  });
+
+  return {
+    duplicateTitle:
+      "Duplicate Telegram recipients",
+    duplicates,
+    invalid,
+    invalidTitle:
+      "Invalid Telegram recipients",
+    noValidMessage:
+      `Fix the contacts file before starting a Telegram broadcast. It must contain ${TELEGRAM_RECIPIENT_COLUMN}.`,
+    noValidTitle:
+      "No valid Telegram recipients",
+    validCount:
+      seenRecipients.size
   };
 }
 
@@ -714,7 +886,10 @@ app.whenReady().then(() => {
 // Open contacts file
 ipcMain.handle(
   "select-contacts-file",
-  async () => {
+  async (_, options = {}) => {
+
+    const provider =
+      normalizeMessagingProvider(options.provider);
 
     const result =
       await dialog.showOpenDialog({
@@ -747,32 +922,38 @@ ipcMain.handle(
     try {
 
       const contacts =
-        loadContacts(filePath);
+        provider === MESSAGING_PROVIDERS.TELEGRAM
+          ? loadTelegramContacts(filePath)
+          : loadContacts(filePath);
 
       let savedFilePath = null;
       let savedDuplicate = false;
       let archiveError = null;
 
-      try {
+      if (provider === MESSAGING_PROVIDERS.WHATSAPP) {
 
-        const archiveResult =
-          contactFiles.archiveContactFile(filePath);
+        try {
 
-        savedFilePath =
-          archiveResult.filePath;
+          const archiveResult =
+            contactFiles.archiveContactFile(filePath);
 
-        savedDuplicate =
-          archiveResult.duplicate;
+          savedFilePath =
+            archiveResult.filePath;
 
-      } catch (error) {
+          savedDuplicate =
+            archiveResult.duplicate;
 
-        archiveError =
-          error.message;
+        } catch (error) {
+
+          archiveError =
+            error.message;
+        }
       }
 
       return {
         success: true,
         filePath,
+        provider,
         savedFilePath,
         savedDuplicate,
         archiveError,
@@ -803,6 +984,9 @@ ipcMain.handle(
       mediaFile
     } = data;
 
+    const provider =
+      normalizeMessagingProvider(data.provider);
+
     const preview = contacts
       .slice(0, 5)
       .map(contact => {
@@ -810,7 +994,9 @@ ipcMain.handle(
         return {
 
           phone:
-            getPhoneValue(contact),
+            provider === MESSAGING_PROVIDERS.TELEGRAM
+              ? contact[TELEGRAM_RECIPIENT_COLUMN]
+              : getPhoneValue(contact),
 
           message:
             generateMessage(
@@ -1130,7 +1316,19 @@ ipcMain.handle(
 
     try {
 
-      if (!client) {
+      const {
+        contacts,
+        template,
+        mediaFile
+      } = data;
+
+      const provider =
+        normalizeMessagingProvider(data.provider);
+
+      if (
+        provider === MESSAGING_PROVIDERS.WHATSAPP &&
+        !client
+      ) {
 
         return {
           success: false,
@@ -1139,17 +1337,12 @@ ipcMain.handle(
         };
       }
 
-      const {
-        contacts,
-        template,
-        mediaFile
-      } = data;
-
       const validation =
         buildValidationWarnings({
           contacts,
           template,
-          mediaFile
+          mediaFile,
+          provider
         });
 
       if (!validation.valid) {
@@ -1173,6 +1366,8 @@ ipcMain.handle(
 
       // Progress callback
       const options = {
+
+        provider,
 
         template,
 
@@ -1237,6 +1432,8 @@ ipcMain.handle(
         console.log;
 
       let broadcastResult;
+      let activeClient =
+        null;
 
       try {
 
@@ -1253,16 +1450,44 @@ ipcMain.handle(
           originalLog(...args);
         };
 
-        broadcastResult =
-          await sendBroadcast(
-            client,
-            contacts,
-            options
-          );
+        if (provider === MESSAGING_PROVIDERS.TELEGRAM) {
+
+          activeClient =
+            await telegramService.initialize();
+
+          broadcastResult =
+            await sendTelegramBroadcast(
+              activeClient,
+              contacts,
+              options
+            );
+
+        } else {
+
+          activeClient =
+            client;
+
+          broadcastResult =
+            await sendBroadcast(
+              activeClient,
+              contacts,
+              options
+            );
+        }
 
       } finally {
 
         console.log = originalLog;
+
+        if (
+          provider === MESSAGING_PROVIDERS.TELEGRAM &&
+          activeClient
+        ) {
+
+          await telegramService.disconnect(
+            activeClient
+          );
+        }
       }
 
       return {
