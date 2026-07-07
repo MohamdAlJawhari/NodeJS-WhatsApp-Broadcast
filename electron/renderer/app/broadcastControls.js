@@ -168,8 +168,12 @@
 
         async function resumeBroadcast() {
 
-            await electronAPI
-                .resumeBroadcast();
+            try {
+                await electronAPI.resumeBroadcast();
+            } catch (error) {
+                showToast(error.message || "Failed to resume broadcast", "error");
+                return;
+            }
 
             setBroadcastStatus(
                 "RUNNING"
@@ -187,8 +191,12 @@
 
         async function stopBroadcast() {
 
-            await electronAPI
-                .stopBroadcast();
+            try {
+                await electronAPI.stopBroadcast();
+            } catch (error) {
+                showToast(error.message || "Failed to stop broadcast", "error");
+                return;
+            }
 
             stopRequested =
                 true;

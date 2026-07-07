@@ -5,6 +5,12 @@ const { createClient } = require("./whatsapp");
 const { sendBroadcast } = require("./sender");
 const { validatePhone, validateTemplateVariables } = require("./validator");
 const { getPhoneValue } = require("./phoneColumn");
+const {
+  REDACTED_CONTACT,
+  redactContactRow,
+  redactSensitiveText,
+  redactSensitiveValue
+} = require("./security/redaction");
 
 async function main() {
   const sessionName = process.env.SESSION_NAME || "employee-session";
@@ -22,7 +28,7 @@ Hello {{name}}, your password is {{password}}. Your username is {{username}}.
 
   console.log("\nPreview first 3 contacts:");
   contacts.slice(0, 3).forEach(contact => {
-    console.log(contact);
+    console.log(redactContactRow(contact));
   });
 
   // Opens WhatsApp and waits until it is ready.
@@ -83,11 +89,14 @@ Hello {{name}}, your password is {{password}}. Your username is {{username}}.
 
     console.log(
       "Phone:",
-      validation.valid
-        ? validation.international
-        : contact.phone
+      redactSensitiveValue(
+        validation.valid
+          ? validation.international
+          : contact.phone,
+        "phone"
+      )
     );
-    console.log(previewMessage);
+    console.log(REDACTED_CONTACT);
 
   });
 
@@ -120,5 +129,8 @@ Hello {{name}}, your password is {{password}}. Your username is {{username}}.
 }
 
 main().catch(error => {
-  console.error("App error:", error);
+  console.error(
+    "App error:",
+    redactSensitiveText(error.message)
+  );
 });

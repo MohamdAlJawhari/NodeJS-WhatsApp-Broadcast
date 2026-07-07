@@ -17,15 +17,12 @@
                     const template =
                         dom.templateInput.value;
 
-                    await electronAPI
-                        .saveTemplate(
-                            template
-                        );
-
-                    showToast(
-                        "Default template saved",
-                        "success"
-                    );
+                    try {
+                        await electronAPI.saveTemplate(template);
+                        showToast("Default template saved", "success");
+                    } catch (error) {
+                        showToast(error.message || "Failed to save template", "error");
+                    }
                 }
             );
         }

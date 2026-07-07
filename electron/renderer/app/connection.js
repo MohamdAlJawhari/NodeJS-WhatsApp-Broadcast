@@ -97,11 +97,11 @@
 
             } else {
 
-                stopConnectionTimer(
-                    "Connected"
-                );
-
                 if (result.alreadyConnected) {
+
+                    stopConnectionTimer(
+                        "Connected"
+                    );
 
                     setConnectionStatus(
                         "CONNECTED"
@@ -112,6 +112,11 @@
                     showToast(
                         "WhatsApp is already connected",
                         "info"
+                    );
+                } else {
+
+                    setConnectionStatus(
+                        "Waiting for QR scan..."
                     );
                 }
             }

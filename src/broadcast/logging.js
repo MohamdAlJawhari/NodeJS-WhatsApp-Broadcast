@@ -1,4 +1,9 @@
 const path = require("path");
+const {
+  REDACTED_CONTACT,
+  redactPhoneLikeText,
+  redactSensitiveText
+} = require("../security/redaction");
 
 function createContactLogEntry({
   contact,
@@ -120,7 +125,7 @@ function addDiagnosticLine(
 ) {
 
   const formatted =
-    formatDiagnosticValue(value);
+    formatDiagnosticValue(value, label);
 
   if (formatted) {
 
@@ -141,7 +146,7 @@ function formatRecipientDiagnosticsForLog(recipient) {
     .join("; ");
 }
 
-function formatDiagnosticValue(value) {
+function formatDiagnosticValue(value, label = "") {
 
   if (
     value === undefined ||
@@ -151,9 +156,14 @@ function formatDiagnosticValue(value) {
     return "";
   }
 
+  if (isSensitiveDiagnosticLabel(label)) {
+
+    return redactRecipientValue(value);
+  }
+
   if (typeof value === "string") {
 
-    return value.trim();
+    return redactSensitiveText(value.trim());
   }
 
   if (
@@ -166,12 +176,12 @@ function formatDiagnosticValue(value) {
 
   if (value.username) {
 
-    return `@${value.username}`;
+    return REDACTED_CONTACT;
   }
 
   if (value.id) {
 
-    return `id:${String(value.id)}`;
+    return REDACTED_CONTACT;
   }
 
   return "";
@@ -200,8 +210,13 @@ function getContactId(contact = {}) {
     return "";
   }
 
-  return String(contact[key] ?? "")
-    .trim();
+  const contactId =
+    String(contact[key] ?? "")
+      .trim();
+
+  return contactId
+    ? REDACTED_CONTACT
+    : "";
 }
 
 function sanitizeLogText(value) {
@@ -211,12 +226,45 @@ function sanitizeLogText(value) {
     return "";
   }
 
-  return String(value);
+  return redactSensitiveText(value);
 }
 
 function formatLogPhone(phone) {
 
-  return String(phone ?? "");
+  return redactRecipientValue(phone);
+}
+
+function redactRecipientValue(value) {
+
+  if (
+    value === undefined ||
+    value === null
+  ) {
+
+    return "";
+  }
+
+  const text =
+    String(value).trim();
+
+  if (!text) {
+
+    return "";
+  }
+
+  const redacted =
+    redactPhoneLikeText(text);
+
+  return redacted === text
+    ? REDACTED_CONTACT
+    : redacted;
+}
+
+function isSensitiveDiagnosticLabel(label) {
+
+  return /original|phone|target/i.test(
+    String(label || "")
+  );
 }
 
 function getMediaType(mediaFile) {

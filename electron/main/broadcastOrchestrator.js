@@ -21,6 +21,11 @@ const {
   buildValidationWarnings
 } = require("./validationService");
 
+const {
+  redactSensitiveObject,
+  redactSensitiveText
+} = require("../../src/security/redaction");
+
 function createBroadcastOrchestrator({
   runtimePaths,
   settingsService,
@@ -187,14 +192,14 @@ function createBroadcastOrchestrator({
         console.log = (...args) => {
 
           const message =
-            args.join(" ");
+            createSafeConsoleMessage(args);
 
           event.sender.send(
             "broadcast-log",
             message
           );
 
-          originalLog(...args);
+          originalLog(message);
         };
 
         if (provider === MESSAGING_PROVIDERS.TELEGRAM) {
@@ -235,7 +240,12 @@ function createBroadcastOrchestrator({
               activeClient
             );
           } catch (disconnectError) {
-            console.error("Failed to disconnect Telegram client:", disconnectError);
+            console.error(
+              "Failed to disconnect Telegram client:",
+              redactSensitiveText(
+                formatConsoleArgument(disconnectError)
+              )
+            );
           }
         }
       }
@@ -260,6 +270,37 @@ function createBroadcastOrchestrator({
     start,
     stop
   };
+}
+
+function createSafeConsoleMessage(args) {
+
+  return redactSensitiveText(
+    args.map(formatConsoleArgument)
+      .join(" ")
+  );
+}
+
+function formatConsoleArgument(arg) {
+
+  if (arg instanceof Error) {
+
+    return arg.message;
+  }
+
+  if (
+    arg &&
+    typeof arg === "object"
+  ) {
+    try {
+      return JSON.stringify(
+        redactSensitiveObject(arg)
+      );
+    } catch (_error) {
+      return String(arg);
+    }
+  }
+
+  return String(arg);
 }
 
 module.exports = {

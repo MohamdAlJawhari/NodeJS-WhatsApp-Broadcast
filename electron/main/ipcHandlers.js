@@ -130,35 +130,30 @@ function registerIpcHandlers({
   ipcMain.handle(
     "generate-preview",
     async (_, data) => {
+      try {
+        const {
+          contacts,
+          template
+        } = data;
 
-      const {
-        contacts,
-        template
-      } = data;
+        const provider =
+          normalizeMessagingProvider(data.provider);
 
-      const provider =
-        normalizeMessagingProvider(data.provider);
-
-      const preview = contacts
-        .slice(0, 5)
-        .map(contact => {
-
-          return {
-
+        return (Array.isArray(contacts) ? contacts : [])
+          .slice(0, 5)
+          .map(contact => ({
             phone:
               provider === MESSAGING_PROVIDERS.TELEGRAM
                 ? getTelegramRecipientLabel(contact)
                 : getPhoneValue(contact),
-
-            message:
-              generateMessage(
-                template,
-                contact
-              )
-          };
-        });
-
-      return preview;
+            message: generateMessage(template, contact)
+          }));
+      } catch (error) {
+        return {
+          success: false,
+          error: error.message
+        };
+      }
     }
   );
 
