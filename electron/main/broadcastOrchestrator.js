@@ -150,9 +150,7 @@ function createBroadcastOrchestrator({
         ) => {
 
           const progress =
-            (
-              current / total
-            ) * 100;
+            total > 0 ? (current / total) * 100 : 0;
 
           event.sender.send(
             "broadcast-progress",
@@ -232,10 +230,13 @@ function createBroadcastOrchestrator({
           provider === MESSAGING_PROVIDERS.TELEGRAM &&
           activeClient
         ) {
-
-          await telegramService.disconnect(
-            activeClient
-          );
+          try {
+            await telegramService.disconnect(
+              activeClient
+            );
+          } catch (disconnectError) {
+            console.error("Failed to disconnect Telegram client:", disconnectError);
+          }
         }
       }
 

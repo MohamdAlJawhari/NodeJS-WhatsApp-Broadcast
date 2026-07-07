@@ -307,3 +307,255 @@
         }
     }
 })();
+function updateButtons(
+    state
+) {
+
+    const activeSendStates = [
+        "RUNNING",
+        "PAUSED",
+        "STOPPING"
+    ];
+
+    setUnsafeControlsDisabled(
+        activeSendStates.includes(state)
+    );
+
+    if (state === "IDLE") {
+
+        startBtn.disabled =
+            false;
+
+        pauseBtn.disabled =
+            true;
+
+        resumeBtn.disabled =
+            true;
+
+        stopBtn.disabled =
+            true;
+
+        retryFailedBtn.disabled =
+            false;
+    }
+
+    if (state === "RUNNING") {
+
+        startBtn.disabled =
+            true;
+
+        pauseBtn.disabled =
+            false;
+
+        resumeBtn.disabled =
+            true;
+
+        stopBtn.disabled =
+            false;
+
+        retryFailedBtn.disabled =
+            true;
+    }
+
+    if (state === "PAUSED") {
+
+        startBtn.disabled =
+            true;
+
+        pauseBtn.disabled =
+            true;
+
+        resumeBtn.disabled =
+            false;
+
+        stopBtn.disabled =
+            false;
+
+        retryFailedBtn.disabled =
+            true;
+    }
+
+    if (state === "STOPPING") {
+
+        startBtn.disabled =
+            true;
+
+        pauseBtn.disabled =
+            true;
+
+        resumeBtn.disabled =
+            true;
+
+        stopBtn.disabled =
+            true;
+
+        retryFailedBtn.disabled =
+            true;
+    }
+
+    if (
+        state === "STOPPED" ||
+        state === "COMPLETED"
+    ) {
+
+        startBtn.disabled =
+            false;
+
+        pauseBtn.disabled =
+            true;
+
+        resumeBtn.disabled =
+            true;
+
+        stopBtn.disabled =
+            true;
+
+        retryFailedBtn.disabled =
+            false;
+    }
+}
+
+function updateCounters(
+    counters
+) {
+
+    successCountEl.innerText =
+        counters.success;
+
+    failedCountEl.innerText =
+        counters.failed;
+
+    skippedCountEl.innerText =
+        counters.skipped;
+}
+
+loadAppSettings();
+setConnectionStatus("Not connected");
+setBroadcastStatus("IDLE");
+updateButtons("IDLE");
+function updateButtons(
+    state
+) {
+
+    const activeSendStates = [
+        "RUNNING",
+        "PAUSED",
+        "STOPPING"
+    ];
+
+    setUnsafeControlsDisabled(
+        activeSendStates.includes(state)
+    );
+
+    if (state === "IDLE") {
+
+        startBtn.disabled =
+            false;
+
+        pauseBtn.disabled =
+            true;
+
+        resumeBtn.disabled =
+            true;
+
+        stopBtn.disabled =
+            true;
+
+        retryFailedBtn.disabled =
+            false;
+    }
+
+    if (state === "RUNNING") {
+
+        startBtn.disabled =
+            true;
+
+        pauseBtn.disabled =
+            false;
+
+        resumeBtn.disabled =
+            true;
+
+        stopBtn.disabled =
+            false;
+
+        retryFailedBtn.disabled =
+            true;
+    }
+
+    if (state === "PAUSED") {
+
+        startBtn.disabled =
+            true;
+
+        pauseBtn.disabled =
+            true;
+
+        resumeBtn.disabled =
+            false;
+
+        stopBtn.disabled =
+            false;
+
+        retryFailedBtn.disabled =
+            true;
+    }
+
+    if (state === "STOPPING") {
+
+        startBtn.disabled =
+            true;
+
+        pauseBtn.disabled =
+            true;
+
+        resumeBtn.disabled =
+            true;
+
+        stopBtn.disabled =
+            true;
+
+        retryFailedBtn.disabled =
+            true;
+    }
+
+    if (
+        state === "STOPPED" ||
+        state === "COMPLETED"
+    ) {
+
+        startBtn.disabled =
+            false;
+
+        pauseBtn.disabled =
+            true;
+
+        resumeBtn.disabled =
+            true;
+
+        stopBtn.disabled =
+            true;
+
+        retryFailedBtn.disabled =
+            false;
+    }
+}
+
+function updateCounters(
+    counters
+) {
+
+    successCountEl.innerText =
+        counters.success;
+
+    failedCountEl.innerText =
+        counters.failed;
+
+    skippedCountEl.innerText =
+        counters.skipped;
+}
+
+loadAppSettings();
+setConnectionStatus("Not connected");
+setBroadcastStatus("IDLE");
+updateButtons("IDLE");

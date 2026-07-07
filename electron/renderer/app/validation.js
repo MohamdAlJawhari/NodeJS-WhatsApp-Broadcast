@@ -83,6 +83,10 @@
 
             } catch (error) {
 
+                if (requestId !== validationRequestId) {
+                    return null;
+                }
+
                 const result = {
                     valid: false,
                     warnings: [

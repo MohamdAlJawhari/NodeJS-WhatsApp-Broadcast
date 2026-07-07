@@ -42,7 +42,11 @@
 
                 if (contactFilesUI) {
 
-                    await contactFilesUI.loadSavedContactFiles();
+                    try {
+                        await contactFilesUI.loadSavedContactFiles();
+                    } catch (error) {
+                        console.error("Failed to load contact files:", error);
+                    }
                 }
             }
         }

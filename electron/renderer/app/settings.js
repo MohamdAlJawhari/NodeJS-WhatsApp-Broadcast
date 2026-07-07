@@ -32,12 +32,16 @@
 
         async function loadAppSettings() {
 
-            const settings =
-                await electronAPI
-                    .loadSettings();
+            let settings;
+            try {
+                settings = await electronAPI.loadSettings();
+            } catch (error) {
+                showToast(error.message || "Failed to load settings", "error");
+                return;
+            }
 
             dom.templateInput.value =
-                settings.defaultTemplate;
+                settings.defaultTemplate || "";
 
             const contactFilesUI =
                 getContactFilesUI();

@@ -37,11 +37,8 @@ function createWhatsAppConnectionService({
         };
       }
 
-      return {
-        success: false,
-        error:
-          "WhatsApp is already open. Log out or restart the app before reconnecting."
-      };
+      // Stale/disconnected client — clear it and fall through to create a new session.
+      client = null;
     }
 
     try {

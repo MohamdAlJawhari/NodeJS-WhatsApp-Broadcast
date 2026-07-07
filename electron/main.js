@@ -92,7 +92,8 @@ const broadcastOrchestrator =
   createBroadcastOrchestrator({
     runtimePaths,
     settingsService,
-    whatsappConnection
+    whatsappConnection,
+    telegramConnection
   });
 
 registerIpcHandlers({

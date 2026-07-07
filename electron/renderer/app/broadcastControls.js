@@ -145,9 +145,12 @@
         }
 
         async function pauseBroadcast() {
-
-            await electronAPI
-                .pauseBroadcast();
+            try {
+                await electronAPI.pauseBroadcast();
+            } catch (error) {
+                showToast(error.message || "Failed to pause broadcast", "error");
+                return;
+            }
 
             setBroadcastStatus(
                 "PAUSED"

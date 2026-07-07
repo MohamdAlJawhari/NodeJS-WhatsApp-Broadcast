@@ -26,7 +26,11 @@
 
                     if (onProviderChange) {
 
-                        await onProviderChange();
+                        try {
+                            await onProviderChange();
+                        } catch (error) {
+                            console.error("Provider change failed:", error);
+                        }
                     }
                 }
             );

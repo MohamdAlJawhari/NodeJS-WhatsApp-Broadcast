@@ -18,6 +18,8 @@
             );
         }
 
+        let previewRequestId = 0;
+
         async function previewMessages() {
 
             const contacts =
@@ -33,22 +35,32 @@
                 return;
             }
 
-            const preview =
-                await electronAPI
-                    .generatePreview({
+            const requestId = ++previewRequestId;
+            try {
+                const preview =
+                    await electronAPI
+                        .generatePreview({
 
-                        contacts,
-                        template:
-                            getTemplate(),
-                        mediaFile:
-                            getMediaFile(),
-                        provider:
-                            getSelectedProvider()
-                    });
-
-            renderPreview(
-                preview
-            );
+                            contacts,
+                            template:
+                                getTemplate(),
+                            mediaFile:
+                                getMediaFile(),
+                            provider:
+                                getSelectedProvider()
+                        });
+                if (requestId !== previewRequestId) {
+                    return;
+                }
+                renderPreview(
+                    preview
+                );
+            } catch (error) {
+                if (requestId !== previewRequestId) {
+                    return;
+                }
+                showToast(error.message || "Preview failed", "error");
+            }
         }
 
         function renderPreview(
