@@ -8,9 +8,18 @@ const {
   validatePhone
 } = require("./validator");
 
-const TELEGRAM_RECIPIENT_COLUMN = "telegram_recipient";
+const TELEGRAM_TO_COLUMN = "TELEGRAM_TO";
+const LEGACY_TELEGRAM_RECIPIENT_COLUMN = "telegram_recipient";
+
+const TELEGRAM_RECIPIENT_COLUMN = TELEGRAM_TO_COLUMN;
+
+const TELEGRAM_RECIPIENT_COLUMNS = [
+  TELEGRAM_TO_COLUMN,
+  LEGACY_TELEGRAM_RECIPIENT_COLUMN
+];
 
 const TELEGRAM_USERNAME_COLUMNS = [
+  "@USERNAME",
   "telegram_username",
   "Telegram Username",
   "username",
@@ -19,8 +28,14 @@ const TELEGRAM_USERNAME_COLUMNS = [
 
 function resolveTelegramRecipient(contact = {}) {
 
+  const recipientValue =
+    getFirstColumnValue(
+      contact,
+      TELEGRAM_RECIPIENT_COLUMNS
+    );
+
   const rawRecipient =
-    contact[TELEGRAM_RECIPIENT_COLUMN];
+    recipientValue.rawValue;
 
   const recipient =
     String(rawRecipient ?? "").trim();
@@ -32,37 +47,57 @@ function resolveTelegramRecipient(contact = {}) {
       rawRecipient,
       chatId:
         recipient,
+      diagnostics: {
+        source:
+          "direct",
+        column:
+          recipientValue.column,
+        originalValue:
+          recipient,
+        resolvedTarget:
+          recipient
+      },
       recipientType:
         "direct"
     };
   }
 
-  const usernameColumn =
-    findTelegramUsernameColumn(
-      Object.keys(contact)
+  const usernameValue =
+    getFirstColumnValue(
+      contact,
+      TELEGRAM_USERNAME_COLUMNS
     );
 
-  if (usernameColumn) {
+  if (usernameValue.column) {
 
     const rawUsername =
-      contact[usernameColumn];
+      usernameValue.rawValue;
 
-    const username =
-      String(rawUsername ?? "").trim();
-
-    if (username) {
-
-      return {
-        valid: true,
-        rawRecipient:
+    return {
+      valid: true,
+      rawRecipient:
+        rawUsername,
+      chatId:
+        formatTelegramUsername(rawUsername),
+      diagnostics: {
+        source:
+          "username",
+        column:
+          usernameValue.column,
+        originalValue:
           rawUsername,
-        chatId:
-          formatTelegramUsername(username),
-        recipientType:
-          "username"
-      };
-    }
+        resolvedTarget:
+          formatTelegramUsername(rawUsername)
+      },
+      recipientType:
+        "username"
+    };
   }
+
+  const phoneColumn =
+    findPhoneColumn(
+      Object.keys(contact)
+    );
 
   const rawPhone =
     getPhoneValue(contact);
@@ -78,6 +113,16 @@ function resolveTelegramRecipient(contact = {}) {
         valid: false,
         rawRecipient:
           rawPhone,
+        diagnostics: {
+          source:
+            "phone",
+          column:
+            phoneColumn,
+          originalValue:
+            rawPhone,
+          lookupStatus:
+            "invalid_phone"
+        },
         reason:
           phoneValidation.reason
       };
@@ -89,6 +134,18 @@ function resolveTelegramRecipient(contact = {}) {
         rawPhone,
       chatId:
         `+${phoneValidation.phone}`,
+      diagnostics: {
+        source:
+          "phone",
+        column:
+          phoneColumn,
+        originalValue:
+          rawPhone,
+        normalizedPhone:
+          `+${phoneValidation.phone}`,
+        lookupStatus:
+          "ready_for_lookup"
+      },
       phone:
         phoneValidation.phone,
       recipientType:
@@ -106,12 +163,28 @@ function resolveTelegramRecipient(contact = {}) {
 
 function findTelegramUsernameColumn(headers) {
 
+  return findColumn(
+    headers,
+    TELEGRAM_USERNAME_COLUMNS
+  );
+}
+
+function findTelegramRecipientColumn(headers) {
+
+  return findColumn(
+    headers,
+    TELEGRAM_RECIPIENT_COLUMNS
+  );
+}
+
+function findColumn(headers, candidates) {
+
   const columns =
     Array.isArray(headers)
       ? headers
       : [];
 
-  for (const candidate of TELEGRAM_USERNAME_COLUMNS) {
+  for (const candidate of candidates) {
 
     const normalizedCandidate =
       normalizeColumnName(candidate);
@@ -132,6 +205,39 @@ function findTelegramUsernameColumn(headers) {
   return null;
 }
 
+function getFirstColumnValue(contact, candidates) {
+
+  const columns =
+    Object.keys(contact || {});
+
+  for (const candidate of candidates) {
+
+    const column =
+      findColumn(columns, [candidate]);
+
+    if (!column) {
+
+      continue;
+    }
+
+    const rawValue =
+      contact[column];
+
+    if (String(rawValue ?? "").trim()) {
+
+      return {
+        column,
+        rawValue
+      };
+    }
+  }
+
+  return {
+    column: null,
+    rawValue: undefined
+  };
+}
+
 function hasTelegramRecipientHeader(headers) {
 
   const columns =
@@ -139,7 +245,7 @@ function hasTelegramRecipientHeader(headers) {
       ? headers
       : [];
 
-  return columns.includes(TELEGRAM_RECIPIENT_COLUMN) ||
+  return Boolean(findTelegramRecipientColumn(columns)) ||
     Boolean(findTelegramUsernameColumn(columns)) ||
     Boolean(findPhoneColumn(columns));
 }
@@ -162,8 +268,8 @@ function getTelegramRecipientLabel(contact = {}) {
 function getTelegramRecipientRequirementLabel() {
 
   return [
-    TELEGRAM_RECIPIENT_COLUMN,
-    "telegram_username",
+    TELEGRAM_TO_COLUMN,
+    "@USERNAME",
     getPhoneColumnRequirementLabel()
   ].join(", ");
 }
@@ -189,10 +295,14 @@ function normalizeColumnName(columnName) {
 }
 
 module.exports = {
+  findTelegramRecipientColumn,
+  findTelegramUsernameColumn,
   getTelegramRecipientLabel,
   getTelegramRecipientRequirementLabel,
   hasTelegramRecipientHeader,
+  TELEGRAM_TO_COLUMN,
   resolveTelegramRecipient,
   TELEGRAM_RECIPIENT_COLUMN,
+  TELEGRAM_RECIPIENT_COLUMNS,
   TELEGRAM_USERNAME_COLUMNS
 };

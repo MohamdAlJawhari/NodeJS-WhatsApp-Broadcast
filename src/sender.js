@@ -198,6 +198,8 @@ async function sendBroadcast(client, contacts, options) {
       `\n[${progress}%] Processing ${i + 1}/${contacts.length}`
     );
 
+    logRecipientDiagnostics(recipient);
+
     if (!recipient.valid) {
 
       const reason =
@@ -212,6 +214,7 @@ async function sendBroadcast(client, contacts, options) {
         createContactLogEntry({
           contact,
           index: i,
+          recipient,
           rawPhone,
           status: "skipped",
           reason
@@ -386,6 +389,7 @@ async function sendBroadcast(client, contacts, options) {
         createContactLogEntry({
           contact,
           index: i,
+          recipient,
           rawPhone,
           status,
           error:
@@ -440,6 +444,7 @@ async function sendBroadcast(client, contacts, options) {
           createContactLogEntry({
             contact,
             index: i,
+            recipient,
             rawPhone,
             status,
             warning:
@@ -466,6 +471,7 @@ async function sendBroadcast(client, contacts, options) {
           createContactLogEntry({
             contact,
             index: i,
+            recipient,
             rawPhone,
             status: "failed",
             error:
@@ -638,6 +644,7 @@ function createContactLogEntry({
   contact,
   index,
   rawPhone,
+  recipient,
   status,
   reason,
   error,
@@ -655,6 +662,14 @@ function createContactLogEntry({
       getContactId(contact),
     phone:
       formatLogPhone(rawPhone),
+    recipientSource:
+      sanitizeLogText(
+        getRecipientDiagnosticSource(recipient)
+      ),
+    recipientDetails:
+      sanitizeLogText(
+        formatRecipientDiagnosticsForLog(recipient)
+      ),
     status,
     reason:
       sanitizeLogText(reason),
@@ -669,6 +684,137 @@ function createContactLogEntry({
         ? mediaType
         : ""
   };
+}
+
+function logRecipientDiagnostics(recipient) {
+
+  const lines =
+    getRecipientDiagnosticLines(recipient);
+
+  lines.forEach(line => {
+    console.log(line);
+  });
+}
+
+function getRecipientDiagnosticLines(recipient) {
+
+  const diagnostics =
+    recipient && recipient.diagnostics;
+
+  if (!diagnostics) {
+
+    return [];
+  }
+
+  const lines = [];
+
+  addDiagnosticLine(
+    lines,
+    "Recipient source",
+    diagnostics.source
+  );
+
+  addDiagnosticLine(
+    lines,
+    "Recipient column",
+    diagnostics.column
+  );
+
+  addDiagnosticLine(
+    lines,
+    "Original value",
+    diagnostics.originalValue
+  );
+
+  addDiagnosticLine(
+    lines,
+    "Normalized phone",
+    diagnostics.normalizedPhone
+  );
+
+  addDiagnosticLine(
+    lines,
+    "Resolved target",
+    diagnostics.resolvedTarget
+  );
+
+  addDiagnosticLine(
+    lines,
+    "Telegram lookup method",
+    diagnostics.lookupMethod
+  );
+
+  addDiagnosticLine(
+    lines,
+    "Telegram lookup",
+    diagnostics.lookupStatus
+  );
+
+  return lines;
+}
+
+function addDiagnosticLine(
+  lines,
+  label,
+  value
+) {
+
+  const formatted =
+    formatDiagnosticValue(value);
+
+  if (formatted) {
+
+    lines.push(`${label}: ${formatted}`);
+  }
+}
+
+function getRecipientDiagnosticSource(recipient) {
+
+  return recipient &&
+    recipient.diagnostics &&
+    recipient.diagnostics.source;
+}
+
+function formatRecipientDiagnosticsForLog(recipient) {
+
+  return getRecipientDiagnosticLines(recipient)
+    .join("; ");
+}
+
+function formatDiagnosticValue(value) {
+
+  if (
+    value === undefined ||
+    value === null
+  ) {
+
+    return "";
+  }
+
+  if (typeof value === "string") {
+
+    return value.trim();
+  }
+
+  if (
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+
+    return String(value);
+  }
+
+  if (value.username) {
+
+    return `@${value.username}`;
+  }
+
+  if (value.id) {
+
+    return `id:${String(value.id)}`;
+  }
+
+  return "";
 }
 
 function getContactId(contact = {}) {
@@ -748,6 +894,14 @@ async function writeSanitizedCsvLog(
         {
           id: "phone",
           title: "phone"
+        },
+        {
+          id: "recipientSource",
+          title: "recipientSource"
+        },
+        {
+          id: "recipientDetails",
+          title: "recipientDetails"
         },
         {
           id: "status",
