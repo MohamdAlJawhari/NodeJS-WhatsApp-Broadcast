@@ -11,6 +11,7 @@ function createWhatsAppConnectionService({
 }) {
 
   let client = null;
+  let connectPromise = null;
 
   async function connect(event) {
 
@@ -26,8 +27,8 @@ function createWhatsAppConnectionService({
 
       if (connected) {
 
-        event.sender.send(
-          "connection-status",
+        sendConnectionStatus(
+          event,
           "CONNECTED"
         );
 
@@ -38,8 +39,42 @@ function createWhatsAppConnectionService({
       }
 
       // Stale/disconnected client — clear it and fall through to create a new session.
+      if (typeof client.close === "function") {
+        await client.close().catch(() => {});
+      }
       client = null;
     }
+
+    if (connectPromise) {
+
+      const result =
+        await connectPromise;
+
+      if (result.success) {
+
+        sendConnectionStatus(
+          event,
+          "CONNECTED"
+        );
+      }
+
+      return result;
+    }
+
+    connectPromise =
+      createClient(event);
+
+    try {
+
+      return await connectPromise;
+
+    } finally {
+
+      connectPromise = null;
+    }
+  }
+
+  async function createClient(event) {
 
     try {
 
@@ -77,7 +112,8 @@ function createWhatsAppConnectionService({
 
           catchQR: (base64Qr) => {
 
-            event.sender.send(
+            sendEvent(
+              event,
               "qr-code",
               base64Qr
             );
@@ -85,15 +121,16 @@ function createWhatsAppConnectionService({
 
           statusFind: (status) => {
 
-            event.sender.send(
+            sendEvent(
+              event,
               "connection-status",
               status
             );
           }
         });
 
-      event.sender.send(
-        "connection-status",
+      sendConnectionStatus(
+        event,
         "CONNECTED"
       );
 
@@ -107,6 +144,37 @@ function createWhatsAppConnectionService({
         success: false,
         error: error.message
       };
+    }
+  }
+
+  function sendConnectionStatus(
+    event,
+    status
+  ) {
+
+    sendEvent(
+      event,
+      "connection-status",
+      status
+    );
+  }
+
+  function sendEvent(
+    event,
+    channel,
+    payload
+  ) {
+
+    if (
+      event &&
+      event.sender &&
+      typeof event.sender.send === "function"
+    ) {
+
+      event.sender.send(
+        channel,
+        payload
+      );
     }
   }
 

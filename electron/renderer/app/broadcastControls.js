@@ -99,9 +99,16 @@
 
         async function retryFailed() {
 
-            const result =
-                await electronAPI
-                    .loadLatestFailedContacts();
+            let result;
+            try {
+                result = await electronAPI.loadLatestFailedContacts();
+            } catch (error) {
+                showToast(
+                    error.message || "Failed to load failed contacts",
+                    "error"
+                );
+                return;
+            }
 
             if (!result.success) {
 

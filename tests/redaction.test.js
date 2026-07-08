@@ -35,6 +35,24 @@ test(
 );
 
 test(
+  "redaction can preserve phone-like values while removing secrets",
+  () => {
+
+    const redacted =
+      redactSensitiveText(
+        "Send to +15555550123 with token=fake-token",
+        {
+          redactPhoneLike: false
+        }
+      );
+
+    assert.match(redacted, /\+15555550123/);
+    assert.match(redacted, /token=\[REDACTED\]/);
+    assert.doesNotMatch(redacted, /fake-token/);
+  }
+);
+
+test(
   "redaction removes sensitive keyed values and contact rows",
   () => {
 
@@ -172,5 +190,39 @@ test(
 
     assert.match(serialized, /\[REDACTED_CONTACT\]/);
     assert.doesNotMatch(serialized, /example_username/);
+  }
+);
+
+test(
+  "recipient diagnostic lines can preserve live recipient values",
+  () => {
+
+    const lines =
+      getRecipientDiagnosticLines(
+        {
+          diagnostics: {
+            source: "username",
+            column: "@USERNAME",
+            originalValue: "example_username",
+            normalizedPhone: "+15555550123",
+            resolvedTarget: {
+              username: "example_username"
+            },
+            lookupStatus: "found token=fake-token"
+          }
+        },
+        {
+          redactRecipientValues: false
+        }
+      );
+
+    const serialized =
+      lines.join("\n");
+
+    assert.match(serialized, /example_username/);
+    assert.match(serialized, /@example_username/);
+    assert.match(serialized, /\+15555550123/);
+    assert.match(serialized, /token=\[REDACTED\]/);
+    assert.doesNotMatch(serialized, /fake-token/);
   }
 );

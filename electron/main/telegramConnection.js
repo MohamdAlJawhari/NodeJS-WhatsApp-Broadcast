@@ -4,6 +4,9 @@ const {
   loginWithTelegramQr
 } = require("../../src/services/telegramLoginService");
 
+const telegramService =
+  require("../../src/services/telegramService");
+
 function createTelegramConnectionService() {
 
   async function connect(event) {
@@ -26,7 +29,7 @@ function createTelegramConnectionService() {
           onPassword: async () => {
 
             throw new Error(
-              "Telegram two-step verification is enabled. Run node scripts\\telegramQrLogin.cjs to connect this account."
+              "Telegram two-step verification is enabled. Run 'node scripts/telegramQrLogin.cjs' to connect this account."
             );
           },
 
@@ -89,7 +92,19 @@ function createTelegramConnectionService() {
     }
   }
 
+  async function createClient() {
+
+    return telegramService.initialize();
+  }
+
+  async function disconnectClient(client) {
+
+    await telegramService.disconnect(client);
+  }
+
   return {
+    createClient,
+    disconnectClient,
     connect
   };
 }

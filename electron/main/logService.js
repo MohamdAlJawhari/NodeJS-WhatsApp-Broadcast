@@ -49,15 +49,17 @@ function createLogService({
           file.endsWith(logType.extension);
       })
       .map(file => {
-        const filePath =
-          path.join(logsDir, file);
-
-        return {
-          filePath,
-          modifiedAt:
-            fs.statSync(filePath).mtimeMs
-        };
+        const filePath = path.join(logsDir, file);
+        try {
+          return {
+            filePath,
+            modifiedAt: fs.statSync(filePath).mtimeMs
+          };
+        } catch {
+          return null;
+        }
       })
+      .filter(Boolean)
       .sort((a, b) => {
         return b.modifiedAt - a.modifiedAt;
       });

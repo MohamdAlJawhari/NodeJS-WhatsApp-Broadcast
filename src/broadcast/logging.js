@@ -51,17 +51,50 @@ function createContactLogEntry({
   };
 }
 
-function logRecipientDiagnostics(recipient) {
+function logRecipientDiagnostics(
+  recipient,
+  logger = console,
+  options = {}
+) {
 
   const lines =
-    getRecipientDiagnosticLines(recipient);
+    getRecipientDiagnosticLines(
+      recipient,
+      options
+    );
+
+  const log =
+    createLogger(logger);
 
   lines.forEach(line => {
-    console.log(line);
+    log(line);
   });
 }
 
-function getRecipientDiagnosticLines(recipient) {
+function createLogger(logger) {
+
+  if (typeof logger === "function") {
+
+    return logger;
+  }
+
+  if (
+    logger &&
+    typeof logger.log === "function"
+  ) {
+
+    return logger.log.bind(logger);
+  }
+
+  return console.log.bind(console);
+}
+
+function getRecipientDiagnosticLines(
+  recipient,
+  {
+    redactRecipientValues = true
+  } = {}
+) {
 
   const diagnostics =
     recipient && recipient.diagnostics;
@@ -76,43 +109,64 @@ function getRecipientDiagnosticLines(recipient) {
   addDiagnosticLine(
     lines,
     "Recipient source",
-    diagnostics.source
+    diagnostics.source,
+    {
+      redactRecipientValues
+    }
   );
 
   addDiagnosticLine(
     lines,
     "Recipient column",
-    diagnostics.column
+    diagnostics.column,
+    {
+      redactRecipientValues
+    }
   );
 
   addDiagnosticLine(
     lines,
     "Original value",
-    diagnostics.originalValue
+    diagnostics.originalValue,
+    {
+      redactRecipientValues
+    }
   );
 
   addDiagnosticLine(
     lines,
     "Normalized phone",
-    diagnostics.normalizedPhone
+    diagnostics.normalizedPhone,
+    {
+      redactRecipientValues
+    }
   );
 
   addDiagnosticLine(
     lines,
     "Resolved target",
-    diagnostics.resolvedTarget
+    diagnostics.resolvedTarget,
+    {
+      redactRecipientValues
+    }
   );
 
   addDiagnosticLine(
     lines,
     "Telegram lookup method",
-    diagnostics.lookupMethod
+    diagnostics.lookupMethod,
+    {
+      redactRecipientValues
+    }
   );
 
   addDiagnosticLine(
     lines,
     "Telegram lookup",
-    diagnostics.lookupStatus
+    diagnostics.lookupStatus,
+    {
+      redactRecipientValues
+    }
   );
 
   return lines;
@@ -121,11 +175,16 @@ function getRecipientDiagnosticLines(recipient) {
 function addDiagnosticLine(
   lines,
   label,
-  value
+  value,
+  options = {}
 ) {
 
   const formatted =
-    formatDiagnosticValue(value, label);
+    formatDiagnosticValue(
+      value,
+      label,
+      options
+    );
 
   if (formatted) {
 
@@ -146,7 +205,13 @@ function formatRecipientDiagnosticsForLog(recipient) {
     .join("; ");
 }
 
-function formatDiagnosticValue(value, label = "") {
+function formatDiagnosticValue(
+  value,
+  label = "",
+  {
+    redactRecipientValues = true
+  } = {}
+) {
 
   if (
     value === undefined ||
@@ -156,9 +221,17 @@ function formatDiagnosticValue(value, label = "") {
     return "";
   }
 
-  if (isSensitiveDiagnosticLabel(label)) {
+  if (
+    isSensitiveDiagnosticLabel(label) &&
+    redactRecipientValues
+  ) {
 
     return redactRecipientValue(value);
+  }
+
+  if (isSensitiveDiagnosticLabel(label)) {
+
+    return formatLiveDiagnosticValue(value);
   }
 
   if (typeof value === "string") {
@@ -182,6 +255,57 @@ function formatDiagnosticValue(value, label = "") {
   if (value.id) {
 
     return REDACTED_CONTACT;
+  }
+
+  return "";
+}
+
+function formatLiveDiagnosticValue(value) {
+
+  if (
+    value === undefined ||
+    value === null
+  ) {
+
+    return "";
+  }
+
+  if (typeof value === "string") {
+
+    return redactSensitiveText(
+      value.trim(),
+      {
+        redactPhoneLike: false
+      }
+    );
+  }
+
+  if (
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+
+    return String(value);
+  }
+
+  if (value.username) {
+
+    return `@${redactSensitiveText(
+      value.username,
+      {
+        redactPhoneLike: false
+      }
+    )}`;
+  }
+
+  if (value.id) {
+
+    return `id:${redactSensitiveText(
+      String(value.id),
+      {
+        redactPhoneLike: false
+      }
+    )}`;
   }
 
   return "";
@@ -232,6 +356,32 @@ function sanitizeLogText(value) {
 function formatLogPhone(phone) {
 
   return redactRecipientValue(phone);
+}
+
+function formatLiveLogRecipient(recipient) {
+
+  if (
+    recipient === undefined ||
+    recipient === null
+  ) {
+
+    return "";
+  }
+
+  const text =
+    String(recipient).trim();
+
+  if (!text) {
+
+    return "";
+  }
+
+  return redactSensitiveText(
+    text,
+    {
+      redactPhoneLike: false
+    }
+  );
 }
 
 function redactRecipientValue(value) {
@@ -307,6 +457,7 @@ function createLogRunId() {
 module.exports = {
   createContactLogEntry,
   createLogRunId,
+  formatLiveLogRecipient,
   formatLogPhone,
   formatRecipientDiagnosticsForLog,
   getMediaType,

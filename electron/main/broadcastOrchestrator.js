@@ -2,9 +2,6 @@ const {
   sendBroadcast
 } = require("../../src/sender");
 
-const telegramService =
-  require("../../src/services/telegramService");
-
 const {
   sendTelegramBroadcast
 } = require("../../src/telegramSender");
@@ -29,8 +26,11 @@ const {
 function createBroadcastOrchestrator({
   runtimePaths,
   settingsService,
-  whatsappConnection
+  whatsappConnection,
+  telegramConnection
 }) {
+
+  let activeBroadcastPromise = null;
 
   async function pause() {
 
@@ -66,6 +66,30 @@ function createBroadcastOrchestrator({
   }
 
   async function start(event, data) {
+
+    if (activeBroadcastPromise) {
+
+      return {
+        success: false,
+        error:
+          "A broadcast is already running"
+      };
+    }
+
+    activeBroadcastPromise =
+      runBroadcast(event, data);
+
+    try {
+
+      return await activeBroadcastPromise;
+
+    } finally {
+
+      activeBroadcastPromise = null;
+    }
+  }
+
+  async function runBroadcast(event, data) {
 
     try {
 
@@ -157,7 +181,8 @@ function createBroadcastOrchestrator({
           const progress =
             total > 0 ? (current / total) * 100 : 0;
 
-          event.sender.send(
+          safeSend(
+            event,
             "broadcast-progress",
             progress
           );
@@ -167,11 +192,18 @@ function createBroadcastOrchestrator({
           counters
         ) => {
 
-          event.sender.send(
+          safeSend(
+            event,
             "broadcast-counters",
             counters
           );
         },
+
+        logger:
+          createBroadcastLogger(event),
+
+        redactLiveRecipients:
+          false
       };
 
       broadcastController.paused =
@@ -180,32 +212,16 @@ function createBroadcastOrchestrator({
       broadcastController.stopped =
         false;
 
-      const originalLog =
-        console.log;
-
       let broadcastResult;
       let activeClient =
         null;
 
       try {
 
-        console.log = (...args) => {
-
-          const message =
-            createSafeConsoleMessage(args);
-
-          event.sender.send(
-            "broadcast-log",
-            message
-          );
-
-          originalLog(message);
-        };
-
         if (provider === MESSAGING_PROVIDERS.TELEGRAM) {
 
           activeClient =
-            await telegramService.initialize();
+            await telegramConnection.createClient();
 
           broadcastResult =
             await sendTelegramBroadcast(
@@ -229,14 +245,12 @@ function createBroadcastOrchestrator({
 
       } finally {
 
-        console.log = originalLog;
-
         if (
           provider === MESSAGING_PROVIDERS.TELEGRAM &&
           activeClient
         ) {
           try {
-            await telegramService.disconnect(
+            await telegramConnection.disconnectClient(
               activeClient
             );
           } catch (disconnectError) {
@@ -274,10 +288,99 @@ function createBroadcastOrchestrator({
 
 function createSafeConsoleMessage(args) {
 
+  return createConsoleMessage(
+    args,
+    {
+      redactPhoneLike: true
+    }
+  );
+}
+
+function createLiveConsoleMessage(args) {
+
+  return createConsoleMessage(
+    args,
+    {
+      redactPhoneLike: false
+    }
+  );
+}
+
+function createConsoleMessage(
+  args,
+  {
+    redactPhoneLike
+  }
+) {
+
   return redactSensitiveText(
     args.map(formatConsoleArgument)
-      .join(" ")
+      .join(" "),
+    {
+      redactPhoneLike
+    }
   );
+}
+
+function createBroadcastLogger(event) {
+
+  return {
+    log: (...args) => {
+
+      const message =
+        createLiveConsoleMessage(args);
+
+      safeSend(
+        event,
+        "broadcast-log",
+        message
+      );
+
+      console.log(
+        createSafeConsoleMessage(args)
+      );
+    }
+  };
+}
+
+function safeSend(
+  event,
+  channel,
+  payload
+) {
+
+  try {
+
+    const sender =
+      event && event.sender;
+
+    if (
+      !sender ||
+      typeof sender.send !== "function"
+    ) {
+
+      return false;
+    }
+
+    if (
+      typeof sender.isDestroyed === "function" &&
+      sender.isDestroyed()
+    ) {
+
+      return false;
+    }
+
+    sender.send(
+      channel,
+      payload
+    );
+
+    return true;
+
+  } catch (_sendError) {
+
+    return false;
+  }
 }
 
 function formatConsoleArgument(arg) {

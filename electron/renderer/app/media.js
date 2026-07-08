@@ -24,7 +24,7 @@
 
             if (!result.success) {
                 if (result.error) {
-                    showToast(result.error, "error in selecting media file");
+                    showToast(result.error, "error");
                 }
                 return;
             }

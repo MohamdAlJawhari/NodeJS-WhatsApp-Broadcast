@@ -299,3 +299,262 @@ test(
     }
   }
 );
+
+test(
+  "sender writes broadcast output through injected logger",
+  async () => {
+
+    const tempDir =
+      createTempDir();
+
+    const originalLog =
+      console.log;
+
+    const logLines = [];
+
+    console.log = () => {
+      throw new Error(
+        "global console.log should not be used"
+      );
+    };
+
+    try {
+
+      const messagingService = {
+        sendMedia: async () => {},
+        sendText: async () => {}
+      };
+
+      const result =
+        await sendBroadcast(
+          {},
+          [
+            {
+              name: "Ali",
+              phone: "+96181744432"
+            }
+          ],
+          createOptions({
+            logsDir:
+              tempDir,
+            messagingService,
+            logger: {
+              log: (...args) => {
+                logLines.push(
+                  args.join(" ")
+                );
+              }
+            }
+          })
+        );
+
+      assert.deepEqual(
+        result.counters,
+        {
+          success: 1,
+          failed: 0,
+          skipped: 0
+        }
+      );
+      assert.ok(
+        logLines.some(line => {
+          return line.includes(
+            "Starting broadcast"
+          );
+        })
+      );
+      assert.ok(
+        logLines.some(line => {
+          return line.includes(
+            "Broadcast finished"
+          );
+        })
+      );
+
+    } finally {
+
+      console.log =
+        originalLog;
+
+      cleanupTempDir(tempDir);
+    }
+  }
+);
+
+test(
+  "sender can show recipients in live logs while saved logs stay redacted",
+  async () => {
+
+    const tempDir =
+      createTempDir();
+
+    const restoreConsole =
+      muteConsole();
+
+    const logLines = [];
+
+    try {
+
+      const messagingService = {
+        sendMedia: async () => {},
+        sendText: async () => {}
+      };
+
+      const result =
+        await sendBroadcast(
+          {},
+          [
+            {
+              name: "Ali",
+              phone: "+15555550123"
+            }
+          ],
+          createOptions({
+            logsDir:
+              tempDir,
+            messagingService,
+            redactLiveRecipients:
+              false,
+            logger: {
+              log: (...args) => {
+                logLines.push(
+                  args.join(" ")
+                );
+              }
+            }
+          })
+        );
+
+      const logFileContents =
+        fs.readFileSync(
+          result.logFile,
+          "utf8"
+        );
+
+      assert.ok(
+        logLines.some(line => {
+          return line.includes(
+            "+15555550123"
+          );
+        })
+      );
+      assert.doesNotMatch(
+        logFileContents,
+        /15555550123/
+      );
+      assert.match(
+        logFileContents,
+        /\[REDACTED_PHONE\]/
+      );
+
+    } finally {
+
+      restoreConsole();
+      cleanupTempDir(tempDir);
+    }
+  }
+);
+
+test(
+  "sender can show Telegram-style diagnostics in live logs only",
+  async () => {
+
+    const tempDir =
+      createTempDir();
+
+    const restoreConsole =
+      muteConsole();
+
+    const logLines = [];
+
+    try {
+
+      const messagingService = {
+        sendMedia: async () => {},
+        sendText: async () => {}
+      };
+
+      const result =
+        await sendBroadcast(
+          {},
+          [
+            {
+              name: "Ali",
+              phone: "+15555550123"
+            }
+          ],
+          createOptions({
+            logsDir:
+              tempDir,
+            messagingService,
+            redactLiveRecipients:
+              false,
+            recipientResolver:
+              () => ({
+                valid: true,
+                rawRecipient:
+                  "@example_username",
+                chatId:
+                  "@example_username",
+                diagnostics: {
+                  source: "username",
+                  column: "@USERNAME",
+                  originalValue: "example_username",
+                  resolvedTarget: {
+                    username: "example_username"
+                  },
+                  lookupStatus:
+                    "found token=fake-token"
+                }
+              }),
+            logger: {
+              log: (...args) => {
+                logLines.push(
+                  args.join(" ")
+                );
+              }
+            }
+          })
+        );
+
+      const liveLogText =
+        logLines.join("\n");
+
+      const savedLogText =
+        fs.readFileSync(
+          result.logFile,
+          "utf8"
+        );
+
+      assert.match(
+        liveLogText,
+        /Original value: example_username/
+      );
+      assert.match(
+        liveLogText,
+        /Resolved target: @example_username/
+      );
+      assert.match(
+        liveLogText,
+        /Sending to @example_username/
+      );
+      assert.doesNotMatch(
+        liveLogText,
+        /fake-token/
+      );
+      assert.doesNotMatch(
+        savedLogText,
+        /example_username|fake-token/
+      );
+      assert.match(
+        savedLogText,
+        /\[REDACTED_CONTACT\]/
+      );
+
+    } finally {
+
+      restoreConsole();
+      cleanupTempDir(tempDir);
+    }
+  }
+);

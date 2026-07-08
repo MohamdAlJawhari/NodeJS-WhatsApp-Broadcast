@@ -22,7 +22,7 @@ function isSensitiveKey(key) {
 
 function redactSensitiveValue(value, key) {
   if (isSensitiveKey(key)) {
-    return REDACTED;
+    return value === "" ? "" : REDACTED;
   }
 
   return redactSensitiveText(value);
@@ -93,7 +93,12 @@ function redactStructuredValue(
   return value;
 }
 
-function redactSensitiveText(value) {
+function redactSensitiveText(
+  value,
+  {
+    redactPhoneLike = true
+  } = {}
+) {
   if (
     value === undefined ||
     value === null
@@ -117,7 +122,11 @@ function redactSensitiveText(value) {
     }
   );
 
-  return redactPhoneLikeText(text);
+  if (redactPhoneLike) {
+    return redactPhoneLikeText(text);
+  }
+
+  return text;
 }
 
 function redactPhoneLikeText(value) {

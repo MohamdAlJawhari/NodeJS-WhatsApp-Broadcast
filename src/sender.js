@@ -13,6 +13,7 @@ const { createObjectCsvWriter } = require("csv-writer");
 const {
   createContactLogEntry,
   createLogRunId,
+  formatLiveLogRecipient,
   formatLogPhone,
   getMediaType,
   logRecipientDiagnostics,
@@ -31,6 +32,8 @@ async function sendBroadcast(client, contacts, options) {
     mediaRetryDelay = 15000,
     onProgress,
     onCountersUpdate,
+    logger = console,
+    redactLiveRecipients = true,
     logsDir:
       customLogsDir,
     messagingService =
@@ -38,6 +41,14 @@ async function sendBroadcast(client, contacts, options) {
     recipientResolver =
       resolveWhatsAppRecipient
   } = options;
+
+  const log =
+    createLogFunction(logger);
+
+  const formatLiveRecipient =
+    redactLiveRecipients
+      ? formatLogPhone
+      : formatLiveLogRecipient;
 
   // Ensure logs directory exists
   const logsDir =
@@ -107,7 +118,7 @@ async function sendBroadcast(client, contacts, options) {
     }
   };
 
-  console.log(
+  log(
     `Starting broadcast to ${contacts.length} contacts...`
   );
 
@@ -158,7 +169,7 @@ async function sendBroadcast(client, contacts, options) {
 
   for (let i = 0; i < contacts.length; i++) {
     if (broadcastController.stopped) {
-      console.log(
+      log(
         "Broadcast stopped"
       );
 
@@ -167,14 +178,14 @@ async function sendBroadcast(client, contacts, options) {
 
     while (broadcastController.paused) {
 
-      console.log(
+      log(
         "Broadcast paused. Waiting to resume..."
       );
       await sleep(1000);
     }
 
     if (broadcastController.stopped) {
-      console.log(
+      log(
         "Broadcast stopped"
       );
 
@@ -195,26 +206,33 @@ async function sendBroadcast(client, contacts, options) {
       recipient.rawRecipient;
 
     const logPhone =
-      formatLogPhone(rawPhone);
+      formatLiveRecipient(rawPhone);
 
 
     const progress = (
       ((i + 1) / contacts.length) * 100
     ).toFixed(1);
 
-    console.log(
+    log(
       `\n[${progress}%] Processing ${i + 1}/${contacts.length}`
     );
 
-    logRecipientDiagnostics(recipient);
+    logRecipientDiagnostics(
+      recipient,
+      log,
+      {
+        redactRecipientValues:
+          redactLiveRecipients
+      }
+    );
 
     if (!recipient.valid) {
 
       const reason =
         sanitizeLogText(recipient.reason);
 
-      console.log(`Skipped: ${logPhone}`);
-      console.log(reason);
+      log(`Skipped: ${logPhone}`);
+      log(reason);
 
       skippedCount++;
 
@@ -266,7 +284,7 @@ async function sendBroadcast(client, contacts, options) {
 
     try {
 
-      console.log(`Sending to ${logPhone}...`);
+      log(`Sending to ${logPhone}...`);
 
       let mediaSent = false;
       let textSent = false;
@@ -280,15 +298,15 @@ async function sendBroadcast(client, contacts, options) {
         mediaErrorMessage =
           mediaValidation.reason;
 
-        console.log(
+        log(
           `Media invalid for ${logPhone}`
         );
 
-        console.log(
+        log(
           `Media type: ${getMediaType(mediaFile)}`
         );
 
-        console.log(
+        log(
           `Error: ${sanitizeLogText(mediaErrorMessage)}`
         );
       }
@@ -326,21 +344,21 @@ async function sendBroadcast(client, contacts, options) {
             mediaErrorMessage =
               mediaError.message;
 
-            console.log(
+            log(
               `Media failed for ${logPhone} (attempt ${attempt}/${maxAttempts})`
             );
 
-            console.log(
+            log(
               `Media type: ${getMediaType(mediaFile)}`
             );
 
-            console.log(
+            log(
               `Error: ${sanitizeLogText(mediaErrorMessage)}`
             );
 
             if (attempt < maxAttempts) {
 
-              console.log(
+              log(
                 `Retrying media in ${mediaRetryDelay / 1000}s...`
               );
 
@@ -421,7 +439,7 @@ async function sendBroadcast(client, contacts, options) {
         failedLogRows.push(logEntry);
       }
 
-      console.log(`${status}: ${logPhone}`);
+      log(`${status}: ${logPhone}`);
 
     } catch (error) {
 
@@ -441,7 +459,7 @@ async function sendBroadcast(client, contacts, options) {
 
         if (mediaRequested) {
 
-          console.log(
+          log(
             `Warning: Message sent but WPPConnect threw internal error`
           );
         }
@@ -494,8 +512,8 @@ async function sendBroadcast(client, contacts, options) {
 
         failedLogRows.push(result);
 
-        console.log(`Failed: ${logPhone}`);
-        console.log(errorMessage);
+        log(`Failed: ${logPhone}`);
+        log(errorMessage);
       }
     }
 
@@ -511,7 +529,7 @@ async function sendBroadcast(client, contacts, options) {
     // Delay between messages
     const delay = randomDelay(delayMin, delayMax);
 
-    console.log(`Waiting ${delay / 1000}s...`);
+    log(`Waiting ${delay / 1000}s...`);
 
     await sleep(delay);
 
@@ -521,7 +539,7 @@ async function sendBroadcast(client, contacts, options) {
       i + 1 < contacts.length
     ) {
 
-      console.log(
+      log(
         `Batch finished. Pausing ${batchPause / 1000}s...`
       );
 
@@ -541,7 +559,7 @@ async function sendBroadcast(client, contacts, options) {
       failedLogRows
     );
 
-    console.log(
+    log(
       `Failed summary saved: ${path.basename(failedFile)}`
     );
   }
@@ -576,7 +594,7 @@ async function sendBroadcast(client, contacts, options) {
       }
     );
 
-    console.log(
+    log(
       `Retry contacts saved: ${path.basename(failedRetryFile)}`
     );
   }
@@ -594,22 +612,22 @@ async function sendBroadcast(client, contacts, options) {
       successLogRows
     );
 
-    console.log(
+    log(
       `Success summary saved: ${path.basename(successFile)}`
     );
   }
 
   // Final summary
-  console.log("\n========== SUMMARY ==========");
+  log("\n========== SUMMARY ==========");
 
-  console.log(`Success: ${successCount}`);
-  console.log(`Failed: ${failedCount}`);
-  console.log(`Skipped: ${skippedCount}`);
+  log(`Success: ${successCount}`);
+  log(`Failed: ${failedCount}`);
+  log(`Skipped: ${skippedCount}`);
 
-  console.log("=============================\n");
+  log("=============================\n");
 
-  console.log("Broadcast finished.");
-  console.log(`Log saved: ${path.basename(logFile)}`);
+  log("Broadcast finished.");
+  log(`Log saved: ${path.basename(logFile)}`);
 
   return {
     logFile,
@@ -709,6 +727,24 @@ async function writeSanitizedCsvLog(
     });
 
   await csvWriter.writeRecords(rows);
+}
+
+function createLogFunction(logger) {
+
+  if (typeof logger === "function") {
+
+    return logger;
+  }
+
+  if (
+    logger &&
+    typeof logger.log === "function"
+  ) {
+
+    return logger.log.bind(logger);
+  }
+
+  return console.log.bind(console);
 }
 
 module.exports = {

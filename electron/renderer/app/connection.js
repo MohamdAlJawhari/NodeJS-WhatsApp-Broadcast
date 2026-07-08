@@ -20,6 +20,7 @@
         let isTelegramConnecting = false;
         let isTelegramConnected = false;
         let unsafeControlsDisabled = false;
+        let whatsAppConnectedHandled = false;
         let connectionStartedAt = null;
         let connectionTimerId = null;
 
@@ -54,6 +55,8 @@
 
             isWhatsAppConnecting =
                 true;
+            whatsAppConnectedHandled =
+                false;
 
             updateConnectButton();
 
@@ -76,7 +79,7 @@
                 result = {
                     success: false,
                     error:
-                        error.message
+                        (error && error.message) || String(error)
                 };
             }
 
@@ -97,28 +100,10 @@
 
             } else {
 
-                if (result.alreadyConnected) {
-
-                    stopConnectionTimer(
-                        "Connected"
-                    );
-
-                    setConnectionStatus(
-                        "CONNECTED"
-                    );
-
-                    qrUI.hideWhatsAppQr();
-
-                    showToast(
-                        "WhatsApp is already connected",
-                        "info"
-                    );
-                } else {
-
-                    setConnectionStatus(
-                        "Waiting for QR scan..."
-                    );
-                }
+                handleWhatsAppConnected({
+                    alreadyConnected:
+                        result.alreadyConnected
+                });
             }
 
             isWhatsAppConnecting =
@@ -353,10 +338,45 @@
             dom.telegramConnectionStatus.innerText =
                 nextText;
 
+            const connectionState =
+                getConnectionState(nextText);
+
             isTelegramConnected =
-                nextText === "CONNECTED";
+                connectionState === "connected";
 
             updateTelegramConnectButton();
+        }
+
+        function handleWhatsAppConnected({
+            alreadyConnected = false
+        } = {}) {
+
+            setConnectionStatus(
+                "CONNECTED"
+            );
+
+            if (whatsAppConnectedHandled) {
+
+                return;
+            }
+
+            whatsAppConnectedHandled =
+                true;
+
+            stopConnectionTimer(
+                "Connected"
+            );
+
+            qrUI.hideWhatsAppQr();
+
+            showToast(
+                alreadyConnected
+                    ? "WhatsApp is already connected"
+                    : "WhatsApp connected",
+                alreadyConnected
+                    ? "info"
+                    : "success"
+            );
         }
 
         function updateTelegramConnectButton() {
@@ -473,18 +493,18 @@
                         status
                     );
 
-                    if (status === "CONNECTED") {
+                    const connectionState =
+                        getConnectionState(status);
 
-                        stopConnectionTimer(
-                            "Connected"
-                        );
+                    if (connectionState !== "connected") {
 
-                        qrUI.hideWhatsAppQr();
+                        whatsAppConnectedHandled =
+                            false;
+                    }
 
-                        showToast(
-                            "WhatsApp connected",
-                            "success"
-                        );
+                    if (connectionState === "connected") {
+
+                        handleWhatsAppConnected();
                     }
                 }
             );
@@ -496,7 +516,7 @@
                         status
                     );
 
-                    if (status === "CONNECTED") {
+                    if (getConnectionState(status) === "connected") {
 
                         qrUI.hideTelegramQr();
                     }
