@@ -2834,3 +2834,28 @@ progress::-webkit-progress-value {
 .page-toolbar {
   margin-bottom: 12px;
 }
+
+/* Extra-short compose panel requested for the desktop sender view. */
+#templatesPanel {
+  min-height: 360px;
+}
+
+#templatesPanel .editor-card-header {
+  padding-top: 14px;
+}
+
+#templatesPanel .editor-toolbar {
+  padding-bottom: 8px;
+}
+
+#templatesPanel textarea {
+  min-height: 150px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  line-height: 1.55;
+}
+
+#templatesPanel .variables-panel {
+  padding-top: 10px;
+  padding-bottom: 12px;
+}
