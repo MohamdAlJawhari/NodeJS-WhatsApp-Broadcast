@@ -1,5 +1,5 @@
 {
-  "defaultTemplate": "Hello {{name}}, your password is {{password}}, your user name was {{username}}.\nمرحباً {{name}}، كلمة مرورك هي {{password}}، واسم المستخدم الخاص بك هو {{username}}.",
+  "defaultTemplate": "Hello {{name}}, your *password *is {{password}}, your user _name _was {{username}}.\nمرحباً {{name}}، كلمة مرورك هي {{password}}،واسم المستخدم الخاص بك هو {{username}}.\n",
   "whatsappSessionName": "employee-session",
   "sending": {
     "delayMin": 10000,

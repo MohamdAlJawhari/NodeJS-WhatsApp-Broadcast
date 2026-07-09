@@ -24,6 +24,17 @@
                     scheduleRefresh();
                 }
             );
+
+            if (dom.validateBtn) {
+
+                dom.validateBtn.addEventListener(
+                    "click",
+                    async () => {
+                        clearTimer();
+                        await refresh();
+                    }
+                );
+            }
         }
 
         function scheduleRefresh() {

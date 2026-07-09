@@ -14,6 +14,14 @@
                 "click",
                 selectMediaFile
             );
+
+            if (dom.removeMediaBtn) {
+
+                dom.removeMediaBtn.addEventListener(
+                    "click",
+                    removeMediaFile
+                );
+            }
         }
 
         async function selectMediaFile() {
@@ -33,8 +41,9 @@
                 result.filePath
             );
 
-            dom.mediaStatus.innerText =
-                result.filePath;
+            updateMediaDisplay(
+                result.filePath
+            );
 
             showToast(
                 "Media file selected",
@@ -44,7 +53,60 @@
             await refreshValidationWarnings();
         }
 
+        async function removeMediaFile() {
+
+            setMediaFile(
+                null
+            );
+
+            updateMediaDisplay(
+                null
+            );
+
+            showToast(
+                "Media file removed",
+                "info"
+            );
+
+            await refreshValidationWarnings();
+        }
+
+        function updateMediaDisplay(
+            filePath
+        ) {
+
+            if (dom.mediaFileName) {
+
+                dom.mediaFileName.innerText =
+                    filePath
+                        ? getFileName(filePath)
+                        : "No file selected";
+            }
+
+            dom.mediaStatus.innerText =
+                filePath ||
+                "No media selected";
+
+            if (dom.removeMediaBtn) {
+
+                dom.removeMediaBtn.disabled =
+                    !filePath;
+            }
+        }
+
+        function getFileName(
+            filePath
+        ) {
+
+            return String(filePath || "")
+                .split(/[\\/]/)
+                .filter(Boolean)
+                .pop() ||
+                "Media file";
+        }
+
         return {
+            removeMediaFile,
             register,
             selectMediaFile
         };

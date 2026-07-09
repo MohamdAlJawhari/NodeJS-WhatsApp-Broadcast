@@ -40,6 +40,15 @@
             dom.templateInput.value =
                 settings.defaultTemplate || "";
 
+            dom.templateInput.dispatchEvent(
+                new Event(
+                    "input",
+                    {
+                        bubbles: true
+                    }
+                )
+            );
+
             const contactFilesUI =
                 getContactFilesUI();
 

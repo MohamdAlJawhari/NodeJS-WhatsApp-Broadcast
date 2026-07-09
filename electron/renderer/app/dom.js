@@ -20,28 +20,60 @@
                 byId("connectBtn"),
             connectTelegramBtn:
                 byId("connectTelegramBtn"),
+            connectionPanel:
+                byId("connectionsPanel"),
             connectionStatus:
                 byId("connectionStatus"),
             connectionTile:
                 byId("connectionTile"),
             connectionTimer:
                 byId("connectionTimer"),
+            contactFileName:
+                byId("contactFileName"),
             contactEditorPage:
                 byId("contactEditorPage"),
+            contactsAddFileBtn:
+                byId("contactsAddFileBtn"),
             contactsBackToSenderBtn:
                 byId("contactsBackToSenderBtn"),
+            contactsCount:
+                byId("contactsCount"),
             contactsNavBtn:
                 byId("contactsNavBtn"),
             contactsPage:
                 byId("contactsPage"),
+            contactsPanel:
+                byId("contactsPanel"),
+            contactsPreviewBtn:
+                byId("contactsPreviewBtn"),
             failedCountEl:
                 byId("failedCount"),
+            headerTelegramBadge:
+                byId("headerTelegramBadge"),
+            headerTelegramStatus:
+                byId("headerTelegramStatus"),
+            headerWhatsAppBadge:
+                byId("headerWhatsAppBadge"),
+            headerWhatsAppStatus:
+                byId("headerWhatsAppStatus"),
+            helpNavBtn:
+                byId("helpNavBtn"),
             logs:
                 byId("logs"),
+            logsNavBtn:
+                byId("logsNavBtn"),
+            logsPanel:
+                byId("logsPanel"),
             mainPage:
                 byId("mainPage"),
             mediaBtn:
                 byId("mediaBtn"),
+            mediaFileName:
+                byId("mediaFileName"),
+            mediaPanel:
+                byId("mediaPanel"),
+            removeMediaBtn:
+                byId("removeMediaBtn"),
             mediaStatus:
                 byId("mediaStatus"),
             openFailedLogsBtn:
@@ -76,10 +108,20 @@
                 byId("startBtn"),
             status:
                 byId("status"),
+            statusBarConnection:
+                byId("statusBarConnection"),
+            statusBarContacts:
+                byId("statusBarContacts"),
+            statusBarReady:
+                byId("statusBarReady"),
+            statusBarTime:
+                byId("statusBarTime"),
             stopBtn:
                 byId("stopBtn"),
             successCountEl:
                 byId("successCount"),
+            settingsNavBtn:
+                byId("settingsNavBtn"),
             telegramConnectionStatus:
                 byId("telegramConnectionStatus"),
             telegramLoginLink:
@@ -88,10 +130,18 @@
                 byId("telegramQrImage"),
             telegramQrPanel:
                 byId("telegramQrPanel"),
+            templateCharCount:
+                byId("templateCharCount"),
             templateInput:
                 byId("templateInput"),
+            templatesNavBtn:
+                byId("templatesNavBtn"),
+            templatesPanel:
+                byId("templatesPanel"),
             toastContainer:
                 byId("toastContainer"),
+            validateBtn:
+                byId("validateBtn"),
             validationPanel:
                 byId("validationPanel"),
             validationSummary:

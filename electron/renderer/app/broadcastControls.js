@@ -139,6 +139,15 @@
                 `Loaded ${result.count} failed contacts for retry`
             );
 
+            updateContactsDisplay({
+                count:
+                    result.count,
+                filePath:
+                    result.filePath,
+                statusText:
+                    `Loaded ${result.count} failed contacts for retry`
+            });
+
             showToast(
                 `Loaded ${result.count} failed contacts for retry`,
                 "success"
@@ -549,6 +558,51 @@
 
             dom.skippedCountEl.innerText =
                 counters.skipped;
+        }
+
+        function updateContactsDisplay({
+            count,
+            filePath,
+            statusText
+        }) {
+
+            if (
+                dom.contactFileName &&
+                filePath
+            ) {
+
+                dom.contactFileName.innerText =
+                    getFileName(filePath);
+            }
+
+            if (
+                dom.contactsCount &&
+                Number.isFinite(count)
+            ) {
+
+                dom.contactsCount.innerText =
+                    `${count} contacts`;
+            }
+
+            if (
+                dom.status &&
+                statusText
+            ) {
+
+                dom.status.innerText =
+                    statusText;
+            }
+        }
+
+        function getFileName(
+            filePath
+        ) {
+
+            return String(filePath || "")
+                .split(/[\\/]/)
+                .filter(Boolean)
+                .pop() ||
+                "Contacts file";
         }
 
         return {

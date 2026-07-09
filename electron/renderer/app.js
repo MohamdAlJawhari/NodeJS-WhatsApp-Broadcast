@@ -186,6 +186,18 @@
                 showToast
             });
 
+    const editorToolbar =
+        window.BroadcastRendererEditorToolbar
+            .createEditorToolbar({
+                dom
+            });
+
+    const desktopChrome =
+        window.BroadcastRendererDesktopChrome
+            .createDesktopChrome({
+                dom
+            });
+
     navigationUI.register();
     providerUI.register();
     qrUI.register();
@@ -197,6 +209,8 @@
     logsUI.register();
     settingsUI.register();
     broadcastControls.register();
+    editorToolbar.register();
+    desktopChrome.register();
 
     settingsUI.loadAppSettings();
     loadAppVersion();
@@ -305,13 +319,35 @@
 
         [
             dom.addContactsFileBtn,
+            dom.contactsAddFileBtn,
+            dom.contactsPreviewBtn,
             dom.previewBtn,
+            dom.validateBtn,
             dom.mediaBtn,
+            dom.removeMediaBtn,
             dom.saveTemplateBtn,
             dom.openSuccessLogsBtn,
             dom.openFailedLogsBtn,
             dom.cleanAllLogsBtn
         ].forEach(button => {
+
+            if (!button) {
+
+                return;
+            }
+
+            if (
+                button === dom.removeMediaBtn &&
+                !disabled &&
+                dom.mediaStatus &&
+                dom.mediaStatus.innerText === "No media selected"
+            ) {
+
+                button.disabled =
+                    true;
+
+                return;
+            }
 
             button.disabled =
                 disabled;

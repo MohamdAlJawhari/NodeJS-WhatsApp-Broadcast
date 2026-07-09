@@ -69,10 +69,38 @@
                 document.createElement("div");
 
             div.className =
-                "log-line";
+                `log-line ${getLogLevelClass(message)}`;
 
-            div.innerText =
+            const time =
+                document.createElement("span");
+
+            time.className =
+                "log-time";
+
+            time.innerText =
+                new Date()
+                    .toLocaleTimeString(
+                        [],
+                        {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit"
+                        }
+                    );
+
+            const body =
+                document.createElement("span");
+
+            body.className =
+                "log-message";
+
+            body.innerText =
                 message;
+
+            div.append(
+                time,
+                body
+            );
 
             dom.logs.appendChild(div);
 
@@ -84,6 +112,43 @@
 
             dom.logs.innerHTML =
                 "";
+        }
+
+        function getLogLevelClass(
+            message
+        ) {
+
+            const normalized =
+                String(message || "")
+                    .toLowerCase();
+
+            if (
+                normalized.includes("failed") ||
+                normalized.includes("error")
+            ) {
+
+                return "log-error";
+            }
+
+            if (
+                normalized.includes("skipped") ||
+                normalized.includes("waiting") ||
+                normalized.includes("retry")
+            ) {
+
+                return "log-warning";
+            }
+
+            if (
+                normalized.includes("success") ||
+                normalized.includes("finished") ||
+                normalized.includes("completed")
+            ) {
+
+                return "log-success";
+            }
+
+            return "log-info";
         }
 
         async function openLogFolder(

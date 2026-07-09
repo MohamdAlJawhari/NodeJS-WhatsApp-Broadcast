@@ -257,6 +257,13 @@
                         "No file selected"
                     );
 
+                    updateSelectedContactDisplay({
+                        count: 0,
+                        filePath: null,
+                        statusText:
+                            "No file selected"
+                    });
+
                     await refreshValidationWarnings();
                 }
 
@@ -575,6 +582,15 @@
             setStatusText(
                 `Loaded ${result.count} saved contacts`
             );
+
+            updateSelectedContactDisplay({
+                count:
+                    result.count,
+                filePath:
+                    result.filePath,
+                statusText:
+                    `Loaded ${result.count} saved contacts`
+            });
 
             showToast(
                 `Loaded ${result.count} saved contacts`,
@@ -1164,6 +1180,15 @@
                         `Loaded ${loaded.count} saved contacts`
                     );
 
+                    updateSelectedContactDisplay({
+                        count:
+                            loaded.count,
+                        filePath:
+                            loaded.filePath,
+                        statusText:
+                            `Loaded ${loaded.count} saved contacts`
+                    });
+
                     await refreshValidationWarnings();
                 }
             }
@@ -1235,6 +1260,64 @@
 
             selectedContactFileId =
                 null;
+        }
+
+        function updateSelectedContactDisplay({
+            count,
+            filePath,
+            statusText
+        }) {
+
+            const contactFileName =
+                document.getElementById(
+                    "contactFileName"
+                );
+
+            const contactsCount =
+                document.getElementById(
+                    "contactsCount"
+                );
+
+            const status =
+                document.getElementById(
+                    "status"
+                );
+
+            if (contactFileName) {
+
+                contactFileName.innerText =
+                    filePath
+                        ? getFileName(filePath)
+                        : "No Excel file loaded";
+            }
+
+            if (contactsCount) {
+
+                contactsCount.innerText =
+                    Number.isFinite(count)
+                        ? `${count} contacts`
+                        : "0 contacts";
+            }
+
+            if (
+                status &&
+                statusText
+            ) {
+
+                status.innerText =
+                    statusText;
+            }
+        }
+
+        function getFileName(
+            filePath
+        ) {
+
+            return String(filePath || "")
+                .split(/[\\/]/)
+                .filter(Boolean)
+                .pop() ||
+                "Contacts file";
         }
 
         return {

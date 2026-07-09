@@ -12,343 +12,382 @@
 
     <div class="app-shell">
 
-        <header class="app-header">
+        <aside class="app-sidebar" aria-label="Application navigation">
 
-            <div class="brand-block">
-
-                <p class="eyebrow">
-                    Broadcast Sender
-                </p>
-
-                <h1>
-                    Sender Control Center
-                </h1>
-
-                <p>
-                    Prepare contacts, validate messages, send broadcasts, and review logs from one workspace.
-                </p>
-
+            <div class="sidebar-brand" aria-label="Broadcast Sender">
+                <span class="brand-mark">BS</span>
             </div>
 
-            <nav class="app-nav" aria-label="Main navigation">
+            <nav class="sidebar-nav" aria-label="Main navigation">
 
-                <button id="senderNavBtn" class="nav-tab active" type="button">
-                    Sender
+                <button id="senderNavBtn" class="sidebar-nav-item active" type="button">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M21 3 9.8 14.2"></path>
+                            <path d="m21 3-7.1 18-4.1-6.8L3 10.1 21 3Z"></path>
+                        </svg>
+                    </span>
+                    <span>Sender</span>
                 </button>
 
-                <button id="contactsNavBtn" class="nav-tab" type="button">
-                    Contacts
+                <button id="contactsNavBtn" class="sidebar-nav-item" type="button">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </span>
+                    <span>Contacts</span>
+                </button>
+
+                <button id="templatesNavBtn" class="sidebar-nav-item" type="button">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path>
+                            <path d="M14 2v6h6"></path>
+                            <path d="M8 13h8"></path>
+                            <path d="M8 17h6"></path>
+                        </svg>
+                    </span>
+                    <span>Templates</span>
+                </button>
+
+                <button id="logsNavBtn" class="sidebar-nav-item" type="button">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M3 3v18h18"></path>
+                            <path d="m7 14 3-3 4 4 5-7"></path>
+                        </svg>
+                    </span>
+                    <span>Logs</span>
+                </button>
+
+                <button id="settingsNavBtn" class="sidebar-nav-item" type="button">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.51a2 2 0 0 1 1-1.72l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2Z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </span>
+                    <span>Settings</span>
                 </button>
 
             </nav>
 
-            <p id="appVersionLabel" class="app-version">
-                v...
-            </p>
+            <button id="helpNavBtn" class="sidebar-nav-item sidebar-help" type="button">
+                <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.82 1c0 2-3 2-3 4"></path>
+                        <path d="M12 17h.01"></path>
+                    </svg>
+                </span>
+                <span>Help</span>
+            </button>
+
+        </aside>
+
+        <header class="app-header">
+
+            <div class="app-title">
+                <h1>Broadcast Sender</h1>
+                <span id="appVersionLabel" class="app-version">v1.1.0</span>
+            </div>
+
+            <div class="header-tools">
+
+                <label class="provider-control" for="providerSelect">
+                    <span>Channel</span>
+                    <select id="providerSelect">
+                        <option value="whatsapp" selected>WhatsApp</option>
+                        <option value="telegram">Telegram</option>
+                    </select>
+                </label>
+
+                <div id="headerWhatsAppBadge" class="connection-badge" data-state="waiting">
+                    <span class="status-dot" aria-hidden="true"></span>
+                    <span>WhatsApp</span>
+                    <strong id="headerWhatsAppStatus">Offline</strong>
+                </div>
+
+                <div id="headerTelegramBadge" class="connection-badge" data-state="waiting">
+                    <span class="status-dot" aria-hidden="true"></span>
+                    <span>Telegram</span>
+                    <strong id="headerTelegramStatus">Offline</strong>
+                </div>
+
+            </div>
 
         </header>
 
-        <main>
+        <main class="app-main">
 
-            <section id="mainPage" class="container app-page">
+            <section id="mainPage" class="app-page sender-page">
 
-                <section class="quick-connect-panel">
+                <div class="sender-workspace">
 
-                    <div class="quick-connect-copy">
+                    <aside class="setup-column">
 
-                        <p class="eyebrow">
-                            Start Here
-                        </p>
+                        <section id="connectionsPanel" class="surface-card">
 
-                        <h2>
-                            Connect Channels
-                        </h2>
+                            <div class="card-header">
+                                <div>
+                                    <span class="section-label">Step 1</span>
+                                    <h2>Connections</h2>
+                                </div>
+                            </div>
 
-                        <p>
-                            Connect WhatsApp or Telegram, then prepare contacts, media, and message.
-                        </p>
+                            <div id="connectionTile" class="channel-card connection-waiting">
+                                <span class="channel-icon whatsapp-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M3.3 20.7 4.8 16A8 8 0 1 1 8 19.2Z"></path>
+                                        <path d="M9 8.7c.2 2.6 2.7 5.1 5.3 5.3l1.4-1.4c.3-.3.8-.4 1.2-.2.7.3 1.4.4 2.1.4"></path>
+                                    </svg>
+                                </span>
+                                <div class="channel-card-body">
+                                    <h3>WhatsApp</h3>
+                                    <p id="connectionStatus">Not connected</p>
+                                    <p id="connectionTimer" class="connection-timer">Connection time: 00:00</p>
+                                </div>
+                                <button id="connectBtn" type="button">Connect WhatsApp</button>
+                            </div>
 
-                    </div>
+                            <img id="qrImage" class="qr-image" alt="WhatsApp login QR code">
 
-                    <div class="quick-connect-actions">
+                            <div class="channel-card telegram-channel-card">
+                                <span class="channel-icon telegram-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M21.5 3.5 2.5 11l7.1 2.3L12 20.5l3.7-5.7 5.8-11.3Z"></path>
+                                        <path d="m9.6 13.3 5.5-4.9"></path>
+                                    </svg>
+                                </span>
+                                <div class="channel-card-body">
+                                    <h3>Telegram</h3>
+                                    <p id="telegramConnectionStatus">Telegram not connected</p>
+                                </div>
+                                <button id="connectTelegramBtn" type="button">Connect Telegram</button>
+                            </div>
 
-                        <button id="connectBtn" class="primary-action" type="button">
-                            Connect WhatsApp
-                        </button>
+                            <div id="telegramQrPanel" class="telegram-qr-panel hidden">
+                                <img id="telegramQrImage" class="qr-image" alt="Telegram login QR code">
+                                <a id="telegramLoginLink" href="#" target="_blank" rel="noreferrer">Open Telegram login link</a>
+                            </div>
 
-                        <button id="connectTelegramBtn" type="button">
-                            Connect Telegram
-                        </button>
+                        </section>
 
-                        <p id="connectionTimer" class="connection-timer">
-                            Connection time: 00:00
-                        </p>
+                        <section id="contactsPanel" class="surface-card">
 
-                        <p id="telegramConnectionStatus" class="connection-timer">
-                            Telegram not connected
-                        </p>
+                            <div class="card-header">
+                                <div>
+                                    <span class="section-label">Step 2</span>
+                                    <h2>Contacts</h2>
+                                </div>
+                            </div>
 
-                    </div>
+                            <div class="file-summary">
+                                <span class="file-icon xlsx-icon" aria-hidden="true">XLSX</span>
+                                <div class="file-summary-body">
+                                    <strong id="contactFileName">No Excel file loaded</strong>
+                                    <p id="status">No file selected</p>
+                                    <span id="contactsCount" class="meta-text">0 contacts</span>
+                                </div>
+                            </div>
 
-                    <img id="qrImage" class="qr-image">
+                            <div class="button-stack">
+                                <button id="addContactsFileBtn" class="secondary-action" type="button">Load Excel</button>
+                                <button id="contactsPreviewBtn" type="button">Preview Contacts</button>
+                            </div>
 
-                    <div id="telegramQrPanel" class="telegram-qr-panel hidden">
+                        </section>
 
-                        <img id="telegramQrImage" class="qr-image">
+                        <section id="mediaPanel" class="surface-card">
 
-                        <a id="telegramLoginLink" href="#" target="_blank" rel="noreferrer">
-                            Open Telegram login link
-                        </a>
+                            <div class="card-header">
+                                <div>
+                                    <span class="section-label">Step 3</span>
+                                    <h2>Media</h2>
+                                </div>
+                                <span class="optional-pill">Optional</span>
+                            </div>
 
-                    </div>
+                            <div class="file-summary media-summary">
+                                <span class="file-icon media-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5Z"></path>
+                                        <path d="M14 2v6h6"></path>
+                                        <path d="m8 17 2.2-2.2a1.6 1.6 0 0 1 2.2 0L16 18"></path>
+                                        <circle cx="9" cy="10" r="1"></circle>
+                                    </svg>
+                                </span>
+                                <div class="file-summary-body">
+                                    <strong id="mediaFileName">No file selected</strong>
+                                    <p id="mediaStatus">No media selected</p>
+                                </div>
+                            </div>
 
-                </section>
+                            <div class="button-stack two-up">
+                                <button id="mediaBtn" type="button">Choose File</button>
+                                <button id="removeMediaBtn" class="ghost-danger-action" type="button" disabled>Remove File</button>
+                            </div>
 
-                <div class="status-strip">
+                        </section>
 
-                    <div class="metric-tile provider-tile">
+                    </aside>
 
-                        <label for="providerSelect">
-                            Channel
-                        </label>
+                    <section class="compose-column">
 
-                        <select id="providerSelect">
-                            <option value="whatsapp" selected>
-                                WhatsApp
-                            </option>
-                            <option value="telegram">
-                                Telegram
-                            </option>
-                        </select>
+                        <section id="templatesPanel" class="editor-card">
 
-                    </div>
+                            <div class="editor-card-header">
+                                <div>
+                                    <span class="section-label">Step 4</span>
+                                    <h2>Message Template</h2>
+                                </div>
+                                <span id="templateCharCount" class="meta-text">0 characters</span>
+                            </div>
 
-                    <div class="metric-tile">
+                            <div class="editor-toolbar" role="toolbar" aria-label="Message formatting">
+                                <button class="toolbar-button" type="button" data-editor-command="bold" aria-label="Bold">
+                                    <strong>B</strong>
+                                </button>
+                                <button class="toolbar-button" type="button" data-editor-command="italic" aria-label="Italic">
+                                    <em>I</em>
+                                </button>
+                                <button class="toolbar-button" type="button" data-editor-command="list" aria-label="List">
+                                    <span aria-hidden="true">List</span>
+                                </button>
+                                <button class="toolbar-button toolbar-button-wide" type="button" data-template-insert="{{name}}">
+                                    Insert Variable
+                                </button>
+                                <button class="toolbar-button" type="button" data-editor-command="emoji" aria-label="Emoji">
+                                    <span aria-hidden="true">:)</span>
+                                </button>
+                            </div>
 
-                        <span>
-                            Contacts
-                        </span>
+                            <textarea id="templateInput" rows="14" dir="auto" placeholder="Write your message template here..."></textarea>
 
-                        <strong id="status">
-                            No file selected
-                        </strong>
+                            <div class="variables-panel">
+                                <span>Available Variables</span>
+                                <div class="variable-chips" aria-label="Available message variables">
+                                    <button class="variable-chip" type="button" data-template-insert="{{name}}">{{name}}</button>
+                                    <button class="variable-chip" type="button" data-template-insert="{{username}}">{{username}}</button>
+                                    <button class="variable-chip" type="button" data-template-insert="{{password}}">{{password}}</button>
+                                    <button class="variable-chip" type="button" data-template-insert="{{phone}}">{{phone}}</button>
+                                </div>
+                            </div>
 
-                    </div>
+                        </section>
 
-                    <div id="connectionTile" class="metric-tile connection-waiting">
-
-                        <span>
-                            WhatsApp
-                        </span>
-
-                        <strong id="connectionStatus">
-                            Not connected
-                        </strong>
-
-                    </div>
-
-                </div>
-
-                <div class="sender-grid">
-
-                    <section class="panel media-panel">
-
-                        <div class="panel-heading">
-
-                            <h3>
-                                Media File
-                            </h3>
-
-                            <span>
-                                Optional
-                            </span>
-
-                        </div>
-
-                        <div class="button-row">
-
-                            <button id="mediaBtn" type="button">
-                                Choose Media File
-                            </button>
-
-                        </div>
-
-                        <p id="mediaStatus" class="muted-text">
-                            No media selected
-                        </p>
-
-                    </section>
-
-                    <section class="panel template-panel">
-
-                        <div class="panel-heading">
-
-                            <h3>
-                                Message Template
-                            </h3>
-
-                        </div>
-
-                        <textarea id="templateInput" rows="8" dir="auto" placeholder="Write your message template here..."></textarea>
-
-                        <div class="button-row">
-
-                            <button id="saveTemplateBtn" type="button">
-                                Save As Default Template
-                            </button>
-
+                        <section class="action-bar" aria-label="Broadcast actions">
                             <button id="previewBtn" type="button">
+                                <span class="button-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </span>
                                 Preview Messages
                             </button>
-
-                        </div>
-
-                    </section>
-
-                    <section class="panel panel-wide">
-
-                        <div class="panel-heading">
-
-                            <h3>
-                                Preview
-                            </h3>
-
-                        </div>
-
-                        <div id="previewContainer" class="preview-list"></div>
-
-                    </section>
-
-                    <section class="panel panel-wide">
-
-                        <div id="validationPanel" class="validation-panel validation-panel-empty">
-
-                            <div class="validation-header">
-
-                                <h3>
-                                    Validation Warnings
-                                </h3>
-
-                                <span id="validationSummary">
-                                    No contacts loaded
+                            <button id="validateBtn" type="button">
+                                <span class="button-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M20 6 9 17l-5-5"></path>
+                                    </svg>
                                 </span>
-
-                            </div>
-
-                            <ul id="validationWarnings"></ul>
-
-                        </div>
-
-                    </section>
-
-                    <section class="panel panel-wide">
-
-                        <div class="panel-heading">
-
-                            <h3>
-                                Sending
-                            </h3>
-
-                            <span id="broadcastStatus" class="status-idle">
-                                Ready
-                            </span>
-
-                        </div>
-
-                        <div class="button-row">
-
+                                Validate Contacts
+                            </button>
+                            <button id="saveTemplateBtn" type="button">
+                                <span class="button-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path>
+                                        <path d="M17 21v-8H7v8"></path>
+                                        <path d="M7 3v5h8"></path>
+                                    </svg>
+                                </span>
+                                Save Template
+                            </button>
                             <button id="startBtn" class="primary-action" type="button">
-                                Start Sending
+                                <span class="button-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M21 3 9.8 14.2"></path>
+                                        <path d="m21 3-7.1 18-4.1-6.8L3 10.1 21 3Z"></path>
+                                    </svg>
+                                </span>
+                                Start Broadcast
                             </button>
+                        </section>
 
-                            <button id="pauseBtn" type="button">
-                                Pause
-                            </button>
+                        <div class="operations-grid">
 
-                            <button id="resumeBtn" type="button">
-                                Resume
-                            </button>
+                            <section id="previewPanel" class="surface-card preview-panel">
+                                <div class="card-header">
+                                    <h2>Preview</h2>
+                                </div>
+                                <div id="previewContainer" class="preview-list"></div>
+                            </section>
 
-                            <button id="stopBtn" class="danger-action" type="button">
-                                Stop
-                            </button>
+                            <section class="surface-card validation-card">
+                                <div id="validationPanel" class="validation-panel validation-panel-empty">
+                                    <div class="validation-header">
+                                        <h2>Validation</h2>
+                                        <span id="validationSummary">No contacts loaded</span>
+                                    </div>
+                                    <ul id="validationWarnings"></ul>
+                                </div>
+                            </section>
 
-                            <button id="retryFailedBtn" class="warning-action" type="button">
-                                Retry Failed
-                            </button>
-
-                        </div>
-
-                        <div id="progressContainer" class="progress-panel">
-
-                            <progress id="progressBar" value="0" max="100"></progress>
-
-                            <p id="progressText">
-                                0%
-                            </p>
-
-                            <div id="counterContainer" class="counter-grid">
-
-                                <div class="counter-tile success-counter">
-                                    <span>
-                                        Success
-                                    </span>
-                                    <strong id="successCount">
-                                        0
-                                    </strong>
+                            <section class="surface-card sending-card">
+                                <div class="card-header">
+                                    <h2>Broadcast</h2>
+                                    <span id="broadcastStatus" class="status-idle">Ready</span>
                                 </div>
 
-                                <div class="counter-tile failed-counter">
-                                    <span>
-                                        Failed
-                                    </span>
-                                    <strong id="failedCount">
-                                        0
-                                    </strong>
+                                <div id="progressContainer" class="progress-panel">
+                                    <div class="progress-header">
+                                        <span>Progress</span>
+                                        <strong id="progressText">0%</strong>
+                                    </div>
+                                    <progress id="progressBar" value="0" max="100"></progress>
+
+                                    <div id="counterContainer" class="counter-grid">
+                                        <div class="counter-tile success-counter">
+                                            <span>Success</span>
+                                            <strong id="successCount">0</strong>
+                                        </div>
+                                        <div class="counter-tile failed-counter">
+                                            <span>Failed</span>
+                                            <strong id="failedCount">0</strong>
+                                        </div>
+                                        <div class="counter-tile skipped-counter">
+                                            <span>Skipped</span>
+                                            <strong id="skippedCount">0</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="broadcast-secondary-actions">
+                                        <button id="pauseBtn" type="button">Pause</button>
+                                        <button id="resumeBtn" type="button">Resume</button>
+                                        <button id="stopBtn" class="danger-action" type="button">Stop</button>
+                                        <button id="retryFailedBtn" class="warning-action" type="button">Retry Failed</button>
+                                    </div>
                                 </div>
+                            </section>
 
-                                <div class="counter-tile skipped-counter">
-                                    <span>
-                                        Skipped
-                                    </span>
-                                    <strong id="skippedCount">
-                                        0
-                                    </strong>
+                            <section id="logsPanel" class="surface-card logs-card">
+                                <div class="card-header">
+                                    <h2>Logs</h2>
+                                    <div id="logActionContainer" class="compact-actions">
+                                        <button id="openSuccessLogsBtn" type="button">Success Log</button>
+                                        <button id="openFailedLogsBtn" type="button">Failed Log</button>
+                                        <button id="cleanAllLogsBtn" class="danger-action" type="button">Clean Logs</button>
+                                    </div>
                                 </div>
-
-                            </div>
-
-                            <div id="logActionContainer">
-
-                                <button id="openSuccessLogsBtn" type="button">
-                                    Open Latest Success Log
-                                </button>
-
-                                <button id="openFailedLogsBtn" type="button">
-                                    Open Latest Failed Log
-                                </button>
-
-                                <button id="cleanAllLogsBtn" class="danger-action" type="button">
-                                    Clean All Logs
-                                </button>
-
-                            </div>
+                                <div id="logs"></div>
+                            </section>
 
                         </div>
-
-                    </section>
-
-                    <section class="panel panel-wide">
-
-                        <div class="panel-heading">
-
-                            <h3>
-                                Live Logs
-                            </h3>
-
-                        </div>
-
-                        <div id="logs"></div>
 
                     </section>
 
@@ -356,189 +395,98 @@
 
             </section>
 
-            <section id="contactsPage" class="container app-page hidden">
+            <section id="contactsPage" class="app-page contacts-page hidden">
 
-                <div class="page-title-row">
-
+                <div class="page-toolbar">
                     <div>
-
-                        <p class="eyebrow">
-                            Contacts Control
-                        </p>
-
-                        <h2>
-                            Saved contact files
-                        </h2>
-
-                        <p>
-                            Add, select, edit, download, or delete stored contact files without crowding the sender page.
-                        </p>
-
+                        <span class="section-label">Contacts</span>
+                        <h2>Contact Library</h2>
                     </div>
-
                     <div class="page-actions">
-
-                        <button id="addContactsFileBtn" class="primary-action" type="button">
-                            Add Contacts File
-                        </button>
-
-                        <button id="contactsBackToSenderBtn" type="button">
-                            Back to Sender
-                        </button>
-
+                        <button id="contactsAddFileBtn" class="primary-action" type="button">Add Contacts File</button>
                     </div>
-
                 </div>
 
-                <section id="savedContactsPanel" class="panel">
-
-                    <div id="savedContactsHeader" class="panel-heading">
-
+                <section id="savedContactsPanel" class="surface-card">
+                    <div id="savedContactsHeader" class="card-header">
                         <div>
-
-                            <h3>
-                                Contact Library
-                            </h3>
-
-                            <p>
-                                Select a file for sending, or open it to edit rows and columns.
-                            </p>
-
+                            <h2>Saved Contact Files</h2>
                         </div>
-
-                        <div id="savedContactsActions">
-
-                            <button id="refreshSavedContactsBtn" type="button">
-                                Refresh
-                            </button>
-
-                            <button id="openSavedContactsBtn" type="button">
-                                Open Folder
-                            </button>
-
+                        <div id="savedContactsActions" class="compact-actions">
+                            <button id="refreshSavedContactsBtn" type="button">Refresh</button>
+                            <button id="openSavedContactsBtn" type="button">Open Folder</button>
+                            <button id="contactsBackToSenderBtn" type="button">Back to Sender</button>
                         </div>
-
                     </div>
 
-                    <div id="savedContactsList">
-                        No saved contact files
-                    </div>
-
+                    <div id="savedContactsList">No saved contact files</div>
                 </section>
 
             </section>
 
-            <section id="contactEditorPage" class="container app-page hidden">
+            <section id="contactEditorPage" class="app-page contact-editor-page hidden">
 
-                <div class="editor-hero">
-
+                <div class="page-toolbar editor-toolbar-page">
                     <div class="editor-title-row">
-
-                        <div class="editor-icon">
-                            File
-                        </div>
-
+                        <span class="file-icon xlsx-icon" aria-hidden="true">XLSX</span>
                         <div>
-
-                            <p class="eyebrow">
-                                Contacts Control
-                            </p>
-
-                            <h2>
-                                Contacts File Details
-                            </h2>
-
-                            <p>
-                                Review this file and edit its name, description, columns, and rows.
-                            </p>
-
+                            <span class="section-label">Contacts</span>
+                            <h2>Contacts File Details</h2>
                         </div>
-
                     </div>
 
                     <div class="editor-actions">
-
-                        <button id="editorBackBtn" type="button">
-                            Back
-                        </button>
-
-                        <button id="editorSelectBtn" class="success-action" type="button">
-                            Select for Sender
-                        </button>
-
-                        <button id="editorExportBtn" class="warning-action" type="button">
-                            Download File
-                        </button>
-
-                        <button id="editorDeleteBtn" class="danger-action" type="button">
-                            Delete File
-                        </button>
-
+                        <button id="editorBackBtn" type="button">Back</button>
+                        <button id="editorSelectBtn" class="success-action" type="button">Select for Sender</button>
+                        <button id="editorExportBtn" class="warning-action" type="button">Download File</button>
+                        <button id="editorDeleteBtn" class="danger-action" type="button">Delete File</button>
                     </div>
-
                 </div>
 
-                <div class="editor-body">
-
+                <div class="editor-body surface-card">
                     <p id="editorFileMeta"></p>
 
                     <div class="editor-details-grid">
-
                         <label>
-                            File Name
+                            <span>File Name</span>
                             <input id="editorFileNameInput" type="text">
                         </label>
 
                         <label>
-                            Description
+                            <span>Description</span>
                             <textarea id="editorDescriptionInput" rows="4"></textarea>
                         </label>
 
-                        <button id="editorSaveDetailsBtn" class="success-action" type="button">
-                            Save Details
-                        </button>
-
+                        <button id="editorSaveDetailsBtn" class="success-action" type="button">Save Details</button>
                     </div>
 
-                    <p id="editorTableSummary"></p>
-
-                    <p class="editor-help">
-                        Use the small [-] and [+] buttons inside each row and column to remove or insert exactly where you want. The main phone column name is locked.
-                    </p>
-
-                    <div class="editor-toolbar">
-
-                        <button id="editorSaveContentBtn" class="success-action" type="button">
-                            Save File Content
-                        </button>
-
-                        <button id="editorAddRowBtn" type="button">
-                            Add Row
-                        </button>
-
-                        <button id="editorAddColumnBtn" type="button">
-                            Add Column
-                        </button>
-
+                    <div class="editor-table-header">
+                        <p id="editorTableSummary"></p>
                         <div class="editor-search">
-
                             <input id="editorSearchInput" type="search" placeholder="Search contacts">
-
-                            <button id="editorClearSearchBtn" class="mini-btn" type="button" aria-label="Clear contact search" disabled>
-                                X
-                            </button>
-
+                            <button id="editorClearSearchBtn" class="mini-btn" type="button" aria-label="Clear contact search" disabled>X</button>
                         </div>
+                    </div>
 
+                    <div class="editor-controls-row">
+                        <button id="editorSaveContentBtn" class="success-action" type="button">Save File Content</button>
+                        <button id="editorAddRowBtn" type="button">Add Row</button>
+                        <button id="editorAddColumnBtn" type="button">Add Column</button>
                     </div>
 
                     <div id="contactTableEditor" class="table-editor"></div>
-
                 </div>
 
             </section>
 
         </main>
+
+        <footer class="status-bar" aria-label="Application status">
+            <span id="statusBarConnection">WhatsApp Offline</span>
+            <span id="statusBarContacts">0 Contacts Loaded</span>
+            <span id="statusBarReady">Ready to Send</span>
+            <span id="statusBarTime">--:--</span>
+        </footer>
 
     </div>
 
@@ -558,6 +506,8 @@
     <script src="app/media.js"></script>
     <script src="app/preview.js"></script>
     <script src="app/broadcastControls.js"></script>
+    <script src="app/editorToolbar.js"></script>
+    <script src="app/desktopChrome.js"></script>
     <script src="app.js"></script>
 
 </body>

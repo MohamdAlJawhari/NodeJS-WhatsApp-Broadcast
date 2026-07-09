@@ -14,15 +14,26 @@
 
         function register() {
 
-            dom.addContactsFileBtn.addEventListener(
-                "click",
-                async () => {
+            [
+                dom.addContactsFileBtn,
+                dom.contactsAddFileBtn
+            ].forEach(button => {
 
-                    await loadContactsFile({
-                        showContactsPageAfterLoad: true
-                    });
+                if (!button) {
+
+                    return;
                 }
-            );
+
+                button.addEventListener(
+                    "click",
+                    async () => {
+
+                        await loadContactsFile({
+                            showContactsPageAfterLoad: true
+                        });
+                    }
+                );
+            });
         }
 
         async function loadContactsFile({
@@ -31,6 +42,11 @@
 
             dom.status.innerText =
                 "Loading contacts...";
+
+            updateContactsDisplay({
+                statusText:
+                    "Loading contacts..."
+            });
 
             const result =
                 await electronAPI
@@ -44,6 +60,11 @@
                 dom.status.innerText =
                     result.error ||
                     "File selection canceled";
+
+                updateContactsDisplay({
+                    statusText:
+                        dom.status.innerText
+                });
 
                 if (result.error) {
 
@@ -72,6 +93,15 @@
 
             dom.status.innerText =
                 `Loaded ${result.count} contacts`;
+
+            updateContactsDisplay({
+                filePath:
+                    result.filePath,
+                count:
+                    result.count,
+                statusText:
+                    dom.status.innerText
+            });
 
             showToast(
                 `Loaded ${result.count} contacts`,
@@ -114,6 +144,51 @@
 
                 await showPage("contacts");
             }
+        }
+
+        function updateContactsDisplay({
+            filePath,
+            count,
+            statusText
+        }) {
+
+            if (
+                dom.contactFileName &&
+                filePath
+            ) {
+
+                dom.contactFileName.innerText =
+                    getFileName(filePath);
+            }
+
+            if (
+                dom.contactsCount &&
+                Number.isFinite(count)
+            ) {
+
+                dom.contactsCount.innerText =
+                    `${count} contacts`;
+            }
+
+            if (
+                dom.status &&
+                statusText
+            ) {
+
+                dom.status.innerText =
+                    statusText;
+            }
+        }
+
+        function getFileName(
+            filePath
+        ) {
+
+            return String(filePath || "")
+                .split(/[\\/]/)
+                .filter(Boolean)
+                .pop() ||
+                "Contacts file";
         }
 
         return {
