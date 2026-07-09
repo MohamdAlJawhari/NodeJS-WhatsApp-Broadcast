@@ -10,6 +10,8 @@
         return {
             addContactsFileBtn:
                 byId("addContactsFileBtn"),
+            appVersionLabel:
+                byId("appVersionLabel"),
             broadcastStatus:
                 byId("broadcastStatus"),
             cleanAllLogsBtn:

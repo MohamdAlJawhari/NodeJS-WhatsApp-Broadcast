@@ -152,6 +152,16 @@ h3 {
   background: var(--surface-soft);
 }
 
+.app-version {
+  align-self: flex-start;
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 .nav-tab {
   min-width: 116px;
   border-color: transparent;

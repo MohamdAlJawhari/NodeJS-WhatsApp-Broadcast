@@ -1,8 +1,8 @@
 {
-  "name": "whatsapp",
-  "version": "1.0.1",
-  "description": "Internal WhatsApp broadcast sender desktop app",
-  "productName": "WhatsApp Broadcast Sender",
+  "name": "broadcast-sender",
+  "version": "1.1.0",
+  "description": "Internal WhatsApp and Telegram broadcast sender desktop app",
+  "productName": "Broadcast Sender",
   "main": "electron/main.js",
   "scripts": {
     "start": "electron .",
@@ -35,7 +35,7 @@
   },
   "build": {
     "appId": "com.internal.whatsapp-broadcast-sender",
-    "productName": "WhatsApp Broadcast Sender",
+    "productName": "Broadcast Sender",
     "directories": {
       "output": "release"
     },
@@ -77,7 +77,7 @@
         }
       ],
       "signAndEditExecutable": false,
-      "artifactName": "WhatsApp-Broadcast-Sender-Setup-${version}.${ext}"
+      "artifactName": "Broadcast-Sender-Setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -85,7 +85,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "${productName}"
+      "shortcutName": "Broadcast Sender"
     }
   }
 }

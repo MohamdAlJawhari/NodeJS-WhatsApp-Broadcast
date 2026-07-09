@@ -199,9 +199,38 @@
     broadcastControls.register();
 
     settingsUI.loadAppSettings();
+    loadAppVersion();
     connectionUI.setConnectionStatus("Not connected");
     broadcastControls.setBroadcastStatus("IDLE");
     broadcastControls.updateButtons("IDLE");
+
+    async function loadAppVersion() {
+
+        if (!dom.appVersionLabel) {
+
+            return;
+        }
+
+        try {
+
+            const status =
+                await electronAPI.getUpdateStatus();
+
+            const version =
+                status &&
+                status.currentVersion;
+
+            dom.appVersionLabel.innerText =
+                version
+                    ? `v${version}`
+                    : "";
+
+        } catch (_error) {
+
+            dom.appVersionLabel.innerText =
+                "";
+        }
+    }
 
     function getContactFilesUI() {
 
