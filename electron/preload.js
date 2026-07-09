@@ -177,6 +177,62 @@ contextBridge.exposeInMainWorld(
       ipcRenderer.invoke(
         "save-template",
         template
+      ),
+
+    getUpdateStatus: () =>
+      ipcRenderer.invoke(
+        "get-update-status"
+      ),
+
+    checkForUpdates: () =>
+      ipcRenderer.invoke(
+        "check-for-updates"
+      ),
+
+    downloadUpdate: () =>
+      ipcRenderer.invoke(
+        "download-update"
+      ),
+
+    installUpdate: (options) =>
+      ipcRenderer.invoke(
+        "install-update",
+        options
+      ),
+
+    onUpdateStatus: (callback) =>
+      ipcRenderer.on(
+        "update-status",
+        (_, status) =>
+          callback(status)
+      ),
+
+    onUpdateProgress: (callback) =>
+      ipcRenderer.on(
+        "update-progress",
+        (_, progress) =>
+          callback(progress)
+      ),
+
+    onUpdateAvailable: (callback) =>
+      ipcRenderer.on(
+        "update-available",
+        (_, updateInfo) =>
+          callback(updateInfo)
+      ),
+
+    onUpdateDownloaded: (callback) =>
+      ipcRenderer.on(
+        "update-downloaded",
+        (_, updateInfo) =>
+          callback(updateInfo)
+      ),
+
+    onUpdateError: (callback) =>
+      ipcRenderer.on(
+        "update-error",
+        (_, error) =>
+          callback(error)
       )
   }
 );

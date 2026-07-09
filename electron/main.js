@@ -48,6 +48,17 @@ const {
   registerIpcHandlers
 } = require("./main/ipcHandlers");
 
+const {
+  autoUpdater
+} = require("electron-updater");
+
+const electronLog =
+  require("electron-log");
+
+const {
+  createUpdateService
+} = require("./main/updateService");
+
 const appRootDir = path.join(
   __dirname,
   ".."
@@ -96,6 +107,14 @@ const broadcastOrchestrator =
     telegramConnection
   });
 
+const updateService =
+  createUpdateService({
+    app,
+    autoUpdater,
+    getWindows: () => BrowserWindow.getAllWindows(),
+    logger: electronLog
+  });
+
 registerIpcHandlers({
   ipcMain,
   dialog,
@@ -104,7 +123,8 @@ registerIpcHandlers({
   telegramConnection,
   broadcastOrchestrator,
   logService,
-  settingsService
+  settingsService,
+  updateService
 });
 
 function createWindow() {
@@ -137,6 +157,8 @@ function createWindow() {
       "index.html"
     )
   );
+
+  return win;
 }
 
 app.whenReady().then(() => {
@@ -144,4 +166,6 @@ app.whenReady().then(() => {
   settingsService.configureRuntimePaths();
 
   createWindow();
+
+  updateService.scheduleStartupCheck();
 });

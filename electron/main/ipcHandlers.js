@@ -35,7 +35,8 @@ function registerIpcHandlers({
   telegramConnection,
   broadcastOrchestrator,
   logService,
-  settingsService
+  settingsService,
+  updateService
 }) {
 
   ipcMain.handle(
@@ -359,6 +360,48 @@ function registerIpcHandlers({
       return settingsService.saveDefaultTemplate(
         template
       );
+    }
+  );
+
+  ipcMain.handle(
+    "get-update-status",
+    async () => {
+      return updateService.getStatus();
+    }
+  );
+
+  ipcMain.handle(
+    "check-for-updates",
+    async () => {
+      return updateService.checkForUpdates({
+        manual: true
+      });
+    }
+  );
+
+  ipcMain.handle(
+    "download-update",
+    async () => {
+      return updateService.downloadUpdate();
+    }
+  );
+
+  ipcMain.handle(
+    "install-update",
+    async (_, options = {}) => {
+
+      const installOptions =
+        options &&
+        typeof options === "object"
+          ? options
+          : {};
+
+      return updateService.installUpdate({
+        silent:
+          installOptions.silent !== false,
+        forceRunAfter:
+          installOptions.forceRunAfter !== false
+      });
     }
   );
 }

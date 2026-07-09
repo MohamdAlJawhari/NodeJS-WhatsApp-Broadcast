@@ -9,7 +9,7 @@
     "electron": "electron .",
     "cli": "node src/app.js",
     "test": "node --test tests/*.test.js",
-    "build:win": "electron-builder --win --x64"
+    "build:win": "electron-builder --win --x64 --publish never"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +19,8 @@
     "@wppconnect-team/wppconnect": "^1.8.12",
     "csv-writer": "^1.6.0",
     "dotenv": "^17.4.2",
+    "electron-log": "^5.4.4",
+    "electron-updater": "^6.8.9",
     "libphonenumber-js": "^1.12.43",
     "puppeteer": "^24.43.0",
     "qrcode": "^1.5.4",
@@ -37,6 +39,13 @@
     "directories": {
       "output": "release"
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "MohamdAlJawhari",
+        "repo": "NodeJS-WhatsApp-Broadcast"
+      }
+    ],
     "files": [
       "package.json",
       "build/icon.ico",
@@ -68,7 +77,7 @@
         }
       ],
       "signAndEditExecutable": false,
-      "artifactName": "${productName} Setup ${version}.${ext}"
+      "artifactName": "WhatsApp-Broadcast-Sender-Setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
