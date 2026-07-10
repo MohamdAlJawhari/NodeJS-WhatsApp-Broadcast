@@ -4,6 +4,8 @@
         dom,
         electronAPI,
         getContactFilesUI,
+        getSelectedProvider,
+        initializeChannelTemplates,
         refreshValidationWarnings,
         showToast
     }) {
@@ -17,9 +19,15 @@
                     const template =
                         dom.templateInput.value;
 
+                    const provider =
+                        getSelectedProvider();
+
                     try {
-                        await electronAPI.saveTemplate(template);
-                        showToast("Default template saved", "success");
+                        await electronAPI.saveTemplate(template, provider);
+                        showToast(
+                            `${provider === "telegram" ? "Telegram" : "WhatsApp"} template saved`,
+                            "success"
+                        );
                     } catch (error) {
                         showToast(error.message || "Failed to save template", "error");
                     }
@@ -37,17 +45,7 @@
                 return;
             }
 
-            dom.templateInput.value =
-                settings.defaultTemplate || "";
-
-            dom.templateInput.dispatchEvent(
-                new Event(
-                    "input",
-                    {
-                        bubbles: true
-                    }
-                )
-            );
+            initializeChannelTemplates(settings);
 
             const contactFilesUI =
                 getContactFilesUI();

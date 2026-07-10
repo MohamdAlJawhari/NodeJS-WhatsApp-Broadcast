@@ -132,6 +132,8 @@
                 byId("progressBar"),
             progressText:
                 byId("progressText"),
+            providerControl:
+                document.querySelector(".provider-control"),
             providerSelect:
                 byId("providerSelect"),
             qrImage:

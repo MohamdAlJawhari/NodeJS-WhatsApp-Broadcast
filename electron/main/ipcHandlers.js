@@ -370,9 +370,20 @@ function registerIpcHandlers({
 
   ipcMain.handle(
     "save-template",
-    async (_, template) => {
+    async (_, payload) => {
+      const template =
+        payload && typeof payload === "object"
+          ? payload.template
+          : payload;
+
+      const provider =
+        payload && typeof payload === "object"
+          ? payload.provider
+          : "whatsapp";
+
       return settingsService.saveDefaultTemplate(
-        template
+        template,
+        provider
       );
     }
   );

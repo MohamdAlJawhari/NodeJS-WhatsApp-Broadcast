@@ -177,10 +177,13 @@ contextBridge.exposeInMainWorld(
         "load-settings"
       ),
 
-    saveTemplate: (template) =>
+    saveTemplate: (template, provider) =>
       ipcRenderer.invoke(
         "save-template",
-        template
+        {
+          provider,
+          template
+        }
       ),
 
     getUpdateStatus: () =>

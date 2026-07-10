@@ -63,9 +63,31 @@ function normalizeSettings(settings = {}) {
       ? settings.sending
       : {};
 
+  const legacyTemplate =
+    typeof settings.defaultTemplate === "string"
+      ? settings.defaultTemplate
+      : defaultSettings.defaultTemplate;
+
+  const incomingChannelTemplates =
+    settings &&
+    typeof settings.channelTemplates === "object" &&
+    settings.channelTemplates !== null
+      ? settings.channelTemplates
+      : {};
+
   return {
     ...defaultSettings,
     ...settings,
+    channelTemplates: {
+      whatsapp:
+        typeof incomingChannelTemplates.whatsapp === "string"
+          ? incomingChannelTemplates.whatsapp
+          : legacyTemplate,
+      telegram:
+        typeof incomingChannelTemplates.telegram === "string"
+          ? incomingChannelTemplates.telegram
+          : legacyTemplate
+    },
     sending: {
       ...defaultSettings.sending,
       ...incomingSending

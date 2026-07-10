@@ -1827,6 +1827,108 @@ h3 {
   transition: border-color 180ms ease, background 180ms ease;
 }
 
+/* Channel-aware compose experience. */
+.brand-logo {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.provider-control {
+  grid-template-columns: 8px auto 140px;
+  padding: 4px 5px 4px 9px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  transition:
+    border-color 250ms ease,
+    background-color 250ms ease,
+    box-shadow 250ms ease;
+}
+
+.provider-active-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #98a2b3;
+  box-shadow: 0 0 0 3px rgba(152, 162, 179, 0.12);
+  transition: background-color 250ms ease, box-shadow 250ms ease;
+}
+
+.provider-control[data-channel="whatsapp"] {
+  border-color: rgba(22, 163, 74, 0.24);
+  background: rgba(22, 163, 74, 0.055);
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.06);
+}
+
+.provider-control[data-channel="whatsapp"] .provider-active-dot {
+  background: #22a559;
+  box-shadow: 0 0 0 3px rgba(34, 165, 89, 0.14);
+}
+
+.provider-control[data-channel="telegram"] {
+  border-color: rgba(37, 99, 235, 0.22);
+  background: rgba(37, 99, 235, 0.055);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.06);
+}
+
+.provider-control[data-channel="telegram"] .provider-active-dot {
+  background: #328bdc;
+  box-shadow: 0 0 0 3px rgba(50, 139, 220, 0.14);
+}
+
+.provider-control[data-channel="whatsapp"] select {
+  border-color: rgba(22, 163, 74, 0.34);
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #176b39;
+}
+
+.provider-control[data-channel="telegram"] select {
+  border-color: rgba(37, 99, 235, 0.32);
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #245cae;
+}
+
+#templatesPanel,
+#templatesPanel .editor-card-header,
+#templatesPanel .editor-toolbar,
+#templatesPanel textarea,
+#templatesPanel .template-preview,
+#templatesPanel .variables-panel {
+  transition:
+    background-color 250ms ease,
+    border-color 250ms ease,
+    box-shadow 250ms ease;
+}
+
+#templatesPanel[data-channel="whatsapp"] {
+  border-color: rgba(22, 163, 74, 0.2);
+  background: rgba(22, 163, 74, 0.042);
+  box-shadow: 0 10px 28px rgba(22, 163, 74, 0.055);
+}
+
+#templatesPanel[data-channel="telegram"] {
+  border-color: rgba(37, 99, 235, 0.19);
+  background: rgba(37, 99, 235, 0.042);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.055);
+}
+
+#templatesPanel[data-channel="whatsapp"] .editor-card-header,
+#templatesPanel[data-channel="whatsapp"] .editor-toolbar,
+#templatesPanel[data-channel="whatsapp"] textarea,
+#templatesPanel[data-channel="whatsapp"] .template-preview,
+#templatesPanel[data-channel="whatsapp"] .variables-panel {
+  background-color: rgba(246, 253, 248, 0.82);
+}
+
+#templatesPanel[data-channel="telegram"] .editor-card-header,
+#templatesPanel[data-channel="telegram"] .editor-toolbar,
+#templatesPanel[data-channel="telegram"] textarea,
+#templatesPanel[data-channel="telegram"] .template-preview,
+#templatesPanel[data-channel="telegram"] .variables-panel {
+  background-color: rgba(246, 250, 255, 0.84);
+}
+
 .media-state-processing { --media-accent: #d89b16; --media-soft: #fffbeb; }
 .media-state-success { --media-accent: #16a34a; --media-soft: #f0fdf4; }
 .media-state-error { --media-accent: #dc2626; --media-soft: #fff1f2; }
@@ -3822,4 +3924,185 @@ progress::-webkit-progress-value {
     right: 0;
     left: auto;
   }
+}
+
+/* Full workspace channel theming. */
+body {
+  --channel-accent: #667085;
+  --channel-accent-dark: #475467;
+  --channel-accent-rgb: 102, 112, 133;
+  --channel-surface: rgba(248, 250, 252, 0.88);
+  --channel-border: rgba(152, 162, 179, 0.24);
+}
+
+body[data-channel="whatsapp"] {
+  --channel-accent: #1f9d55;
+  --channel-accent-dark: #16733e;
+  --channel-accent-rgb: 31, 157, 85;
+  --channel-surface: rgba(240, 253, 244, 0.78);
+  --channel-border: rgba(31, 157, 85, 0.2);
+}
+
+body[data-channel="telegram"] {
+  --channel-accent: #3186d5;
+  --channel-accent-dark: #2465a3;
+  --channel-accent-rgb: 49, 134, 213;
+  --channel-surface: rgba(239, 247, 255, 0.8);
+  --channel-border: rgba(49, 134, 213, 0.2);
+}
+
+.app-main,
+.compose-column .surface-card,
+.compose-column .editor-card,
+.compose-column .action-bar,
+.status-bar,
+#connectionsPanel .channel-card,
+.toolbar-button,
+.variable-chip,
+#templateCharCount,
+#previewBtn,
+#saveTemplateBtn,
+#startBtn {
+  transition:
+    color 250ms ease,
+    border-color 250ms ease,
+    background-color 250ms ease,
+    box-shadow 250ms ease,
+    outline-color 250ms ease;
+}
+
+body[data-channel="whatsapp"] .app-main,
+body[data-channel="telegram"] .app-main {
+  background:
+    radial-gradient(circle at 78% 5%, rgba(var(--channel-accent-rgb), 0.07), transparent 31%),
+    linear-gradient(145deg, rgba(var(--channel-accent-rgb), 0.025), transparent 45%),
+    var(--bg);
+}
+
+body[data-channel="whatsapp"] .compose-column > .surface-card,
+body[data-channel="telegram"] .compose-column > .surface-card,
+body[data-channel="whatsapp"] .compose-column .operations-grid > .surface-card,
+body[data-channel="telegram"] .compose-column .operations-grid > .surface-card {
+  border-color: var(--channel-border);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    0 1px 2px rgba(17, 24, 39, 0.035),
+    0 12px 28px rgba(var(--channel-accent-rgb), 0.035);
+}
+
+body[data-channel="whatsapp"] .action-bar,
+body[data-channel="telegram"] .action-bar {
+  border-color: var(--channel-border);
+  background:
+    linear-gradient(135deg, rgba(var(--channel-accent-rgb), 0.065), rgba(255, 255, 255, 0.94) 48%),
+    #fff;
+  box-shadow: 0 12px 30px rgba(var(--channel-accent-rgb), 0.09);
+}
+
+body[data-channel="whatsapp"] #startBtn,
+body[data-channel="telegram"] #startBtn {
+  border-color: var(--channel-accent);
+  background: linear-gradient(135deg, var(--channel-accent), var(--channel-accent-dark));
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(var(--channel-accent-rgb), 0.22);
+}
+
+body[data-channel="whatsapp"] #startBtn:hover:not(:disabled),
+body[data-channel="telegram"] #startBtn:hover:not(:disabled) {
+  border-color: var(--channel-accent-dark);
+  background: var(--channel-accent-dark);
+  color: #fff;
+  box-shadow: 0 12px 28px rgba(var(--channel-accent-rgb), 0.28);
+}
+
+body[data-channel="whatsapp"] #previewBtn,
+body[data-channel="whatsapp"] #saveTemplateBtn,
+body[data-channel="telegram"] #previewBtn,
+body[data-channel="telegram"] #saveTemplateBtn {
+  border-color: rgba(var(--channel-accent-rgb), 0.26);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--channel-accent-dark);
+}
+
+body[data-channel="whatsapp"] #previewBtn:hover:not(:disabled),
+body[data-channel="whatsapp"] #saveTemplateBtn:hover:not(:disabled),
+body[data-channel="telegram"] #previewBtn:hover:not(:disabled),
+body[data-channel="telegram"] #saveTemplateBtn:hover:not(:disabled) {
+  border-color: rgba(var(--channel-accent-rgb), 0.48);
+  background: rgba(var(--channel-accent-rgb), 0.075);
+  color: var(--channel-accent-dark);
+}
+
+body[data-channel="whatsapp"] #templatesPanel .toolbar-button:hover:not(:disabled),
+body[data-channel="whatsapp"] #templatesPanel .toolbar-button[aria-expanded="true"],
+body[data-channel="telegram"] #templatesPanel .toolbar-button:hover:not(:disabled),
+body[data-channel="telegram"] #templatesPanel .toolbar-button[aria-expanded="true"] {
+  background: rgba(var(--channel-accent-rgb), 0.09);
+  color: var(--channel-accent-dark);
+}
+
+body[data-channel="whatsapp"] #templatesPanel .toolbar-button:focus-visible,
+body[data-channel="telegram"] #templatesPanel .toolbar-button:focus-visible,
+body[data-channel="whatsapp"] #templateInput:focus-visible,
+body[data-channel="telegram"] #templateInput:focus-visible {
+  outline-color: rgba(var(--channel-accent-rgb), 0.24);
+}
+
+body[data-channel="whatsapp"] #templateCharCount,
+body[data-channel="telegram"] #templateCharCount,
+body[data-channel="whatsapp"] .variable-chip,
+body[data-channel="telegram"] .variable-chip {
+  border-color: rgba(var(--channel-accent-rgb), 0.2);
+  background: rgba(var(--channel-accent-rgb), 0.07);
+  color: var(--channel-accent-dark);
+}
+
+body[data-channel="whatsapp"] #connectionTile,
+body[data-channel="telegram"] .telegram-channel-card {
+  outline: 2px solid rgba(var(--channel-accent-rgb), 0.28);
+  outline-offset: 2px;
+  background:
+    linear-gradient(135deg, rgba(var(--channel-accent-rgb), 0.075), rgba(255, 255, 255, 0.96));
+  box-shadow: 0 10px 24px rgba(var(--channel-accent-rgb), 0.08);
+}
+
+body[data-channel="whatsapp"] #connectBtn,
+body[data-channel="telegram"] #connectTelegramBtn {
+  border-color: rgba(var(--channel-accent-rgb), 0.3);
+  background: rgba(var(--channel-accent-rgb), 0.075);
+  color: var(--channel-accent-dark);
+}
+
+body[data-channel="whatsapp"] #headerWhatsAppBadge,
+body[data-channel="telegram"] #headerTelegramBadge {
+  border-color: rgba(var(--channel-accent-rgb), 0.32);
+  box-shadow:
+    0 0 0 3px rgba(var(--channel-accent-rgb), 0.07),
+    var(--shadow-sm);
+}
+
+body[data-channel="whatsapp"] progress,
+body[data-channel="telegram"] progress {
+  accent-color: var(--channel-accent);
+}
+
+body[data-channel="whatsapp"] .status-bar,
+body[data-channel="telegram"] .status-bar {
+  border-top-color: var(--channel-border);
+  background:
+    linear-gradient(90deg, rgba(var(--channel-accent-rgb), 0.055), rgba(255, 255, 255, 0.98) 34%);
+}
+
+body[data-channel="whatsapp"] .status-bar span::before,
+body[data-channel="telegram"] .status-bar span::before,
+body[data-channel="whatsapp"] .sending-card .card-header h2::before,
+body[data-channel="telegram"] .sending-card .card-header h2::before {
+  color: var(--channel-accent);
+}
+
+body[data-channel="whatsapp"] .sidebar-nav-item.active,
+body[data-channel="telegram"] .sidebar-nav-item.active {
+  box-shadow:
+    inset 3px 0 0 var(--channel-accent),
+    0 8px 18px rgba(0, 0, 0, 0.14);
 }
