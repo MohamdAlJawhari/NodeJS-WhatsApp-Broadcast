@@ -135,20 +135,39 @@
         }
 
         function updateThumbnail(filePath) {
-            if (!dom.mediaThumbnail) return;
             const extension = getExtension(filePath);
             const isImage = IMAGE_EXTENSIONS.includes(extension);
+            const isVideo = extension === "mp4";
+            const hasFile = Boolean(filePath);
             if (dom.mediaSelectedRow) {
                 dom.mediaSelectedRow.classList.toggle("media-selected-image", isImage);
             }
-            dom.mediaThumbnail.classList.toggle("media-thumbnail-empty", !filePath);
-            dom.mediaThumbnail.classList.toggle("media-thumbnail-photo", isImage);
-            dom.mediaThumbnail.classList.toggle("media-thumbnail-file", Boolean(filePath) && !isImage);
+            if (dom.mediaUploadCard) {
+                dom.mediaUploadCard.classList.toggle("media-preview-image", isImage);
+                dom.mediaUploadCard.classList.toggle("media-preview-file", hasFile && !isImage);
+                dom.mediaUploadCard.classList.toggle("media-preview-video", hasFile && isVideo);
+            }
             if (dom.mediaThumbnailImage) {
                 dom.mediaThumbnailImage.classList.toggle("hidden", !isImage);
                 if (isImage) dom.mediaThumbnailImage.src = pathToFileUrl(filePath);
                 else dom.mediaThumbnailImage.removeAttribute("src");
             }
+            if (dom.mediaCanvasFile) {
+                dom.mediaCanvasFile.classList.toggle("hidden", !hasFile || isImage);
+                dom.mediaCanvasFile.classList.toggle("media-canvas-video", isVideo);
+                dom.mediaCanvasFile.classList.toggle("media-canvas-document", hasFile && !isImage && !isVideo);
+                const videoIcon = dom.mediaCanvasFile.querySelector && dom.mediaCanvasFile.querySelector(".media-canvas-video-icon");
+                const documentIcon = dom.mediaCanvasFile.querySelector && dom.mediaCanvasFile.querySelector(".media-canvas-document-icon");
+                if (videoIcon) videoIcon.classList.toggle("hidden", !isVideo);
+                if (documentIcon) documentIcon.classList.toggle("hidden", isVideo);
+            }
+            if (dom.mediaCanvasBadge) {
+                dom.mediaCanvasBadge.innerText = getTypeLabel(filePath);
+            }
+            if (!dom.mediaThumbnail) return;
+            dom.mediaThumbnail.classList.toggle("media-thumbnail-empty", !filePath);
+            dom.mediaThumbnail.classList.toggle("media-thumbnail-photo", isImage);
+            dom.mediaThumbnail.classList.toggle("media-thumbnail-file", Boolean(filePath) && !isImage);
             if (dom.mediaThumbnailIcon) dom.mediaThumbnailIcon.classList.toggle("hidden", isImage);
             if (dom.mediaThumbnailBadge) {
                 dom.mediaThumbnailBadge.innerText = extension.toUpperCase();

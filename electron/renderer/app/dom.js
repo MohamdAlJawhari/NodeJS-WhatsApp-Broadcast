@@ -80,6 +80,10 @@
                 byId("mainPage"),
             mediaBtn:
                 byId("mediaBtn"),
+            mediaCanvasBadge:
+                byId("mediaCanvasBadge"),
+            mediaCanvasFile:
+                byId("mediaCanvasFile"),
             mediaDropZone:
                 byId("mediaDropZone"),
             mediaDropPrompt:

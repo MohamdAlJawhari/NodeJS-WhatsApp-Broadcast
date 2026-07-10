@@ -1871,6 +1871,45 @@ h3 {
   object-fit: cover;
 }
 
+.media-canvas-file {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 9px;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.96), transparent 44%),
+    color-mix(in srgb, var(--media-accent) 12%, white);
+  color: var(--media-accent);
+}
+
+.media-canvas-file svg {
+  width: 82px;
+  height: 82px;
+  filter: drop-shadow(0 10px 16px rgba(16, 24, 40, 0.1));
+}
+
+.media-canvas-file svg rect {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.media-canvas-file strong {
+  min-width: 48px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--media-accent);
+  color: #fff;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
 .media-preview-overlay {
   position: absolute;
   right: 10px;
@@ -1883,10 +1922,6 @@ h3 {
   font-size: 10px;
   font-weight: 700;
   pointer-events: none;
-}
-
-.media-thumbnail-photo + .media-file-details {
-  grid-column: 1 / 2;
 }
 
 .media-upload-actions {
@@ -1916,7 +1951,7 @@ h3 {
 .media-selected-row {
   display: grid;
   order: 4;
-  grid-template-columns: 60px minmax(0, 1fr) 32px;
+  grid-template-columns: minmax(0, 1fr) 32px;
   gap: 14px;
   align-items: center;
   padding: 12px;
@@ -1925,28 +1960,6 @@ h3 {
   background: rgba(255, 255, 255, 0.78);
 }
 
-.media-selected-row.media-selected-image {
-  grid-template-columns: minmax(0, 1fr) 32px;
-}
-
-.media-selected-row.media-selected-image .media-thumbnail {
-  display: none;
-}
-
-.media-thumbnail {
-  position: relative;
-  display: grid;
-  width: 60px;
-  height: 60px;
-  overflow: hidden;
-  place-items: center;
-  border-radius: 9px;
-  background: color-mix(in srgb, var(--media-accent) 13%, white);
-  color: var(--media-accent);
-}
-.media-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
-.media-thumbnail-icon { display: grid; place-items: center; }
-.media-thumbnail-badge { position: absolute; right: 4px; bottom: 4px; padding: 1px 4px; border-radius: 4px; background: var(--media-accent); color: white; font-size: 8px; font-weight: 800; }
 .media-file-details { min-width: 0; }
 .media-file-line { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .media-file-line strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1958,12 +1971,13 @@ h3 {
 .media-progress-label { display: block; margin-top: 3px; }
 .media-remove-button { width: 30px; min-width: 30px; min-height: 30px; padding: 0; border: 0; border-radius: 50%; background: #fee2e2; color: #dc2626; font-size: 22px; line-height: 1; }
 
-.media-state-success .media-thumbnail-photo ~ .media-drop-zone .media-drop-placeholder,
-.media-state-success:has(.media-thumbnail-photo) .media-drop-placeholder {
+.media-state-success.media-preview-image .media-drop-placeholder,
+.media-state-success.media-preview-file .media-drop-placeholder {
   display: none;
 }
 
-.media-state-success:has(.media-thumbnail-photo) .media-drop-zone {
+.media-state-success.media-preview-image .media-drop-zone,
+.media-state-success.media-preview-file .media-drop-zone {
   min-height: 230px;
   padding: 0;
   overflow: hidden;
@@ -1971,16 +1985,18 @@ h3 {
   background: #e5e7eb;
 }
 
-.media-state-success:has(.media-thumbnail-photo) .media-preview-overlay {
+.media-state-success.media-preview-image .media-preview-overlay,
+.media-state-success.media-preview-file .media-preview-overlay {
   display: inline-flex;
 }
 
-.media-state-success:has(.media-thumbnail-photo) .media-drop-zone:hover .media-preview-overlay,
-.media-state-success:has(.media-thumbnail-photo) .media-drop-zone.is-dragging .media-preview-overlay {
+.media-state-success.media-preview-image .media-drop-zone:hover .media-preview-overlay,
+.media-state-success.media-preview-image .media-drop-zone.is-dragging .media-preview-overlay,
+.media-state-success.media-preview-file .media-drop-zone:hover .media-preview-overlay,
+.media-state-success.media-preview-file .media-drop-zone.is-dragging .media-preview-overlay {
   background: var(--primary);
 }
 
-.media-state-success:not(:has(.media-thumbnail-photo)) .media-drop-zone,
 .media-state-error .media-drop-zone {
   min-height: 120px;
 }
