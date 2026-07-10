@@ -4106,3 +4106,121 @@ body[data-channel="telegram"] .sidebar-nav-item.active {
     inset 3px 0 0 var(--channel-accent),
     0 8px 18px rgba(0, 0, 0, 0.14);
 }
+
+/* Presentation-only contact file categories. */
+.saved-contact-item {
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color 220ms ease,
+    background-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.saved-contact-item::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: transparent;
+  transition: background-color 220ms ease;
+}
+
+.saved-contact-item[data-contact-category="whatsapp"] {
+  border-color: rgba(31, 157, 85, 0.24);
+  background:
+    linear-gradient(105deg, rgba(31, 157, 85, 0.09), rgba(255, 255, 255, 0.96) 46%);
+  box-shadow: 0 8px 22px rgba(31, 157, 85, 0.055);
+}
+
+.saved-contact-item[data-contact-category="whatsapp"]::before {
+  background: #1f9d55;
+}
+
+.saved-contact-item[data-contact-category="telegram"] {
+  border-color: rgba(49, 134, 213, 0.24);
+  background:
+    linear-gradient(105deg, rgba(49, 134, 213, 0.095), rgba(255, 255, 255, 0.96) 46%);
+  box-shadow: 0 8px 22px rgba(49, 134, 213, 0.055);
+}
+
+.saved-contact-item[data-contact-category="telegram"]::before {
+  background: #3186d5;
+}
+
+.saved-contact-name-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+}
+
+.saved-contact-name-row strong {
+  min-width: 0;
+}
+
+.saved-contact-category-badge {
+  flex: 0 0 auto;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--muted);
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  line-height: 1.3;
+}
+
+.saved-contact-item[data-contact-category="whatsapp"] .saved-contact-category-badge {
+  border-color: rgba(31, 157, 85, 0.24);
+  background: rgba(240, 253, 244, 0.92);
+  color: #16733e;
+}
+
+.saved-contact-item[data-contact-category="telegram"] .saved-contact-category-badge {
+  border-color: rgba(49, 134, 213, 0.24);
+  background: rgba(239, 247, 255, 0.94);
+  color: #2465a3;
+}
+
+.saved-contact-category-control {
+  display: inline-grid;
+  grid-template-columns: auto 116px;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 4px 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.saved-contact-category-control select {
+  width: 116px;
+  min-height: 34px;
+  border-color: transparent;
+  background-color: transparent;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.saved-contact-item[data-contact-category="whatsapp"] .saved-contact-category-control {
+  border-color: rgba(31, 157, 85, 0.22);
+}
+
+.saved-contact-item[data-contact-category="telegram"] .saved-contact-category-control {
+  border-color: rgba(49, 134, 213, 0.22);
+}
+
+@media (max-width: 900px) {
+  .saved-contact-item {
+    grid-template-columns: 1fr;
+  }
+
+  .saved-contact-actions {
+    justify-content: flex-start;
+  }
+}

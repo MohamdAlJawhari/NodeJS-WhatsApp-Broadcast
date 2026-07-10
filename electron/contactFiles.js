@@ -167,6 +167,10 @@ function createContactFileService({
 
         return {
           ...newest,
+          category:
+            normalizeContactCategory(
+              readContactMeta(newest.filePath).category
+            ),
           count,
           loadError,
           duplicateCount:
@@ -278,6 +282,7 @@ function createContactFileService({
     if (!fs.existsSync(metaPath)) {
 
       return {
+        category: "none",
         description: ""
       };
     }
@@ -291,9 +296,25 @@ function createContactFileService({
     } catch {
 
       return {
+        category: "none",
         description: ""
       };
     }
+  }
+
+  function normalizeContactCategory(category) {
+
+    const normalized =
+      String(category || "")
+        .trim()
+        .toLowerCase();
+
+    return [
+      "whatsapp",
+      "telegram"
+    ].includes(normalized)
+      ? normalized
+      : "none";
   }
 
   function writeContactMeta(filePath, meta) {
@@ -495,6 +516,10 @@ function createContactFileService({
 
     return {
       ...getContactFileStats(filePath),
+      category:
+        normalizeContactCategory(
+          readContactMeta(filePath).category
+        ),
       description:
         readContactMeta(filePath).description || "",
       rows,
@@ -578,9 +603,19 @@ function createContactFileService({
         newFilePath;
     }
 
+    const currentMeta =
+      readContactMeta(finalFilePath);
+
     writeContactMeta(
       finalFilePath,
       {
+        ...currentMeta,
+        category:
+          normalizeContactCategory(
+            data.category !== undefined
+              ? data.category
+              : currentMeta.category
+          ),
         description:
           String(data.description || "")
       }
@@ -602,6 +637,36 @@ function createContactFileService({
     );
 
     return getSavedContactDetails(data.id);
+  }
+
+  function updateSavedContactCategory(
+    id,
+    category
+  ) {
+
+    const filePath =
+      resolveSavedContactPath(id);
+
+    const meta =
+      readContactMeta(filePath);
+
+    const normalizedCategory =
+      normalizeContactCategory(category);
+
+    writeContactMeta(
+      filePath,
+      {
+        ...meta,
+        category: normalizedCategory,
+        description:
+          String(meta.description || "")
+      }
+    );
+
+    return {
+      category: normalizedCategory,
+      id: path.basename(filePath)
+    };
   }
 
   function deleteSavedContactFile(id) {
@@ -816,6 +881,31 @@ function createContactFileService({
     );
 
     ipcMain.handle(
+      "set-saved-contact-category",
+      async (_, data = {}) => {
+
+        try {
+
+          return {
+            success: true,
+            file:
+              updateSavedContactCategory(
+                data.id,
+                data.category
+              )
+          };
+
+        } catch (error) {
+
+          return {
+            success: false,
+            error: error.message
+          };
+        }
+      }
+    );
+
+    ipcMain.handle(
       "delete-saved-contact-file",
       async (_, id) => {
 
@@ -863,6 +953,7 @@ function createContactFileService({
     getSavedContactDetails,
     registerHandlers,
     resolveSavedContactPath,
+    updateSavedContactCategory,
     updateSavedContactContent,
     updateSavedContactDetails
   };

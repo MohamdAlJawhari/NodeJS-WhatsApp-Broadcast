@@ -6,6 +6,9 @@
         "STOPPING"
     ];
 
+    const contactCategoryStorageKey =
+        "broadcast-sender.contact-file-categories.v1";
+
     function createContactFilesUI({
         getBroadcastState,
         refreshValidationWarnings,
@@ -243,6 +246,10 @@
                     return;
                 }
 
+                removePersistedContactCategory(
+                    editorFile.id
+                );
+
                 if (
                     selectedContactFileId ===
                     editorFile.id
@@ -399,6 +406,14 @@
                 item.className =
                     "saved-contact-item";
 
+                const savedCategory =
+                    getPersistedContactCategory(
+                        file
+                    );
+
+                item.dataset.contactCategory =
+                    savedCategory;
+
                 const info =
                     document.createElement("div");
 
@@ -412,13 +427,33 @@
                     file.displayName ||
                     file.fileName;
 
+                const nameRow =
+                    document.createElement("div");
+
+                nameRow.className =
+                    "saved-contact-name-row";
+
+                const categoryBadge =
+                    document.createElement("span");
+
+                categoryBadge.className =
+                    "saved-contact-category-badge";
+
+                categoryBadge.innerText =
+                    getContactCategoryLabel(
+                        savedCategory
+                    );
+
+                nameRow.appendChild(name);
+                nameRow.appendChild(categoryBadge);
+
                 const meta =
                     document.createElement("span");
 
                 meta.innerText =
                     getSavedContactMeta(file);
 
-                info.appendChild(name);
+                info.appendChild(nameRow);
                 info.appendChild(meta);
 
                 const actions =
@@ -426,6 +461,107 @@
 
                 actions.className =
                     "saved-contact-actions";
+
+                const categoryControl =
+                    document.createElement("label");
+
+                categoryControl.className =
+                    "saved-contact-category-control";
+
+                const categoryLabel =
+                    document.createElement("span");
+
+                categoryLabel.innerText =
+                    "Category";
+
+                const categorySelect =
+                    document.createElement("select");
+
+                categorySelect.setAttribute(
+                    "aria-label",
+                    `Category for ${file.displayName || file.fileName}`
+                );
+
+                [
+                    ["none", "None"],
+                    ["whatsapp", "WhatsApp"],
+                    ["telegram", "Telegram"]
+                ].forEach(([value, label]) => {
+                    const option =
+                        document.createElement("option");
+
+                    option.value = value;
+                    option.innerText = label;
+                    categorySelect.appendChild(option);
+                });
+
+                categorySelect.value =
+                    savedCategory;
+
+                categorySelect.addEventListener(
+                    "change",
+                    async () => {
+                        const nextCategory =
+                            normalizeContactCategory(
+                                categorySelect.value
+                            );
+
+                        applyContactCategoryAppearance({
+                            category: nextCategory,
+                            categoryBadge,
+                            categorySelect,
+                            item
+                        });
+
+                        persistContactCategory(
+                            file.id,
+                            nextCategory
+                        );
+
+                        categorySelect.disabled = true;
+
+                        try {
+                            if (
+                                typeof window.electronAPI
+                                    .setSavedContactCategory === "function"
+                            ) {
+                                const result =
+                                    await window.electronAPI
+                                        .setSavedContactCategory({
+                                            id: file.id,
+                                            category: nextCategory
+                                        });
+
+                                if (!result.success) {
+                                    throw new Error(
+                                        result.error ||
+                                        "Metadata synchronization failed"
+                                    );
+                                }
+                            }
+                        } catch (error) {
+                            console.warn(
+                                "Contact category saved locally; metadata synchronization is unavailable:",
+                                error
+                            );
+                        } finally {
+                            categorySelect.disabled = false;
+                        }
+
+                        showToast(
+                            `${getContactCategoryLabel(nextCategory)} category applied`,
+                            "success"
+                        );
+                    }
+                );
+
+                categoryControl.appendChild(
+                    categoryLabel
+                );
+
+                categoryControl.appendChild(
+                    categorySelect
+                );
 
                 const button =
                     document.createElement("button");
@@ -470,6 +606,7 @@
                     }
                 );
 
+                actions.appendChild(categoryControl);
                 actions.appendChild(button);
                 actions.appendChild(editButton);
 
@@ -529,6 +666,189 @@
             }
 
             return parts.join(" | ");
+        }
+
+        function getPersistedContactCategory(
+            file
+        ) {
+
+            const categories =
+                readPersistedContactCategories();
+
+            if (
+                file?.id &&
+                Object.prototype.hasOwnProperty.call(
+                    categories,
+                    file.id
+                )
+            ) {
+                return normalizeContactCategory(
+                    categories[file.id]
+                );
+            }
+
+            return normalizeContactCategory(
+                file?.category
+            );
+        }
+
+        function readPersistedContactCategories() {
+
+            try {
+                const parsed = JSON.parse(
+                    window.localStorage.getItem(
+                        contactCategoryStorageKey
+                    ) || "{}"
+                );
+
+                return parsed &&
+                    typeof parsed === "object"
+                    ? parsed
+                    : {};
+            } catch {
+                return {};
+            }
+        }
+
+        function persistContactCategory(
+            id,
+            category
+        ) {
+
+            if (!id) return;
+
+            const categories =
+                readPersistedContactCategories();
+
+            categories[id] =
+                normalizeContactCategory(category);
+
+            try {
+                window.localStorage.setItem(
+                    contactCategoryStorageKey,
+                    JSON.stringify(categories)
+                );
+            } catch (error) {
+                console.warn(
+                    "Could not persist contact category locally:",
+                    error
+                );
+            }
+        }
+
+        function movePersistedContactCategory(
+            previousId,
+            nextId
+        ) {
+
+            if (
+                !previousId ||
+                !nextId ||
+                previousId === nextId
+            ) {
+                return;
+            }
+
+            const categories =
+                readPersistedContactCategories();
+
+            if (!Object.prototype.hasOwnProperty.call(
+                categories,
+                previousId
+            )) {
+                return;
+            }
+
+            categories[nextId] =
+                categories[previousId];
+
+            delete categories[previousId];
+
+            try {
+                window.localStorage.setItem(
+                    contactCategoryStorageKey,
+                    JSON.stringify(categories)
+                );
+            } catch (error) {
+                console.warn(
+                    "Could not move saved contact category:",
+                    error
+                );
+            }
+        }
+
+        function removePersistedContactCategory(
+            id
+        ) {
+
+            const categories =
+                readPersistedContactCategories();
+
+            delete categories[id];
+
+            try {
+                window.localStorage.setItem(
+                    contactCategoryStorageKey,
+                    JSON.stringify(categories)
+                );
+            } catch {
+                // Metadata cleanup is best-effort only.
+            }
+        }
+
+        function applyContactCategoryAppearance({
+            category,
+            categoryBadge,
+            categorySelect,
+            item
+        }) {
+
+            const normalized =
+                normalizeContactCategory(category);
+
+            item.dataset.contactCategory =
+                normalized;
+
+            categorySelect.value =
+                normalized;
+
+            categoryBadge.innerText =
+                getContactCategoryLabel(normalized);
+        }
+
+        function normalizeContactCategory(
+            category
+        ) {
+
+            const normalized =
+                String(category || "")
+                    .trim()
+                    .toLowerCase();
+
+            return [
+                "whatsapp",
+                "telegram"
+            ].includes(normalized)
+                ? normalized
+                : "none";
+        }
+
+        function getContactCategoryLabel(
+            category
+        ) {
+
+            const normalized =
+                normalizeContactCategory(category);
+
+            if (normalized === "whatsapp") {
+                return "WhatsApp";
+            }
+
+            if (normalized === "telegram") {
+                return "Telegram";
+            }
+
+            return "None";
         }
 
         function formatBytes(
@@ -1117,6 +1437,11 @@
                 selectedContactFileId =
                     result.file.id;
             }
+
+            movePersistedContactCategory(
+                previousId,
+                result.file.id
+            );
 
             setEditorFile(
                 result.file

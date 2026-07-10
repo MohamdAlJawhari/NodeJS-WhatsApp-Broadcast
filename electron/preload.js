@@ -55,6 +55,12 @@ contextBridge.exposeInMainWorld(
         data
       ),
 
+    setSavedContactCategory: (data) =>
+      ipcRenderer.invoke(
+        "set-saved-contact-category",
+        data
+      ),
+
     deleteSavedContactFile: (id) =>
       ipcRenderer.invoke(
         "delete-saved-contact-file",
