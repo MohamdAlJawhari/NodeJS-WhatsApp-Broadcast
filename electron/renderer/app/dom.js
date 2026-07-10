@@ -80,10 +80,36 @@
                 byId("mainPage"),
             mediaBtn:
                 byId("mediaBtn"),
+            mediaDropZone:
+                byId("mediaDropZone"),
+            mediaDropPrompt:
+                byId("mediaDropPrompt"),
             mediaFileName:
                 byId("mediaFileName"),
+            mediaFileSize:
+                byId("mediaFileSize"),
+            mediaProgressBar:
+                byId("mediaProgressBar"),
+            mediaProgressLabel:
+                byId("mediaProgressLabel"),
+            mediaSelectedRow:
+                byId("mediaSelectedRow"),
             mediaPanel:
                 byId("mediaPanel"),
+            mediaThumbnail:
+                byId("mediaThumbnail"),
+            mediaThumbnailBadge:
+                byId("mediaThumbnailBadge"),
+            mediaThumbnailIcon:
+                byId("mediaThumbnailIcon"),
+            mediaThumbnailImage:
+                byId("mediaThumbnailImage"),
+            mediaUploadCard:
+                byId("mediaUploadCard"),
+            mediaUploadHint:
+                byId("mediaUploadHint"),
+            mediaUploadTitle:
+                byId("mediaUploadTitle"),
             removeMediaBtn:
                 byId("removeMediaBtn"),
             mediaStatus:

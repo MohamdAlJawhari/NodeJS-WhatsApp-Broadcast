@@ -2,6 +2,8 @@ const {
   getTelegramRecipientLabel
 } = require("../../src/telegramRecipient");
 
+const fs = require("node:fs");
+
 const {
   generateMessage
 } = require("../../src/template");
@@ -189,10 +191,22 @@ function registerIpcHandlers({
         };
       }
 
+      const filePath =
+        result.filePaths[0];
+
+      let fileSize;
+
+      try {
+        fileSize =
+          fs.statSync(filePath).size;
+      } catch (_) {
+        fileSize = undefined;
+      }
+
       return {
         success: true,
-        filePath:
-          result.filePaths[0]
+        filePath,
+        fileSize
       };
     }
   );

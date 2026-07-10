@@ -184,25 +184,45 @@
                                 <span class="optional-pill">Optional</span>
                             </div>
 
-                            <div class="file-summary media-summary">
-                                <span class="file-icon media-icon" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5Z"></path>
-                                        <path d="M14 2v6h6"></path>
-                                        <path d="m8 17 2.2-2.2a1.6 1.6 0 0 1 2.2 0L16 18"></path>
-                                        <circle cx="9" cy="10" r="1"></circle>
-                                    </svg>
-                                </span>
-                                <div class="file-summary-body">
-                                    <strong id="mediaFileName">No file selected</strong>
-                                    <p id="mediaStatus">No media selected</p>
+                            <div id="mediaUploadCard" class="media-upload-card media-state-empty" data-media-state="empty">
+                                <div class="media-upload-heading">
+                                    <strong id="mediaUploadTitle">Upload your files</strong>
+                                    <span id="mediaUploadHint">File should be JPG, PNG, PDF, MP4</span>
                                 </div>
-                            </div>
 
-                            <div class="button-stack two-up">
-                                <button id="mediaBtn" type="button">Choose File</button>
-                                <button id="removeMediaBtn" class="ghost-danger-action" type="button" disabled>Remove
-                                    File</button>
+                                <div id="mediaSelectedRow" class="media-selected-row hidden">
+                                    <span id="mediaThumbnail" class="media-thumbnail media-thumbnail-empty" aria-hidden="true">
+                                        <span id="mediaThumbnailIcon" class="media-thumbnail-icon">
+                                            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path></svg>
+                                        </span>
+                                        <span id="mediaThumbnailBadge" class="media-thumbnail-badge hidden"></span>
+                                    </span>
+                                    <div class="media-file-details">
+                                        <div class="media-file-line"><strong id="mediaFileName">No file selected</strong><span id="mediaFileSize"></span></div>
+                                        <p id="mediaStatus">No media selected</p>
+                                        <div class="media-progress-track"><span id="mediaProgressBar"></span></div>
+                                        <span id="mediaProgressLabel" class="media-progress-label"></span>
+                                    </div>
+                                    <button id="removeMediaBtn" class="media-remove-button" type="button" disabled aria-label="Remove media">&times;</button>
+                                </div>
+
+                                <div id="mediaDropZone" class="media-drop-zone" role="button" tabindex="0"
+                                    aria-label="Drag and drop a media file or browse for one">
+                                    <img id="mediaThumbnailImage" class="media-canvas-preview hidden" alt="Selected media preview">
+                                    <div class="media-drop-placeholder">
+                                        <svg class="media-upload-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path>
+                                            <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"></path>
+                                        </svg>
+                                        <span id="mediaDropPrompt">Drag &amp; drop your file here</span>
+                                    </div>
+                                    <span class="media-preview-overlay">Drop a file to replace</span>
+                                </div>
+
+                                <div class="media-upload-actions">
+                                    <button id="mediaBtn" type="button">Browse File</button>
+                                    <span>JPG, PNG, PDF or MP4</span>
+                                </div>
                             </div>
 
                         </section>
