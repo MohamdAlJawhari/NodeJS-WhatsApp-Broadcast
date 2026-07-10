@@ -10,6 +10,8 @@
         return {
             addContactsFileBtn:
                 byId("addContactsFileBtn"),
+            alignmentDropdownMenu:
+                byId("alignmentDropdownMenu"),
             appVersionLabel:
                 byId("appVersionLabel"),
             broadcastStatus:
@@ -30,6 +32,8 @@
                 byId("connectionTimer"),
             contactFileName:
                 byId("contactFileName"),
+            emojiDropdownMenu:
+                byId("emojiDropdownMenu"),
             contactEditorPage:
                 byId("contactEditorPage"),
             contactsAddFileBtn:
@@ -58,6 +62,14 @@
                 byId("headerWhatsAppStatus"),
             helpNavBtn:
                 byId("helpNavBtn"),
+            linkApplyBtn:
+                byId("linkApplyBtn"),
+            linkCancelBtn:
+                byId("linkCancelBtn"),
+            linkDropdownMenu:
+                byId("linkDropdownMenu"),
+            linkUrlInput:
+                byId("linkUrlInput"),
             logs:
                 byId("logs"),
             logsNavBtn:
@@ -68,10 +80,40 @@
                 byId("mainPage"),
             mediaBtn:
                 byId("mediaBtn"),
+            mediaCanvasBadge:
+                byId("mediaCanvasBadge"),
+            mediaCanvasFile:
+                byId("mediaCanvasFile"),
+            mediaDropZone:
+                byId("mediaDropZone"),
+            mediaDropPrompt:
+                byId("mediaDropPrompt"),
             mediaFileName:
                 byId("mediaFileName"),
+            mediaFileSize:
+                byId("mediaFileSize"),
+            mediaProgressBar:
+                byId("mediaProgressBar"),
+            mediaProgressLabel:
+                byId("mediaProgressLabel"),
+            mediaSelectedRow:
+                byId("mediaSelectedRow"),
             mediaPanel:
                 byId("mediaPanel"),
+            mediaThumbnail:
+                byId("mediaThumbnail"),
+            mediaThumbnailBadge:
+                byId("mediaThumbnailBadge"),
+            mediaThumbnailIcon:
+                byId("mediaThumbnailIcon"),
+            mediaThumbnailImage:
+                byId("mediaThumbnailImage"),
+            mediaUploadCard:
+                byId("mediaUploadCard"),
+            mediaUploadHint:
+                byId("mediaUploadHint"),
+            mediaUploadTitle:
+                byId("mediaUploadTitle"),
             removeMediaBtn:
                 byId("removeMediaBtn"),
             mediaStatus:
@@ -90,6 +132,8 @@
                 byId("progressBar"),
             progressText:
                 byId("progressText"),
+            providerControl:
+                document.querySelector(".provider-control"),
             providerSelect:
                 byId("providerSelect"),
             qrImage:
@@ -134,6 +178,10 @@
                 byId("templateCharCount"),
             templateInput:
                 byId("templateInput"),
+            templatePreview:
+                byId("templatePreview"),
+            templatePreviewToggle:
+                byId("templatePreviewToggle"),
             templatesNavBtn:
                 byId("templatesNavBtn"),
             templatesPanel:
@@ -146,6 +194,8 @@
                 byId("validationPanel"),
             validationSummary:
                 byId("validationSummary"),
+            variableDropdownMenu:
+                byId("variableDropdownMenu"),
             validationWarnings:
                 byId("validationWarnings")
         };

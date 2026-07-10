@@ -49,6 +49,7 @@
     "files": [
       "package.json",
       "build/icon.ico",
+      "build/icon.svg",
       "electron/**/*",
       "src/**/*",
       "settings.json",

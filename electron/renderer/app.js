@@ -36,6 +36,12 @@
             .createProviderUI({
                 providerSelect:
                     dom.providerSelect,
+                providerControl:
+                    dom.providerControl,
+                templateInput:
+                    dom.templateInput,
+                templatesPanel:
+                    dom.templatesPanel,
                 defaultProvider:
                     "whatsapp",
                 onProviderChange:
@@ -160,6 +166,10 @@
                 dom,
                 electronAPI,
                 getContactFilesUI,
+                getSelectedProvider:
+                    providerUI.getSelectedProvider,
+                initializeChannelTemplates:
+                    providerUI.initializeChannelTemplates,
                 refreshValidationWarnings:
                     validationUI.refresh,
                 showToast

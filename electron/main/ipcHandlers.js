@@ -2,6 +2,8 @@ const {
   getTelegramRecipientLabel
 } = require("../../src/telegramRecipient");
 
+const fs = require("node:fs");
+
 const {
   generateMessage
 } = require("../../src/template");
@@ -189,10 +191,22 @@ function registerIpcHandlers({
         };
       }
 
+      const filePath =
+        result.filePaths[0];
+
+      let fileSize;
+
+      try {
+        fileSize =
+          fs.statSync(filePath).size;
+      } catch (_) {
+        fileSize = undefined;
+      }
+
       return {
         success: true,
-        filePath:
-          result.filePaths[0]
+        filePath,
+        fileSize
       };
     }
   );
@@ -356,9 +370,20 @@ function registerIpcHandlers({
 
   ipcMain.handle(
     "save-template",
-    async (_, template) => {
+    async (_, payload) => {
+      const template =
+        payload && typeof payload === "object"
+          ? payload.template
+          : payload;
+
+      const provider =
+        payload && typeof payload === "object"
+          ? payload.provider
+          : "whatsapp";
+
       return settingsService.saveDefaultTemplate(
-        template
+        template,
+        provider
       );
     }
   );

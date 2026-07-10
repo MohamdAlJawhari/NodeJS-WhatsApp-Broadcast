@@ -1,11 +1,15 @@
 const {
   contextBridge,
-  ipcRenderer
+  ipcRenderer,
+  webUtils
 } = require("electron");
 
 contextBridge.exposeInMainWorld(
   "electronAPI",
   {
+    getPathForFile: (file) =>
+      webUtils.getPathForFile(file),
+
     selectMediaFile: () =>
       ipcRenderer.invoke(
         "select-media-file"
@@ -48,6 +52,12 @@ contextBridge.exposeInMainWorld(
     saveSavedContactContent: (data) =>
       ipcRenderer.invoke(
         "save-saved-contact-content",
+        data
+      ),
+
+    setSavedContactCategory: (data) =>
+      ipcRenderer.invoke(
+        "set-saved-contact-category",
         data
       ),
 
@@ -173,10 +183,13 @@ contextBridge.exposeInMainWorld(
         "load-settings"
       ),
 
-    saveTemplate: (template) =>
+    saveTemplate: (template, provider) =>
       ipcRenderer.invoke(
         "save-template",
-        template
+        {
+          provider,
+          template
+        }
       ),
 
     getUpdateStatus: () =>

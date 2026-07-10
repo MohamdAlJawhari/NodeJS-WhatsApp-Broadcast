@@ -186,15 +186,33 @@ function createSettingsService({
     return loadSettings();
   }
 
-  function saveDefaultTemplate(template) {
+  function saveDefaultTemplate(
+    template,
+    provider = "whatsapp"
+  ) {
 
     configureRuntimePaths();
 
     const settings =
       loadSettings();
 
-    settings.defaultTemplate =
-      template;
+    const normalizedProvider =
+      String(provider || "")
+        .trim()
+        .toLowerCase() === "telegram"
+        ? "telegram"
+        : "whatsapp";
+
+    settings.channelTemplates = {
+      ...(settings.channelTemplates || {}),
+      [normalizedProvider]:
+        String(template || "")
+    };
+
+    if (normalizedProvider === "whatsapp") {
+      settings.defaultTemplate =
+        String(template || "");
+    }
 
     saveSettings(settings);
 
