@@ -131,7 +131,20 @@
 
             const normalized =
                 String(text || "")
+                    .trim()
                     .toLowerCase();
+
+            if (
+                !normalized ||
+                normalized.includes("not connected") ||
+                normalized.includes("not_connected") ||
+                normalized.includes("notconnected") ||
+                normalized.includes("not logged") ||
+                normalized.includes("offline")
+            ) {
+
+                return "waiting";
+            }
 
             if (
                 normalized.includes("failed") ||

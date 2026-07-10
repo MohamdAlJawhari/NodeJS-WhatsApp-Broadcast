@@ -279,15 +279,12 @@
             dom.connectionStatus.innerText =
                 nextText;
 
-            dom.connectionTile.classList.remove(
-                ...connectionStateClasses
-            );
-
             const connectionState =
                 getConnectionState(nextText);
 
-            dom.connectionTile.classList.add(
-                `connection-${connectionState}`
+            updateConnectionTileState(
+                dom.connectionTile,
+                connectionState
             );
 
             isWhatsAppConnected =
@@ -341,10 +338,52 @@
             const connectionState =
                 getConnectionState(nextText);
 
+            updateConnectionTileState(
+                getTelegramConnectionTile(),
+                connectionState
+            );
+
             isTelegramConnected =
                 connectionState === "connected";
 
             updateTelegramConnectButton();
+        }
+
+        function updateConnectionTileState(
+            tile,
+            connectionState
+        ) {
+
+            if (
+                !tile ||
+                !tile.classList
+            ) {
+
+                return;
+            }
+
+            tile.classList.remove(
+                ...connectionStateClasses
+            );
+
+            tile.classList.add(
+                `connection-${connectionState}`
+            );
+        }
+
+        function getTelegramConnectionTile() {
+
+            if (
+                !dom.telegramConnectionStatus ||
+                typeof dom.telegramConnectionStatus.closest !== "function"
+            ) {
+
+                return null;
+            }
+
+            return dom.telegramConnectionStatus.closest(
+                ".channel-card"
+            );
         }
 
         function handleWhatsAppConnected({
@@ -521,6 +560,12 @@
                         qrUI.hideTelegramQr();
                     }
                 }
+            );
+
+            setTelegramConnectionStatus(
+                dom.telegramConnectionStatus
+                    ? dom.telegramConnectionStatus.innerText
+                    : "Telegram not connected"
             );
         }
 
