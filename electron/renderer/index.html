@@ -670,58 +670,82 @@
             </section>
 
             <section id="contactEditorPage" class="app-page contact-editor-page hidden">
+                <button id="editorBackBtn" class="editor-back-link" data-editor-icon="arrow-left" type="button">Contact Library</button>
 
-                <div class="page-toolbar editor-toolbar-page">
-                    <div class="editor-title-row">
-                        <span class="file-icon xlsx-icon" aria-hidden="true">XLSX</span>
-                        <div>
-                            <span class="section-label">Contacts</span>
-                            <h2>Contacts File Details</h2>
+                <header class="contact-file-header">
+                    <div class="contact-file-identity">
+                        <span class="contact-xlsx-icon" data-editor-icon-only="file-spreadsheet" aria-hidden="true"></span>
+                        <div class="contact-file-heading">
+                            <div class="contact-file-title-line">
+                                <h2 id="editorDisplayFileName">Contacts File</h2>
+                                <span id="editorActiveBadge" class="editor-active-badge hidden">Active</span>
+                            </div>
+                            <div id="editorFileMeta" class="contact-file-chips"></div>
                         </div>
                     </div>
-
-                    <div class="editor-actions">
-                        <button id="editorBackBtn" type="button">Back</button>
-                        <button id="editorSelectBtn" class="success-action" type="button">Select for Sender</button>
-                        <button id="editorExportBtn" class="warning-action" type="button">Download File</button>
-                        <button id="editorDeleteBtn" class="danger-action" type="button">Delete File</button>
-                    </div>
-                </div>
-
-                <div class="editor-body surface-card">
-                    <p id="editorFileMeta"></p>
-
-                    <div class="editor-details-grid">
-                        <label>
-                            <span>File Name</span>
-                            <input id="editorFileNameInput" type="text">
-                        </label>
-
-                        <label>
-                            <span>Description</span>
-                            <textarea id="editorDescriptionInput" rows="4"></textarea>
-                        </label>
-
-                        <button id="editorSaveDetailsBtn" class="success-action" type="button">Save Details</button>
-                    </div>
-
-                    <div class="editor-table-header">
-                        <p id="editorTableSummary"></p>
-                        <div class="editor-search">
-                            <input id="editorSearchInput" type="search" placeholder="Search contacts">
-                            <button id="editorClearSearchBtn" class="mini-btn" type="button"
-                                aria-label="Clear contact search" disabled>X</button>
+                    <div class="contact-file-actions">
+                        <button id="editorSelectBtn" class="editor-primary-action" data-editor-icon="send" type="button">Use for Sender</button>
+                        <div class="editor-menu-wrap">
+                            <button id="editorMoreBtn" class="editor-icon-button" data-editor-icon-only="more-horizontal" type="button" aria-label="More file actions" aria-expanded="false"></button>
+                            <div id="editorFileMenu" class="editor-file-menu hidden" role="menu">
+                                <button id="editorExportBtn" data-editor-icon="download" type="button" role="menuitem">Download File</button>
+                                <button id="editorRenameBtn" data-editor-icon="pencil" type="button" role="menuitem">Rename File</button>
+                                <button id="editorDuplicateFileBtn" data-editor-icon="copy" type="button" role="menuitem">Duplicate File</button>
+                                <span class="editor-menu-divider"></span>
+                                <button id="editorDeleteBtn" class="editor-menu-danger" data-editor-icon="trash" type="button" role="menuitem">Delete File</button>
+                            </div>
                         </div>
                     </div>
+                </header>
 
-                    <div class="editor-controls-row">
-                        <button id="editorSaveContentBtn" class="success-action" type="button">Save File
-                            Content</button>
-                        <button id="editorAddRowBtn" type="button">Add Row</button>
-                        <button id="editorAddColumnBtn" type="button">Add Column</button>
-                    </div>
+                <div class="contact-editor-layout">
+                    <main class="contact-editor-main">
+                        <section class="editor-panel editor-information-card">
+                            <div class="editor-card-title"><div><span class="editor-eyebrow">DETAILS</span><h3>File Information</h3></div><span class="editor-muted">Keep this file easy to identify</span></div>
+                            <div class="editor-details-grid">
+                                <label><span>File Name</span><input id="editorFileNameInput" type="text"></label>
+                                <label><span>Description</span><textarea id="editorDescriptionInput" rows="2" placeholder="Add a short description (optional)"></textarea></label>
+                                <button id="editorSaveDetailsBtn" class="editor-primary-action" data-editor-icon="save" type="button">Save Changes</button>
+                            </div>
+                        </section>
 
-                    <div id="contactTableEditor" class="table-editor"></div>
+                        <section class="editor-panel editor-data-card">
+                            <div class="editor-controls-row" aria-label="Contact editing toolbar">
+                                <button id="editorSaveContentBtn" class="editor-primary-action" data-editor-icon="save" type="button">Save</button>
+                                <span class="editor-toolbar-divider"></span>
+                                <button id="editorAddRowBtn" data-editor-icon="plus" type="button">Add Row</button>
+                                <button id="editorAddColumnBtn" data-editor-icon="columns" type="button">Add Column</button>
+                                <button id="editorDuplicateSelectedBtn" data-editor-icon="copy" type="button" disabled>Duplicate Selected</button>
+                                <button id="editorDeleteSelectedBtn" class="editor-danger-outline" data-editor-icon="trash" type="button" disabled>Delete Selected</button>
+                                <span class="editor-toolbar-spacer"></span>
+                                <button id="editorUndoBtn" data-editor-icon="undo" type="button" disabled>Undo</button>
+                                <button id="editorRedoBtn" data-editor-icon="redo" type="button" disabled>Redo</button>
+                                <button id="editorImportBtn" data-editor-icon="upload" type="button">Import</button>
+                                <button id="editorToolbarExportBtn" data-editor-icon="download" type="button">Export</button>
+                            </div>
+
+                            <div class="editor-stat-pills" aria-label="Contact statistics">
+                                <button class="editor-stat-pill is-active" data-editor-stat="all" type="button"><span>All Contacts</span><strong id="editorAllCount">0</strong></button>
+                                <button class="editor-stat-pill stat-valid" data-editor-stat="valid" type="button"><span>Valid</span><strong id="editorValidCount">0</strong></button>
+                                <button class="editor-stat-pill stat-duplicate" data-editor-stat="duplicate" type="button"><span>Duplicates</span><strong id="editorDuplicateCount">0</strong></button>
+                                <button class="editor-stat-pill stat-invalid" data-editor-stat="invalid" type="button"><span>Invalid</span><strong id="editorInvalidCount">0</strong></button>
+                            </div>
+
+                            <div class="editor-table-header">
+                                <div class="editor-search"><span data-editor-icon-only="search" aria-hidden="true"></span><input id="editorSearchInput" type="search" placeholder="Search contacts"><button id="editorClearSearchBtn" class="mini-btn" data-editor-icon-only="x" type="button" aria-label="Clear contact search" disabled></button></div>
+                                <div class="editor-view-actions"><button id="editorFilterBtn" data-editor-icon="filter" type="button">Filter</button><button id="editorSortBtn" data-editor-icon="arrow-up-down" type="button">Sort</button></div>
+                            </div>
+
+                            <div id="contactTableEditor" class="table-editor"></div>
+                            <div class="editor-table-footer"><p id="editorTableSummary"></p><div class="editor-pagination" aria-label="Table pagination"><button data-editor-icon-only="chevron-left" type="button" aria-label="Previous page" disabled></button><strong>1</strong><button data-editor-icon-only="chevron-right" type="button" aria-label="Next page" disabled></button></div><span>Changes are saved when you click Save</span></div>
+                        </section>
+                    </main>
+
+                    <aside class="contact-editor-sidebar">
+                        <section class="editor-panel editor-stats-card"><div class="editor-card-title"><h3>Statistics</h3></div><div class="sidebar-stats"><div><span>Total Contacts</span><strong id="editorSideTotal">0</strong></div><div class="is-valid"><span>Valid</span><strong id="editorSideValid">0</strong></div><div class="is-duplicate"><span>Duplicates</span><strong id="editorSideDuplicates">0</strong></div><div class="is-invalid"><span>Invalid</span><strong id="editorSideInvalid">0</strong></div></div></section>
+                        <section class="editor-panel editor-validation-card"><div class="editor-card-title"><h3>Validation</h3></div><div id="editorValidationResults" class="editor-validation-results"></div><div id="editorReadyCard" class="editor-ready-card"><span data-editor-icon-only="circle-check"></span><div><strong>File Ready for Broadcast</strong><small>All required checks passed</small></div></div></section>
+                        <section class="editor-panel editor-quick-card"><div class="editor-card-title"><h3>Quick Actions</h3></div><div class="editor-quick-actions"><button type="button" data-editor-quick="duplicates" data-editor-icon="copy-x">Remove duplicates</button><button type="button" data-editor-quick="validate" data-editor-icon="badge-check">Validate phone numbers</button><button type="button" data-editor-quick="empty" data-editor-icon="rows-3">Clear empty rows</button><button type="button" data-editor-quick="normalize" data-editor-icon="phone">Normalize numbers</button><button type="button" data-editor-quick="usernames" data-editor-icon="user-plus">Generate usernames</button></div></section>
+                    </aside>
                 </div>
 
             </section>
@@ -729,8 +753,11 @@
         </main>
 
         <footer class="status-bar" aria-label="Application status">
+            <span id="statusBarConnection">WhatsApp Offline</span>
+            <span id="statusBarAutoSave">Auto Saved just now</span>
             <span id="statusBarContacts">0 Contacts Loaded</span>
-            <span id="statusBarReady">Ready to Send</span>
+            <span id="statusBarReady">Ready for Broadcast</span>
+            <span id="statusBarTime"></span>
         </footer>
 
     </div>
