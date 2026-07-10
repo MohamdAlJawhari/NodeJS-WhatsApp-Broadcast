@@ -10,6 +10,8 @@
         return {
             addContactsFileBtn:
                 byId("addContactsFileBtn"),
+            alignmentDropdownMenu:
+                byId("alignmentDropdownMenu"),
             appVersionLabel:
                 byId("appVersionLabel"),
             broadcastStatus:
@@ -30,6 +32,8 @@
                 byId("connectionTimer"),
             contactFileName:
                 byId("contactFileName"),
+            emojiDropdownMenu:
+                byId("emojiDropdownMenu"),
             contactEditorPage:
                 byId("contactEditorPage"),
             contactsAddFileBtn:
@@ -58,6 +62,14 @@
                 byId("headerWhatsAppStatus"),
             helpNavBtn:
                 byId("helpNavBtn"),
+            linkApplyBtn:
+                byId("linkApplyBtn"),
+            linkCancelBtn:
+                byId("linkCancelBtn"),
+            linkDropdownMenu:
+                byId("linkDropdownMenu"),
+            linkUrlInput:
+                byId("linkUrlInput"),
             logs:
                 byId("logs"),
             logsNavBtn:
@@ -134,6 +146,10 @@
                 byId("templateCharCount"),
             templateInput:
                 byId("templateInput"),
+            templatePreview:
+                byId("templatePreview"),
+            templatePreviewToggle:
+                byId("templatePreviewToggle"),
             templatesNavBtn:
                 byId("templatesNavBtn"),
             templatesPanel:
@@ -146,6 +162,8 @@
                 byId("validationPanel"),
             validationSummary:
                 byId("validationSummary"),
+            variableDropdownMenu:
+                byId("variableDropdownMenu"),
             validationWarnings:
                 byId("validationWarnings")
         };
