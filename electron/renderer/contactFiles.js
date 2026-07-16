@@ -70,11 +70,6 @@
                 "editorDescriptionInput"
             );
 
-        const editorSaveDetailsBtn =
-            document.getElementById(
-                "editorSaveDetailsBtn"
-            );
-
         const editorTableSummary =
             document.getElementById(
                 "editorTableSummary"
@@ -83,16 +78,6 @@
         const editorSaveContentBtn =
             document.getElementById(
                 "editorSaveContentBtn"
-            );
-
-        const editorAddRowBtn =
-            document.getElementById(
-                "editorAddRowBtn"
-            );
-
-        const editorAddColumnBtn =
-            document.getElementById(
-                "editorAddColumnBtn"
             );
 
         const editorSearchInput =
@@ -363,43 +348,37 @@
             }
         );
 
-        editorSaveDetailsBtn.addEventListener(
-            "click",
-            async () => {
-
-                await saveEditorDetails();
-            }
-        );
-
         editorSaveContentBtn.addEventListener(
             "click",
             async () => {
 
-                await saveEditorContent();
-            }
-        );
+                const rowsToSave =
+                    editorRows.map(row => [...row]);
 
-        editorAddRowBtn.addEventListener(
-            "click",
-            () => {
+                const detailsSaved =
+                    await saveEditorDetails({
+                        notify: false,
+                        reload: false
+                    });
 
-                recordEditorHistory();
+                if (!detailsSaved) {
 
-                insertEditorRow(
-                    editorRows.length
-                );
-            }
-        );
+                    return;
+                }
 
-        editorAddColumnBtn.addEventListener(
-            "click",
-            () => {
+                const contentSaved =
+                    await saveEditorContent({
+                        notify: false,
+                        rows: rowsToSave
+                    });
 
-                recordEditorHistory();
+                if (contentSaved) {
 
-                insertEditorColumn(
-                    editorRows[0]?.length || 0
-                );
+                    showToast(
+                        "Contact file saved",
+                        "success"
+                    );
+                }
             }
         );
 
@@ -1173,8 +1152,46 @@
             const thead =
                 document.createElement("thead");
 
+            const columnControlsRow =
+                document.createElement("tr");
+
+            const rowControlsHeader =
+                document.createElement("th");
+
+            rowControlsHeader.className =
+                "editor-inline-controls-column";
+
+            columnControlsRow.appendChild(rowControlsHeader);
+
+            const selectControlsHeader =
+                document.createElement("th");
+
+            selectControlsHeader.className =
+                "editor-select-cell";
+
+            columnControlsRow.appendChild(selectControlsHeader);
+
+            const numberControlsHeader =
+                document.createElement("th");
+
+            numberControlsHeader.className =
+                "editor-row-number";
+
+            columnControlsRow.appendChild(numberControlsHeader);
+
             const headerRow =
                 document.createElement("tr");
+
+            const rowControlsLabel =
+                document.createElement("th");
+
+            rowControlsLabel.className =
+                "editor-inline-controls-column";
+
+            rowControlsLabel.innerText =
+                "Row";
+
+            headerRow.appendChild(rowControlsLabel);
 
             const rowHeader =
                 document.createElement("th");
@@ -1196,6 +1213,25 @@
                 getEditorPhoneColumnIndex();
 
             editorRows[0].forEach((header, columnIndex) => {
+
+                const controlCell =
+                    document.createElement("th");
+
+                controlCell.appendChild(
+                    createInlineControls(
+                        () => {
+                            recordEditorHistory();
+                            deleteEditorColumn(columnIndex);
+                        },
+                        () => {
+                            recordEditorHistory();
+                            insertEditorColumn(columnIndex + 1);
+                        },
+                        columnIndex === phoneColumnIndex
+                    )
+                );
+
+                columnControlsRow.appendChild(controlCell);
 
                 const headerCell =
                     document.createElement("th");
@@ -1227,26 +1263,10 @@
 
                 headerCell.appendChild(input);
 
-                if (columnIndex !== phoneColumnIndex) {
-                    const removeColumn = document.createElement("button");
-                    removeColumn.type = "button";
-                    removeColumn.className = "editor-column-remove";
-                    removeColumn.appendChild(createEditorIcon("x"));
-                    removeColumn.title = `Delete ${header || "column"}`;
-                    removeColumn.disabled = controlsDisabled;
-                    removeColumn.addEventListener("click", () => {
-                        recordEditorHistory();
-                        deleteEditorColumn(columnIndex);
-                    });
-                    headerCell.appendChild(removeColumn);
-                }
                 headerRow.appendChild(headerCell);
             });
 
-            const actionsHeader = document.createElement("th");
-            actionsHeader.className = "editor-actions-column";
-            actionsHeader.innerText = "Actions";
-            headerRow.appendChild(actionsHeader);
+            thead.appendChild(columnControlsRow);
             thead.appendChild(headerRow);
             table.appendChild(thead);
 
@@ -1265,6 +1285,28 @@
                     document.createElement("tr");
 
                 tr.dataset.rowIndex = String(actualRowIndex);
+
+                const rowControlsCell =
+                    document.createElement("td");
+
+                rowControlsCell.className =
+                    "editor-inline-controls-column";
+
+                rowControlsCell.appendChild(
+                    createInlineControls(
+                        () => {
+                            recordEditorHistory();
+                            deleteEditorRow(actualRowIndex);
+                        },
+                        () => {
+                            recordEditorHistory();
+                            insertEditorRow(actualRowIndex + 1);
+                        },
+                        false
+                    )
+                );
+
+                tr.appendChild(rowControlsCell);
 
                 const controlsCell =
                     document.createElement("td");
@@ -1314,22 +1356,6 @@
                     cell.appendChild(input);
                     tr.appendChild(cell);
                 });
-
-                const actionsCell = document.createElement("td");
-                actionsCell.className = "editor-row-actions";
-                const actionWrap = document.createElement("div");
-                [["Edit", () => tr.querySelector("td input:not([type=checkbox])")?.focus()], ["Duplicate", () => { recordEditorHistory(); insertEditorRow(actualRowIndex + 1, row); }], ["Delete", () => { recordEditorHistory(); deleteEditorRow(actualRowIndex); }]].forEach(([label, handler]) => {
-                    const button = document.createElement("button");
-                    button.type = "button";
-                    button.innerText = label;
-                    button.className = label === "Delete" ? "is-danger" : "";
-                    button.prepend(createEditorIcon(label === "Edit" ? "pencil" : label === "Duplicate" ? "copy" : "trash"));
-                    button.disabled = controlsDisabled;
-                    button.addEventListener("click", handler);
-                    actionWrap.appendChild(button);
-                });
-                actionsCell.appendChild(actionWrap);
-                tr.appendChild(actionsCell);
 
                 tbody.appendChild(tr);
             });
@@ -1595,11 +1621,14 @@
             return `column_${index}`;
         }
 
-        async function saveEditorDetails() {
+        async function saveEditorDetails({
+            notify = true,
+            reload = true
+        } = {}) {
 
             if (!editorFile) {
 
-                return;
+                return false;
             }
 
             const previousId =
@@ -1623,7 +1652,7 @@
                     "error"
                 );
 
-                return;
+                return false;
             }
 
             if (selectedContactFileId === previousId) {
@@ -1641,28 +1670,39 @@
                 result.file
             );
 
-            showToast(
-                "File details saved",
-                "success"
-            );
+            if (notify) {
+
+                showToast(
+                    "File details saved",
+                    "success"
+                );
+            }
 
             updateEditorAutoSaveStatus();
 
-            await loadSavedContactFiles();
+            if (reload) {
+
+                await loadSavedContactFiles();
+            }
+
+            return true;
         }
 
-        async function saveEditorContent() {
+        async function saveEditorContent({
+            notify = true,
+            rows = editorRows
+        } = {}) {
 
             if (!editorFile) {
 
-                return;
+                return false;
             }
 
             const result =
                 await window.electronAPI
                     .saveSavedContactContent({
                         id: editorFile.id,
-                        rows: editorRows
+                        rows
                     });
 
             if (!result.success) {
@@ -1673,7 +1713,7 @@
                     "error"
                 );
 
-                return;
+                return false;
             }
 
             setEditorFile(
@@ -1714,10 +1754,13 @@
                 }
             }
 
-            showToast(
-                "File content saved",
-                "success"
-            );
+            if (notify) {
+
+                showToast(
+                    "File content saved",
+                    "success"
+                );
+            }
 
             editorHistory = [];
             editorFuture = [];
@@ -1725,6 +1768,8 @@
             updateEditorAutoSaveStatus();
 
             await loadSavedContactFiles();
+
+            return true;
         }
 
         function closeEditorFileMenu() {
@@ -1928,10 +1973,7 @@
                 editorSelectBtn,
                 editorExportBtn,
                 editorDeleteBtn,
-                editorSaveDetailsBtn,
-                editorSaveContentBtn,
-                editorAddRowBtn,
-                editorAddColumnBtn
+                editorSaveContentBtn
             ].forEach(button => {
 
                 button.disabled =

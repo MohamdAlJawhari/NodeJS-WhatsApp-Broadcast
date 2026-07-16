@@ -4308,6 +4308,8 @@ body[data-channel="telegram"] .sidebar-nav-item.active {
 
 .contact-editor-page .editor-primary-action { min-height: 38px; border-color: var(--editor-primary); background: var(--editor-primary); color: #fff; box-shadow: 0 4px 10px rgba(91, 92, 235, .15); }
 .contact-editor-page .editor-primary-action:hover:not(:disabled) { border-color: #4d4ed7; background: #4d4ed7; color: #fff; box-shadow: 0 6px 14px rgba(91, 92, 235, .22); transform: translateY(-1px); }
+.contact-editor-page .editor-save-action { border-color: #16a34a; background: #16a34a; box-shadow: 0 4px 10px rgba(22, 163, 74, .18); }
+.contact-editor-page .editor-save-action:hover:not(:disabled) { border-color: #15803d; background: #15803d; box-shadow: 0 6px 14px rgba(22, 163, 74, .24); }
 .editor-icon-button { width: 40px; min-width: 40px; padding: 0; font-size: 15px; letter-spacing: 2px; }
 .editor-menu-wrap { position: relative; }
 .editor-file-menu { position: absolute; z-index: 50; top: calc(100% + 7px); right: 0; display: grid; width: 190px; padding: 6px; border: 1px solid var(--editor-border); border-radius: 10px; background: #fff; box-shadow: 0 16px 36px rgba(31, 34, 55, .16); animation: editor-menu-in .16s ease; }
@@ -4371,6 +4373,11 @@ body[data-channel="telegram"] .sidebar-nav-item.active {
 .contact-editor-page .contact-editor-table input[type="checkbox"] { width: 14px; min-width: 14px; height: 14px; min-height: 14px; accent-color: var(--editor-primary); }
 .editor-select-cell { width: 38px; min-width: 38px; text-align: center !important; }
 .editor-row-number { width: 38px; min-width: 38px; color: #9a9dae; text-align: center !important; font-variant-numeric: tabular-nums; }
+.editor-inline-controls-column { width: 78px; min-width: 78px; }
+.contact-editor-page .contact-editor-table thead tr:first-child th { top: 0; }
+.contact-editor-page .contact-editor-table thead tr:nth-child(2) th { top: 42px; }
+.contact-editor-page .contact-editor-table .inline-controls { gap: 4px; }
+.contact-editor-page .contact-editor-table .inline-controls .mini-btn { width: 28px; min-width: 28px; height: 28px; min-height: 28px; border-radius: 7px; }
 .editor-column-heading { position: relative !important; min-width: 145px; }
 .editor-column-heading input { padding-right: 24px !important; color: #65697b; font-size: 10px !important; font-weight: 700; text-transform: uppercase; }
 .editor-column-remove { position: absolute; right: 5px; top: 7px; width: 24px; min-width: 24px; height: 24px; min-height: 24px; padding: 0; border: 0; background: transparent; color: #9da0b0; opacity: 0; box-shadow: none; }
