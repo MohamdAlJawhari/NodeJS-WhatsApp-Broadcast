@@ -222,12 +222,78 @@
     broadcastControls.register();
     editorToolbar.register();
     desktopChrome.register();
+    registerUpdateUI();
 
     settingsUI.loadAppSettings();
     loadAppVersion();
     connectionUI.setConnectionStatus("Not connected");
     broadcastControls.setBroadcastStatus("IDLE");
     broadcastControls.updateButtons("IDLE");
+
+    function registerUpdateUI() {
+
+        electronAPI.onUpdateAvailable(
+            async updateInfo => {
+
+                const version =
+                    updateInfo?.version || "new";
+
+                const shouldDownload =
+                    window.confirm(
+                        `Broadcast Sender ${version} is available. Download it now?`
+                    );
+
+                if (!shouldDownload) {
+
+                    return;
+                }
+
+                const result =
+                    await electronAPI.downloadUpdate();
+
+                if (!result?.success) {
+
+                    showToast(
+                        result?.error ||
+                        "Could not download the update",
+                        "error"
+                    );
+                }
+            }
+        );
+
+        electronAPI.onUpdateDownloaded(
+            async updateInfo => {
+
+                const version =
+                    updateInfo?.version || "new";
+
+                const shouldInstall =
+                    window.confirm(
+                        `Broadcast Sender ${version} is ready. Restart and install it now?`
+                    );
+
+                if (shouldInstall) {
+
+                    await electronAPI.installUpdate({
+                        silent: true,
+                        forceRunAfter: true
+                    });
+                }
+            }
+        );
+
+        electronAPI.onUpdateError(
+            error => {
+
+                showToast(
+                    error?.message ||
+                    "The update check failed",
+                    "error"
+                );
+            }
+        );
+    }
 
     async function loadAppVersion() {
 

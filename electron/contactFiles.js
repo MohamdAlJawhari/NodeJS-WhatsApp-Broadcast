@@ -75,7 +75,7 @@ function createContactFileService({
     const markerPath =
       path.join(
         dataDir,
-        ".default-contact-template-v1"
+        ".default-contact-template-v2"
       );
 
     if (fs.existsSync(markerPath)) {
@@ -92,14 +92,44 @@ function createContactFileService({
         fileName
       );
 
+    const legacyMarkerExists =
+      fs.existsSync(
+        path.join(
+          dataDir,
+          ".default-contact-template-v1"
+        )
+      );
+
+    const legacyRows = [
+      ["NUMBERS", "@USERNAME"],
+      ["15550100000", "@example_user"]
+    ];
+
+    const exampleRows = [
+      ["NUMBERS", "@USERNAME", "NAME", "PASSWORD"],
+      [
+        "15550100000",
+        "@example_user",
+        "Demo User",
+        "demo_password"
+      ]
+    ];
+
     if (!fs.existsSync(filePath)) {
+
+      if (legacyMarkerExists) {
+
+        fs.writeFileSync(
+          markerPath,
+          "created\n"
+        );
+
+        return null;
+      }
 
       writeContactFileRows(
         filePath,
-        [
-          ["NUMBERS", "@USERNAME"],
-          ["15550100000", "@example_user"]
-        ]
+        exampleRows
       );
 
       writeContactMeta(
@@ -107,7 +137,33 @@ function createContactFileService({
         {
           category: "none",
           description:
-            "Editable example with the required recipient columns for WhatsApp and Telegram. Replace the fictional row with real contacts before sending."
+            "Editable example with WhatsApp and Telegram recipient columns plus demo personalization fields. Replace the fictional row and password before sending."
+        }
+      );
+
+    } else if (
+      legacyMarkerExists &&
+      JSON.stringify(
+        normalizeContactRows(
+          readContactFileRows(filePath)
+        )
+      ) === JSON.stringify(legacyRows)
+    ) {
+
+      writeContactFileRows(
+        filePath,
+        exampleRows
+      );
+
+      const currentMeta =
+        readContactMeta(filePath);
+
+      writeContactMeta(
+        filePath,
+        {
+          ...currentMeta,
+          description:
+            "Editable example with WhatsApp and Telegram recipient columns plus demo personalization fields. Replace the fictional row and password before sending."
         }
       );
     }
