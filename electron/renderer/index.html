@@ -824,10 +824,35 @@
         </main>
 
         <footer class="status-bar" aria-label="Application status">
+            <button id="statusBarUpdate" class="status-update-marker hidden" type="button"></button>
             <span id="statusBarContacts">0 Contacts Loaded</span>
             <span id="statusBarReady">Ready for Broadcast</span>
         </footer>
 
+    </div>
+
+    <div id="updateDialogBackdrop" class="update-dialog-backdrop hidden">
+        <section class="update-dialog" role="dialog" aria-modal="true" aria-labelledby="updateDialogTitle" aria-describedby="updateDialogMessage">
+            <div class="update-dialog-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
+            </div>
+            <span id="updateDialogEyebrow" class="update-dialog-eyebrow">Update available</span>
+            <h2 id="updateDialogTitle">A new version is ready</h2>
+            <p id="updateDialogMessage">Download the latest improvements now, or continue using your current version.</p>
+            <div class="update-version-card">
+                <span>New version</span>
+                <strong id="updateDialogVersion">v—</strong>
+            </div>
+            <div id="updateProgressWrap" class="update-progress-wrap hidden">
+                <div class="update-progress-track"><span id="updateProgressBar"></span></div>
+                <small id="updateProgressText">Preparing download…</small>
+            </div>
+            <div class="update-dialog-actions">
+                <button id="updateLaterBtn" type="button">Stay on this version</button>
+                <button id="updatePrimaryBtn" class="primary-action" type="button">Download update</button>
+            </div>
+            <small class="update-dialog-note">You can install later from the update notice in the footer.</small>
+        </section>
     </div>
 
     <div id="toastContainer" aria-live="polite"></div>

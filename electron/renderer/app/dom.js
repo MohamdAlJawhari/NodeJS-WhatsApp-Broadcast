@@ -162,10 +162,32 @@
                 byId("statusBarConnection"),
             statusBarContacts:
                 byId("statusBarContacts"),
+            statusBarUpdate:
+                byId("statusBarUpdate"),
             statusBarReady:
                 byId("statusBarReady"),
             statusBarTime:
                 byId("statusBarTime"),
+            updateDialogBackdrop:
+                byId("updateDialogBackdrop"),
+            updateDialogEyebrow:
+                byId("updateDialogEyebrow"),
+            updateDialogMessage:
+                byId("updateDialogMessage"),
+            updateDialogTitle:
+                byId("updateDialogTitle"),
+            updateDialogVersion:
+                byId("updateDialogVersion"),
+            updateLaterBtn:
+                byId("updateLaterBtn"),
+            updatePrimaryBtn:
+                byId("updatePrimaryBtn"),
+            updateProgressBar:
+                byId("updateProgressBar"),
+            updateProgressText:
+                byId("updateProgressText"),
+            updateProgressWrap:
+                byId("updateProgressWrap"),
             stopBtn:
                 byId("stopBtn"),
             successCountEl:

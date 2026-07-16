@@ -232,26 +232,131 @@
 
     function registerUpdateUI() {
 
-        electronAPI.onUpdateAvailable(
-            async updateInfo => {
+        let availableVersion = "";
+        let updateState = "available";
 
-                const version =
-                    updateInfo?.version || "new";
+        function renderUpdateDialog() {
 
-                const shouldDownload =
-                    window.confirm(
-                        `Broadcast Sender ${version} is available. Download it now?`
-                    );
+            const ready =
+                updateState === "downloaded";
+            const downloading =
+                updateState === "downloading";
 
-                if (!shouldDownload) {
+            dom.updateDialogEyebrow.innerText =
+                ready
+                    ? "Ready to install"
+                    : downloading
+                        ? "Downloading update"
+                        : "Update available";
+            dom.updateDialogTitle.innerText =
+                ready
+                    ? "Your update is ready"
+                    : downloading
+                        ? "Getting the new version"
+                        : "A new version is available";
+            dom.updateDialogMessage.innerText =
+                ready
+                    ? "Restart Broadcast Sender to finish installing the update."
+                    : downloading
+                        ? "You can keep this window open while the update downloads."
+                        : "Get the latest improvements now, or stay on your current version and update later.";
+            dom.updateDialogVersion.innerText =
+                availableVersion
+                    ? `v${availableVersion}`
+                    : "New version";
+            dom.updatePrimaryBtn.innerText =
+                ready
+                    ? "Restart and install"
+                    : downloading
+                        ? "Downloading…"
+                        : "Download update";
+            dom.updatePrimaryBtn.disabled =
+                downloading;
+            dom.updateLaterBtn.innerText =
+                ready
+                    ? "Restart later"
+                    : "Stay on this version";
+            dom.updateProgressWrap.classList.toggle(
+                "hidden",
+                !downloading
+            );
+        }
+
+        function showUpdateDialog() {
+
+            renderUpdateDialog();
+            dom.updateDialogBackdrop.classList.remove(
+                "hidden"
+            );
+            dom.updatePrimaryBtn.focus();
+        }
+
+        function hideUpdateDialog() {
+
+            dom.updateDialogBackdrop.classList.add(
+                "hidden"
+            );
+        }
+
+        function showFooterUpdateMarker() {
+
+            dom.statusBarUpdate.innerText =
+                updateState === "downloaded"
+                    ? `Update v${availableVersion} ready — click to restart`
+                    : `Version ${availableVersion} available — click here to update`;
+            dom.statusBarUpdate.classList.remove(
+                "hidden"
+            );
+        }
+
+        dom.updateLaterBtn.addEventListener(
+            "click",
+            () => {
+                hideUpdateDialog();
+                showFooterUpdateMarker();
+            }
+        );
+
+        dom.statusBarUpdate.addEventListener(
+            "click",
+            showUpdateDialog
+        );
+
+        dom.updatePrimaryBtn.addEventListener(
+            "click",
+            async () => {
+
+                if (updateState === "downloaded") {
+
+                    const result =
+                        await electronAPI.installUpdate({
+                            silent: true,
+                            forceRunAfter: true
+                        });
+
+                    if (!result?.success) {
+
+                        showToast(
+                            result?.error ||
+                            "Could not install the update",
+                            "error"
+                        );
+                    }
 
                     return;
                 }
+
+                updateState = "downloading";
+                renderUpdateDialog();
 
                 const result =
                     await electronAPI.downloadUpdate();
 
                 if (!result?.success) {
+
+                    updateState = "available";
+                    renderUpdateDialog();
+                    showFooterUpdateMarker();
 
                     showToast(
                         result?.error ||
@@ -262,24 +367,45 @@
             }
         );
 
-        electronAPI.onUpdateDownloaded(
-            async updateInfo => {
+        electronAPI.onUpdateAvailable(
+            updateInfo => {
 
-                const version =
+                availableVersion =
                     updateInfo?.version || "new";
+                updateState = "available";
+                showUpdateDialog();
+            }
+        );
 
-                const shouldInstall =
-                    window.confirm(
-                        `Broadcast Sender ${version} is ready. Restart and install it now?`
+        electronAPI.onUpdateDownloaded(
+            updateInfo => {
+
+                availableVersion =
+                    updateInfo?.version ||
+                    availableVersion ||
+                    "new";
+                updateState = "downloaded";
+                dom.statusBarUpdate.classList.add("hidden");
+                showUpdateDialog();
+            }
+        );
+
+        electronAPI.onUpdateProgress(
+            progress => {
+
+                const percent =
+                    Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            Number(progress?.percent || 0)
+                        )
                     );
 
-                if (shouldInstall) {
-
-                    await electronAPI.installUpdate({
-                        silent: true,
-                        forceRunAfter: true
-                    });
-                }
+                dom.updateProgressBar.style.width =
+                    `${percent}%`;
+                dom.updateProgressText.innerText =
+                    `${Math.round(percent)}% downloaded`;
             }
         );
 
