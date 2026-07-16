@@ -62,6 +62,64 @@ function createContactFileService({
     );
   }
 
+  function ensureDefaultContactTemplate() {
+
+    const dataDir =
+      ensureDirectory(
+        path.join(
+          getWritableRootDir(),
+          "data"
+        )
+      );
+
+    const markerPath =
+      path.join(
+        dataDir,
+        ".default-contact-template-v1"
+      );
+
+    if (fs.existsSync(markerPath)) {
+
+      return null;
+    }
+
+    const fileName =
+      "Contact File Example.xlsx";
+
+    const filePath =
+      path.join(
+        ensureSavedContactsDir(),
+        fileName
+      );
+
+    if (!fs.existsSync(filePath)) {
+
+      writeContactFileRows(
+        filePath,
+        [
+          ["NUMBERS", "@USERNAME"],
+          ["15550100000", "@example_user"]
+        ]
+      );
+
+      writeContactMeta(
+        filePath,
+        {
+          category: "none",
+          description:
+            "Editable example with the required recipient columns for WhatsApp and Telegram. Replace the fictional row with real contacts before sending."
+        }
+      );
+    }
+
+    fs.writeFileSync(
+      markerPath,
+      "created\n"
+    );
+
+    return getSavedContactDetails(fileName);
+  }
+
   function sanitizeFileName(name) {
 
     return name
@@ -948,6 +1006,7 @@ function createContactFileService({
 
   return {
     archiveContactFile,
+    ensureDefaultContactTemplate,
     ensureSavedContactsDir,
     getSavedContactEntries,
     getSavedContactDetails,

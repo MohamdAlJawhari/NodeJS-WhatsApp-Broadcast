@@ -83,3 +83,57 @@ test("saved contact categories persist separately from spreadsheet content", () 
     });
   }
 });
+
+test("first launch creates one editable cross-channel contact example", () => {
+  const tempDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), "broadcast-contact-template-")
+  );
+
+  try {
+    const service = createContactFileService({
+      app: {
+        isPackaged: true,
+        getPath: () => tempDir
+      },
+      dialog: {},
+      shell: {}
+    });
+
+    const created =
+      service.ensureDefaultContactTemplate();
+
+    assert.equal(
+      created.fileName,
+      "Contact File Example.xlsx"
+    );
+    assert.deepEqual(created.rows, [
+      ["NUMBERS", "@USERNAME"],
+      ["15550100000", "@example_user"]
+    ]);
+    assert.match(
+      created.description,
+      /WhatsApp and Telegram/
+    );
+
+    assert.equal(
+      service.ensureDefaultContactTemplate(),
+      null
+    );
+
+    fs.unlinkSync(created.filePath);
+
+    assert.equal(
+      service.ensureDefaultContactTemplate(),
+      null
+    );
+    assert.equal(
+      fs.existsSync(created.filePath),
+      false
+    );
+  } finally {
+    fs.rmSync(tempDir, {
+      force: true,
+      recursive: true
+    });
+  }
+});

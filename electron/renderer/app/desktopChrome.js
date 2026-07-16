@@ -33,13 +33,16 @@
                 syncBroadcastChrome
             );
 
-            updateTime();
+            if (dom.statusBarTime) {
 
-            timeTimerId =
-                setInterval(
-                    updateTime,
-                    30000
-                );
+                updateTime();
+
+                timeTimerId =
+                    setInterval(
+                        updateTime,
+                        30000
+                    );
+            }
 
             syncConnectionChrome();
             syncContactsChrome();

@@ -166,6 +166,8 @@ app.whenReady().then(() => {
 
   settingsService.configureRuntimePaths();
 
+  contactFiles.ensureDefaultContactTemplate();
+
   createWindow();
 
   updateService.scheduleStartupCheck();
