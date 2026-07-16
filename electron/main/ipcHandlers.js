@@ -3,6 +3,7 @@ const {
 } = require("../../src/telegramRecipient");
 
 const fs = require("node:fs");
+const path = require("node:path");
 
 const {
   generateMessage
@@ -43,7 +44,10 @@ function registerIpcHandlers({
 }) {
 
   const helpVideo =
-    getHelpVideoConfig(process.env.HELP_VIDEO_URL);
+    getHelpVideoConfig(
+      process.env.HELP_VIDEO_URL ||
+      readPackagedHelpVideoUrl()
+    );
 
   ipcMain.handle(
     "get-help-video",
@@ -508,6 +512,35 @@ function getHelpVideoConfig(value) {
   } catch (_error) {
 
     return { url: "", thumbnailUrl: "" };
+  }
+}
+
+function readPackagedHelpVideoUrl() {
+
+  try {
+
+    const configPath =
+      path.join(
+        __dirname,
+        "..",
+        "public-config.json"
+      );
+
+    if (!fs.existsSync(configPath)) {
+
+      return "";
+    }
+
+    const config =
+      JSON.parse(
+        fs.readFileSync(configPath, "utf8")
+      );
+
+    return String(config.helpVideoUrl || "");
+
+  } catch (_error) {
+
+    return "";
   }
 }
 
