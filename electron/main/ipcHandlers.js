@@ -32,6 +32,7 @@ const {
 function registerIpcHandlers({
   ipcMain,
   dialog,
+  shell,
   contactFiles,
   whatsappConnection,
   telegramConnection,
@@ -40,6 +41,29 @@ function registerIpcHandlers({
   settingsService,
   updateService
 }) {
+
+  const helpVideo =
+    getHelpVideoConfig(process.env.HELP_VIDEO_URL);
+
+  ipcMain.handle(
+    "get-help-video",
+    async () => helpVideo
+  );
+
+  ipcMain.handle(
+    "open-help-video",
+    async () => {
+
+      if (!helpVideo.url) {
+
+        return { success: false };
+      }
+
+      await shell.openExternal(helpVideo.url);
+
+      return { success: true };
+    }
+  );
 
   ipcMain.handle(
     "select-contacts-file",
@@ -431,6 +455,63 @@ function registerIpcHandlers({
   );
 }
 
+function getHelpVideoConfig(value) {
+
+  try {
+
+    const url = new URL(String(value || "").trim());
+
+    if (url.protocol !== "https:") {
+
+      return { url: "", thumbnailUrl: "" };
+    }
+
+    const host = url.hostname.toLowerCase();
+    let videoId = "";
+
+    if (host === "youtu.be") {
+
+      videoId = url.pathname.split("/").filter(Boolean)[0] || "";
+
+    } else if (
+      host === "youtube.com" ||
+      host === "www.youtube.com" ||
+      host === "m.youtube.com"
+    ) {
+
+      if (url.pathname === "/watch") {
+
+        videoId = url.searchParams.get("v") || "";
+
+      } else {
+
+        const parts = url.pathname.split("/").filter(Boolean);
+
+        if (["embed", "shorts", "live"].includes(parts[0])) {
+
+          videoId = parts[1] || "";
+        }
+      }
+    }
+
+    if (!/^[A-Za-z0-9_-]{6,20}$/.test(videoId)) {
+
+      return { url: "", thumbnailUrl: "" };
+    }
+
+    return {
+      url: url.toString(),
+      thumbnailUrl:
+        `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+    };
+
+  } catch (_error) {
+
+    return { url: "", thumbnailUrl: "" };
+  }
+}
+
 module.exports = {
+  getHelpVideoConfig,
   registerIpcHandlers
 };

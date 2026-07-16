@@ -62,6 +62,12 @@
                 byId("headerWhatsAppStatus"),
             helpNavBtn:
                 byId("helpNavBtn"),
+            helpPage:
+                byId("helpPage"),
+            helpVideoCard:
+                byId("helpVideoCard"),
+            helpVideoThumbnail:
+                byId("helpVideoThumbnail"),
             linkApplyBtn:
                 byId("linkApplyBtn"),
             linkCancelBtn:

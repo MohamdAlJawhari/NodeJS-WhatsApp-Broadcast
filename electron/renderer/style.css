@@ -4107,6 +4107,56 @@ body[data-channel="telegram"] .sidebar-nav-item.active {
     0 8px 18px rgba(0, 0, 0, 0.14);
 }
 
+/* Help center */
+.help-page { max-width: 1440px; margin: 0 auto; padding: 4px 0 36px; }
+.help-hero { display: flex; justify-content: space-between; gap: 24px; align-items: center; margin-bottom: 18px; padding: 26px 28px; border: 1px solid #dfe7f3; border-radius: 16px; background: linear-gradient(135deg, #f8fbff 0%, #f3f0ff 100%); }
+.help-hero h2 { margin: 5px 0 8px; color: #202438; font-size: 28px; letter-spacing: -.5px; }
+.help-hero p { max-width: 720px; margin: 0; color: #686e82; font-size: 14px; line-height: 1.6; }
+.help-hero-icon { display: grid; place-items: center; flex: 0 0 62px; width: 62px; height: 62px; border-radius: 18px; background: #5b5ceb; color: #fff; font-size: 32px; font-weight: 800; box-shadow: 0 12px 28px rgba(91, 92, 235, .22); }
+.help-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+.help-content, .help-sidebar { display: grid; gap: 18px; min-width: 0; }
+.help-section, .help-video-panel, .help-tips-panel { padding: 22px; }
+.help-section-heading { display: flex; gap: 13px; align-items: flex-start; margin-bottom: 18px; }
+.help-section-heading > span { display: grid; place-items: center; flex: 0 0 30px; width: 30px; height: 30px; border-radius: 9px; background: #eeeeff; color: #5051d8; font-weight: 800; }
+.help-section h3, .help-video-panel h3, .help-tips-panel h3 { margin: 0; color: #282b3d; font-size: 17px; }
+.help-section-heading p { margin: 4px 0 0; color: #84889a; font-size: 12px; }
+.help-channel-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.help-channel-card { overflow: hidden; padding: 18px; border: 1px solid #e8eaf1; border-radius: 12px; background: #fbfcfe; }
+.help-channel-card h4 { margin: 10px 0 7px; color: #303345; font-size: 15px; }
+.help-channel-card > p { min-height: 58px; margin: 0 0 14px; color: #6f7385; font-size: 12px; line-height: 1.55; }
+.help-channel-label { display: inline-flex; padding: 4px 8px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; }
+.help-whatsapp-card .help-channel-label { background: #e9faef; color: #16823d; }
+.help-telegram-card .help-channel-label { background: #eaf6ff; color: #1683bd; }
+.help-page code { padding: 2px 5px; border-radius: 5px; background: #f0f1f6; color: #44485b; font-family: Consolas, monospace; font-size: .92em; }
+.help-table-wrap { overflow-x: auto; border: 1px solid #e7e9f0; border-radius: 9px; }
+.help-example-table { width: 100%; min-width: 390px; border-collapse: collapse; background: #fff; font-size: 11px; }
+.help-example-table th, .help-example-table td { padding: 9px 10px; border-right: 1px solid #eceef3; border-bottom: 1px solid #eceef3; text-align: left; white-space: nowrap; }
+.help-example-table th { background: #f5f6f9; color: #55596c; font-size: 9px; letter-spacing: .35px; }
+.help-example-table tr:last-child td { border-bottom: 0; }
+.help-note { margin-top: 14px; padding: 12px 14px; border-left: 3px solid #f59e0b; border-radius: 7px; background: #fff9eb; color: #75613a; font-size: 12px; line-height: 1.55; }
+.help-steps { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; counter-reset: help-step; }
+.help-steps li { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 14px; padding: 12px 4px; border-bottom: 1px solid #eef0f4; color: #717587; font-size: 12px; line-height: 1.5; }
+.help-steps li:last-child { border-bottom: 0; }
+.help-steps strong { color: #36394b; }
+.help-video-panel h3 { margin: 5px 0 14px; }
+.help-video-card { position: relative; display: block; width: 100%; min-height: 180px; overflow: hidden; padding: 0; border: 0; border-radius: 12px; background: #191a22; box-shadow: 0 10px 24px rgba(24, 26, 38, .15); }
+.help-video-card img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.help-video-card:not(.is-unavailable) .help-video-placeholder { display: none; }
+.help-video-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; padding: 24px; background: radial-gradient(circle at 70% 20%, #41445c, #1c1d27 65%); color: #fff; }
+.help-video-placeholder small { color: #b8bbca; font-size: 10px; }
+.help-video-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 7px; background: linear-gradient(transparent 35%, rgba(12, 13, 19, .76)); color: #fff; opacity: 0; transition: opacity .18s ease; }
+.help-video-card:hover:not(:disabled) .help-video-overlay,
+.help-video-card:focus-visible:not(:disabled) .help-video-overlay {
+  opacity: 1;
+}
+.help-play-icon { display: grid; place-items: center; width: 46px; height: 46px; padding-left: 3px; border-radius: 50%; background: #ff0033; color: #fff; font-size: 18px; box-shadow: 0 7px 18px rgba(0, 0, 0, .28); }
+.help-video-card.is-unavailable:disabled { opacity: 1; cursor: default; }
+.help-tips-panel ul { display: grid; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; }
+.help-tips-panel li { position: relative; padding-left: 22px; color: #686c7e; font-size: 12px; line-height: 1.45; }
+.help-tips-panel li::before { content: "✓"; position: absolute; left: 0; color: #16a34a; font-weight: 900; }
+@media (max-width: 1100px) { .help-layout { grid-template-columns: 1fr; } .help-sidebar { grid-template-columns: minmax(280px, .8fr) minmax(0, 1fr); } }
+@media (max-width: 760px) { .help-channel-grid, .help-sidebar { grid-template-columns: 1fr; } .help-hero { align-items: flex-start; } .help-hero-icon { display: none; } .help-steps li { grid-template-columns: 90px minmax(0, 1fr); } }
+
 /* Presentation-only contact file categories. */
 .saved-contact-item {
   position: relative;

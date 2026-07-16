@@ -10,6 +10,16 @@ contextBridge.exposeInMainWorld(
     getPathForFile: (file) =>
       webUtils.getPathForFile(file),
 
+    getHelpVideo: () =>
+      ipcRenderer.invoke(
+        "get-help-video"
+      ),
+
+    openHelpVideo: () =>
+      ipcRenderer.invoke(
+        "open-help-video"
+      ),
+
     selectMediaFile: () =>
       ipcRenderer.invoke(
         "select-media-file"

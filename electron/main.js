@@ -118,6 +118,7 @@ const updateService =
 registerIpcHandlers({
   ipcMain,
   dialog,
+  shell,
   contactFiles,
   whatsappConnection,
   telegramConnection,

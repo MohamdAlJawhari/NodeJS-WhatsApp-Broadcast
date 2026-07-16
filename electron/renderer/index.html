@@ -669,6 +669,81 @@
 
             </section>
 
+            <section id="helpPage" class="app-page help-page hidden">
+                <div class="help-hero">
+                    <div>
+                        <span class="section-label">Help Center</span>
+                        <h2>How to use Broadcast Sender</h2>
+                        <p>Prepare your contacts, connect the correct channel, write your message, and review the preview before sending.</p>
+                    </div>
+                    <span class="help-hero-icon" aria-hidden="true">?</span>
+                </div>
+
+                <div class="help-layout">
+                    <div class="help-content">
+                        <section class="surface-card help-section">
+                            <div class="help-section-heading"><span>1</span><div><h3>Prepare the Excel file</h3><p>The first row must contain column names. Each following row is one recipient.</p></div></div>
+
+                            <div class="help-channel-grid">
+                                <article class="help-channel-card help-whatsapp-card">
+                                    <span class="help-channel-label">WhatsApp</span>
+                                    <h4>Use a <code>NUMBERS</code> column</h4>
+                                    <p>Enter complete phone numbers, preferably with the country code. The app also recognizes the configured phone column, such as <code>phone</code>.</p>
+                                    <div class="help-table-wrap">
+                                        <table class="help-example-table">
+                                            <thead><tr><th>NUMBERS</th><th>NAME</th><th>COMPANY</th></tr></thead>
+                                            <tbody><tr><td>96170123456</td><td>Maya</td><td>Example Co.</td></tr><tr><td>96103123456</td><td>Karim</td><td>Demo Ltd.</td></tr></tbody>
+                                        </table>
+                                    </div>
+                                </article>
+
+                                <article class="help-channel-card help-telegram-card">
+                                    <span class="help-channel-label">Telegram</span>
+                                    <h4>Use an <code>@USERNAME</code> column</h4>
+                                    <p>Usernames should include the <code>@</code>. If a person has no username, use their phone number only after saving that number as a contact in the Telegram account connected to this app.</p>
+                                    <div class="help-table-wrap">
+                                        <table class="help-example-table">
+                                            <thead><tr><th>@USERNAME</th><th>NAME</th><th>DEPARTMENT</th></tr></thead>
+                                            <tbody><tr><td>@maya_example</td><td>Maya</td><td>Sales</td></tr><tr><td>@karim_demo</td><td>Karim</td><td>Support</td></tr></tbody>
+                                        </table>
+                                    </div>
+                                </article>
+                            </div>
+
+                            <div class="help-note"><strong>Important:</strong> Keep column names unique and do not rename or remove the required recipient column. Extra columns can be used as message variables, for example <code>{{NAME}}</code>.</div>
+                        </section>
+
+                        <section class="surface-card help-section">
+                            <div class="help-section-heading"><span>2</span><div><h3>Send a broadcast</h3><p>Follow these steps in order for a safer send.</p></div></div>
+                            <ol class="help-steps">
+                                <li><strong>Connect</strong><span>Connect WhatsApp or Telegram and complete the QR/login process.</span></li>
+                                <li><strong>Load contacts</strong><span>Choose the prepared Excel file or select a saved file from the Contact Library.</span></li>
+                                <li><strong>Compose</strong><span>Write the message and insert variables whose names match your Excel columns.</span></li>
+                                <li><strong>Preview</strong><span>Check sample messages, validation warnings, recipients, and optional media.</span></li>
+                                <li><strong>Send</strong><span>Start the broadcast and monitor the progress and result counters.</span></li>
+                            </ol>
+                        </section>
+                    </div>
+
+                    <aside class="help-sidebar">
+                        <section class="surface-card help-video-panel">
+                            <span class="section-label">Video guide</span>
+                            <h3>Watch the walkthrough</h3>
+                            <button id="helpVideoCard" class="help-video-card is-unavailable" type="button" disabled>
+                                <img id="helpVideoThumbnail" alt="Video walkthrough thumbnail">
+                                <span class="help-video-placeholder"><span class="help-play-icon">▶</span><strong>App walkthrough</strong><small>Add HELP_VIDEO_URL to .env</small></span>
+                                <span class="help-video-overlay"><span class="help-play-icon">▶</span><strong>Watch on YouTube</strong></span>
+                            </button>
+                        </section>
+
+                        <section class="surface-card help-tips-panel">
+                            <h3>Quick checks</h3>
+                            <ul><li>Use one recipient per row.</li><li>Include country codes in phone numbers.</li><li>Make sure Telegram contacts are visible to the connected account.</li><li>Send a small test broadcast first.</li><li>Review warnings before starting.</li></ul>
+                        </section>
+                    </aside>
+                </div>
+            </section>
+
             <section id="contactEditorPage" class="app-page contact-editor-page hidden">
                 <button id="editorBackBtn" class="editor-back-link" data-editor-icon="arrow-left" type="button">Contact Library</button>
 

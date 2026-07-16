@@ -238,34 +238,7 @@
             "click",
             async () => {
 
-                if (!editorFile) {
-
-                    return;
-                }
-
-                const result =
-                    await window.electronAPI
-                        .exportSavedContactFile(
-                            editorFile.id
-                        );
-
-                if (!result.success) {
-
-                    if (result.error) {
-
-                        showToast(
-                            result.error,
-                            "error"
-                        );
-                    }
-
-                    return;
-                }
-
-                showToast(
-                    "Contact file exported",
-                    "success"
-                );
+                await exportEditorFile();
             }
         );
 
@@ -358,7 +331,8 @@
                 const detailsSaved =
                     await saveEditorDetails({
                         notify: false,
-                        reload: false
+                        reload: false,
+                        preserveRows: rowsToSave
                     });
 
                 if (!detailsSaved) {
@@ -430,11 +404,15 @@
 
         document.getElementById("editorDuplicateFileBtn").addEventListener("click", async () => {
             closeEditorFileMenu();
-            editorExportBtn.click();
-            showToast("A copy is ready to save with a new name", "success");
+            await exportEditorFile({
+                successMessage:
+                    "A copy was exported successfully"
+            });
         });
 
-        document.getElementById("editorToolbarExportBtn").addEventListener("click", () => editorExportBtn.click());
+        document.getElementById("editorToolbarExportBtn").addEventListener("click", async () => {
+            await exportEditorFile();
+        });
         document.getElementById("editorImportBtn").addEventListener("click", () => document.getElementById("contactsAddFileBtn")?.click());
 
         editorUI.duplicateSelected.addEventListener("click", duplicateSelectedEditorRows);
@@ -461,6 +439,7 @@
             const header = editorRows[0];
             const rows = editorRows.slice(1).sort((a, b) => String(a[phoneIndex] || "").localeCompare(String(b[phoneIndex] || ""), undefined, { numeric: true }));
             editorRows = [header, ...rows];
+            selectedEditorRows.clear();
             renderContactTableEditor();
         });
 
@@ -1545,6 +1524,7 @@
                 sourceRow ? [...sourceRow] : Array(width).fill("")
             );
 
+            selectedEditorRows.clear();
             renderContactTableEditor();
         }
 
@@ -1559,6 +1539,7 @@
 
             editorRows.splice(index, 1);
 
+            selectedEditorRows.clear();
             renderContactTableEditor();
         }
 
@@ -1621,9 +1602,46 @@
             return `column_${index}`;
         }
 
+        async function exportEditorFile({
+            successMessage = "Contact file exported"
+        } = {}) {
+
+            if (!editorFile) {
+
+                return false;
+            }
+
+            const result =
+                await window.electronAPI
+                    .exportSavedContactFile(
+                        editorFile.id
+                    );
+
+            if (!result.success) {
+
+                if (result.error) {
+
+                    showToast(
+                        result.error,
+                        "error"
+                    );
+                }
+
+                return false;
+            }
+
+            showToast(
+                successMessage,
+                "success"
+            );
+
+            return true;
+        }
+
         async function saveEditorDetails({
             notify = true,
-            reload = true
+            reload = true,
+            preserveRows = null
         } = {}) {
 
             if (!editorFile) {
@@ -1667,7 +1685,12 @@
             );
 
             setEditorFile(
-                result.file
+                preserveRows
+                    ? {
+                        ...result.file,
+                        rows: preserveRows
+                    }
+                    : result.file
             );
 
             if (notify) {
@@ -1720,6 +1743,8 @@
                 result.file
             );
 
+            let senderReloadFailed = false;
+
             if (
                 selectedContactFileId ===
                 editorFile.id
@@ -1751,6 +1776,33 @@
                     });
 
                     await refreshValidationWarnings();
+
+                } else {
+
+                    selectedContactFileId =
+                        null;
+
+                    setContacts([]);
+
+                    setStatusText(
+                        "No file selected"
+                    );
+
+                    updateSelectedContactDisplay({
+                        count: 0,
+                        filePath: null,
+                        statusText:
+                            "Saved file must be selected again"
+                    });
+
+                    await refreshValidationWarnings();
+
+                    showToast(
+                        "The file was saved, but sender contacts could not be refreshed. Select the file again before sending.",
+                        "error"
+                    );
+
+                    senderReloadFailed = true;
                 }
             }
 
@@ -1769,7 +1821,7 @@
 
             await loadSavedContactFiles();
 
-            return true;
+            return !senderReloadFailed;
         }
 
         function closeEditorFileMenu() {

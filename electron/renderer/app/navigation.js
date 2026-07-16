@@ -2,8 +2,11 @@
 
     function createNavigationUI({
         dom,
+        electronAPI,
         getContactFilesUI
     }) {
+
+        let helpVideoLoaded = false;
 
         async function showPage(
             page
@@ -24,12 +27,23 @@
                 page !== "editor"
             );
 
-            setActiveNav(
-                page === "contacts" ||
-                page === "editor"
-                    ? dom.contactsNavBtn
-                    : dom.senderNavBtn
+            dom.helpPage.classList.toggle(
+                "hidden",
+                page !== "help"
             );
+
+            setActiveNav(
+                page === "help"
+                    ? dom.helpNavBtn
+                    : page === "contacts" || page === "editor"
+                        ? dom.contactsNavBtn
+                        : dom.senderNavBtn
+            );
+
+            if (page === "help") {
+
+                await loadHelpVideo();
+            }
 
             if (page === "contacts") {
 
@@ -44,6 +58,39 @@
                         console.error("Failed to load contact files:", error);
                     }
                 }
+            }
+        }
+
+        async function loadHelpVideo() {
+
+            if (helpVideoLoaded || !dom.helpVideoCard) {
+
+                return;
+            }
+
+            helpVideoLoaded = true;
+
+            try {
+
+                const video =
+                    await electronAPI.getHelpVideo();
+
+                if (!video?.url || !video?.thumbnailUrl) {
+
+                    return;
+                }
+
+                dom.helpVideoThumbnail.src =
+                    video.thumbnailUrl;
+
+                dom.helpVideoCard.disabled = false;
+                dom.helpVideoCard.classList.remove(
+                    "is-unavailable"
+                );
+
+            } catch (_error) {
+
+                helpVideoLoaded = false;
             }
         }
 
@@ -165,10 +212,21 @@
                 dom.helpNavBtn.addEventListener(
                     "click",
                     async () => {
-                        await showSenderPanel(
-                            dom.helpNavBtn,
-                            dom.validationPanel
-                        );
+                        await showPage("help");
+                    }
+                );
+            }
+
+            if (dom.helpVideoCard) {
+
+                dom.helpVideoCard.addEventListener(
+                    "click",
+                    async () => {
+
+                        if (!dom.helpVideoCard.disabled) {
+
+                            await electronAPI.openHelpVideo();
+                        }
                     }
                 );
             }

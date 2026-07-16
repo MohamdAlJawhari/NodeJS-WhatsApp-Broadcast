@@ -28,6 +28,7 @@
         window.BroadcastRendererNavigation
             .createNavigationUI({
                 dom,
+                electronAPI,
                 getContactFilesUI
             });
 
