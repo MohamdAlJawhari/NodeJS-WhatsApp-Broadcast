@@ -20,6 +20,13 @@ function getTelegramConfig(
 
 function validateTelegramConfig(config) {
 
+  if (!normalizeText(config.apiId)) {
+
+    throw new Error(
+      "TELEGRAM_API_ID is required. Enter it in Connections."
+    );
+  }
+
   const apiId =
     Number(config.apiId);
 

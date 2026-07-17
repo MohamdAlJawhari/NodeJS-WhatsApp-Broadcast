@@ -8,17 +8,21 @@ const {
   validateTelegramConfig
 } = require("./telegramSession");
 
-async function initialize() {
+async function initialize({
+  config: suppliedConfig,
+  tokensDir
+} = {}) {
 
   const config =
     validateTelegramConfig(
-      getTelegramConfig()
+      suppliedConfig || getTelegramConfig()
     );
 
   const sessionString =
     loadTelegramSession({
       sessionName:
-        config.sessionName
+        config.sessionName,
+      tokensDir
     });
 
   if (!sessionString) {

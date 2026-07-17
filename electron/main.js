@@ -6,7 +6,8 @@ const {
   BrowserWindow,
   ipcMain,
   dialog,
-  shell
+  shell,
+  safeStorage
 } = require("electron");
 
 const path = require("path");
@@ -39,6 +40,10 @@ const {
 const {
   createTelegramConnectionService
 } = require("./main/telegramConnection");
+
+const {
+  createTelegramCredentialsService
+} = require("./main/telegramCredentialsService");
 
 const {
   createBroadcastOrchestrator
@@ -96,8 +101,17 @@ const whatsappConnection =
     wppconnect
   });
 
+const telegramCredentials =
+  createTelegramCredentialsService({
+    runtimePaths,
+    safeStorage
+  });
+
 const telegramConnection =
-  createTelegramConnectionService();
+  createTelegramConnectionService({
+    runtimePaths,
+    telegramCredentials
+  });
 
 const broadcastOrchestrator =
   createBroadcastOrchestrator({
@@ -122,6 +136,7 @@ registerIpcHandlers({
   contactFiles,
   whatsappConnection,
   telegramConnection,
+  telegramCredentials,
   broadcastOrchestrator,
   logService,
   settingsService,

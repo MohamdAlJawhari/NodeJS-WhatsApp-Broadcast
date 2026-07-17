@@ -37,6 +37,7 @@ function registerIpcHandlers({
   contactFiles,
   whatsappConnection,
   telegramConnection,
+  telegramCredentials,
   broadcastOrchestrator,
   logService,
   settingsService,
@@ -251,6 +252,36 @@ function registerIpcHandlers({
     async (event) => {
       return telegramConnection.connect(event);
     }
+  );
+
+  ipcMain.handle(
+    "get-telegram-credentials-status",
+    async () => telegramCredentials.getStatus()
+  );
+
+  ipcMain.handle(
+    "save-telegram-credentials",
+    async (_, credentials) => {
+      try {
+        return {
+          success: true,
+          ...telegramCredentials.saveCredentials(credentials)
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: error.message
+        };
+      }
+    }
+  );
+
+  ipcMain.handle(
+    "delete-telegram-credentials",
+    async () => ({
+      success: true,
+      ...telegramCredentials.deleteCredentials()
+    })
   );
 
   ipcMain.handle(

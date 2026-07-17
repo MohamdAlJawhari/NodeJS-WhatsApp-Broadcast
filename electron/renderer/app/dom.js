@@ -196,6 +196,20 @@
                 byId("settingsNavBtn"),
             telegramConnectionStatus:
                 byId("telegramConnectionStatus"),
+            telegramApiHashInput:
+                byId("telegramApiHashInput"),
+            telegramApiIdInput:
+                byId("telegramApiIdInput"),
+            telegramCredentialsStatus:
+                byId("telegramCredentialsStatus"),
+            telegramCredentialsCard:
+                byId("telegramCredentialsCard"),
+            toggleTelegramCredentialsBtn:
+                byId("toggleTelegramCredentialsBtn"),
+            saveTelegramCredentialsBtn:
+                byId("saveTelegramCredentialsBtn"),
+            deleteTelegramCredentialsBtn:
+                byId("deleteTelegramCredentialsBtn"),
             telegramLoginLink:
                 byId("telegramLoginLink"),
             telegramQrImage:

@@ -99,6 +99,22 @@ contextBridge.exposeInMainWorld(
         "connect-telegram"
       ),
 
+    getTelegramCredentialsStatus: () =>
+      ipcRenderer.invoke(
+        "get-telegram-credentials-status"
+      ),
+
+    saveTelegramCredentials: (credentials) =>
+      ipcRenderer.invoke(
+        "save-telegram-credentials",
+        credentials
+      ),
+
+    deleteTelegramCredentials: () =>
+      ipcRenderer.invoke(
+        "delete-telegram-credentials"
+      ),
+
     onQRCode: (callback) =>
       ipcRenderer.on(
         "qr-code",

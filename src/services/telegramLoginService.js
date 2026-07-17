@@ -10,6 +10,8 @@ const {
 } = require("./telegramSession");
 
 async function loginWithTelegramQr({
+  config: suppliedConfig,
+  tokensDir,
   onError,
   onPassword,
   onQrCode,
@@ -18,12 +20,13 @@ async function loginWithTelegramQr({
 
   const config =
     validateTelegramConfig(
-      getTelegramConfig()
+      suppliedConfig || getTelegramConfig()
     );
 
   const sessionOptions = {
     sessionName:
-      config.sessionName
+      config.sessionName,
+    tokensDir
   };
 
   const client =

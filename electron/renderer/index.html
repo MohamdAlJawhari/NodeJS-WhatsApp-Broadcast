@@ -138,7 +138,42 @@
                                     <h3>Telegram</h3>
                                     <p id="telegramConnectionStatus">Telegram not connected</p>
                                 </div>
-                                <button id="connectTelegramBtn" type="button">Connect Telegram</button>
+                                <div class="telegram-connect-actions">
+                                    <button id="connectTelegramBtn" type="button">Connect Telegram</button>
+                                    <button id="toggleTelegramCredentialsBtn" class="credentials-toggle" type="button"
+                                        aria-expanded="false" aria-controls="telegramCredentialsCard"
+                                        title="Show Telegram credentials" aria-label="Show Telegram credentials">
+                                        <span aria-hidden="true">›</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="telegramCredentialsCard" class="telegram-credentials-card hidden">
+                                <div class="telegram-credentials-heading">
+                                    <div>
+                                        <span class="credential-heading-icon" aria-hidden="true">🔐</span>
+                                        <strong>Telegram credentials</strong>
+                                        <p id="telegramCredentialsStatus">Not configured</p>
+                                    </div>
+                                    <a href="https://my.telegram.org/apps" target="_blank" rel="noreferrer">Get credentials</a>
+                                </div>
+                                <div class="telegram-credentials-fields">
+                                    <label>
+                                        <span>API ID</span>
+                                        <input id="telegramApiIdInput" type="text" inputmode="numeric" autocomplete="off"
+                                            placeholder="Enter your API ID">
+                                    </label>
+                                    <label>
+                                        <span>API hash</span>
+                                        <input id="telegramApiHashInput" type="password" autocomplete="new-password"
+                                            placeholder="Enter your API hash">
+                                    </label>
+                                </div>
+                                <p class="credential-help">Encrypted by Windows and saved only for your Windows account on this computer.</p>
+                                <div class="telegram-credentials-actions">
+                                    <button id="saveTelegramCredentialsBtn" type="button">Save credentials</button>
+                                    <button id="deleteTelegramCredentialsBtn" class="secondary-action" type="button">Delete credentials</button>
+                                </div>
                             </div>
 
                             <div id="telegramQrPanel" class="telegram-qr-panel hidden">

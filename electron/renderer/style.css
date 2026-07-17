@@ -356,7 +356,7 @@ svg circle {
 
 .sender-workspace {
   display: grid;
-  grid-template-columns: minmax(288px, 320px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
   gap: 20px;
   align-items: start;
 }
@@ -366,6 +366,18 @@ svg circle {
   display: grid;
   gap: 16px;
   min-width: 0;
+  max-width: 100%;
+}
+
+.setup-column {
+  overflow-x: clip;
+}
+
+.setup-column > *,
+.compose-column > * {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .surface-card,
@@ -4190,6 +4202,183 @@ body[data-channel="telegram"] .telegram-channel-card {
   background:
     linear-gradient(135deg, rgba(var(--channel-accent-rgb), 0.075), rgba(255, 255, 255, 0.96));
   box-shadow: 0 10px 24px rgba(var(--channel-accent-rgb), 0.08);
+}
+
+.telegram-credentials-card {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid #dbe7f0;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #f8fbfd, #f1f7fb);
+  box-shadow: inset 3px 0 0 #229ed9, 0 8px 20px rgba(15, 23, 42, 0.05);
+  animation: telegram-credentials-reveal 160ms ease-out;
+}
+
+@keyframes telegram-credentials-reveal {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.telegram-connect-actions {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+/* Keep Telegram's primary and disclosure buttons in the card action row. */
+#connectionsPanel .channel-card .telegram-connect-actions {
+  grid-area: action;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40px;
+  width: 100%;
+  min-width: 0;
+  gap: 8px;
+  margin-top: var(--space-1);
+}
+
+#connectionsPanel .channel-card .telegram-connect-actions button {
+  grid-area: auto;
+  width: auto;
+  min-width: 0;
+  margin-top: 0;
+}
+
+#connectionsPanel .channel-card .telegram-connect-actions #connectTelegramBtn {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.credentials-toggle {
+  width: 38px;
+  min-width: 38px;
+  padding: 0;
+  border: 1px solid #cce4f1;
+  border-radius: 9px;
+  background: #edf6fb;
+  color: #167cac;
+}
+
+#connectionsPanel .channel-card .telegram-connect-actions .credentials-toggle {
+  width: 40px;
+  min-width: 40px;
+}
+
+.credentials-toggle span {
+  display: block;
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1;
+  transition: transform 160ms ease;
+}
+
+.credentials-toggle[aria-expanded="true"] span {
+  transform: rotate(90deg);
+}
+
+.credentials-toggle:hover:not(:disabled) {
+  border-color: #9fd2e9;
+  background: #dff1fa;
+}
+
+.telegram-credentials-heading,
+.telegram-credentials-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.telegram-credentials-heading > div {
+  min-width: 0;
+}
+
+.telegram-credentials-heading a {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.telegram-credentials-heading p,
+.credential-help {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.credential-heading-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  margin-right: 5px;
+  border-radius: 7px;
+  background: #e0f2fe;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.telegram-credentials-heading a {
+  color: #167cac;
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.telegram-credentials-heading a:hover {
+  text-decoration: underline;
+}
+
+.telegram-credentials-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.telegram-credentials-fields label {
+  display: grid;
+  gap: 5px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.telegram-credentials-fields input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border-color: #cbdde7;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.telegram-credentials-fields input:focus {
+  border-color: #229ed9;
+  box-shadow: 0 0 0 3px rgba(34, 158, 217, 0.13);
+}
+
+.telegram-credentials-actions {
+  justify-content: flex-start;
+  margin-top: 12px;
+}
+
+.telegram-credentials-actions button {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+@media (max-width: 720px) {
+  .telegram-credentials-fields {
+    grid-template-columns: 1fr;
+  }
+
+  #connectionsPanel .channel-card .telegram-connect-actions {
+    grid-template-columns: minmax(0, 1fr) 40px;
+  }
 }
 
 body[data-channel="whatsapp"] #connectBtn,

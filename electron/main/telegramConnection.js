@@ -7,7 +7,10 @@ const {
 const telegramService =
   require("../../src/services/telegramService");
 
-function createTelegramConnectionService() {
+function createTelegramConnectionService({
+  runtimePaths,
+  telegramCredentials
+}) {
 
   async function connect(event) {
 
@@ -15,6 +18,12 @@ function createTelegramConnectionService() {
 
       const result =
         await loginWithTelegramQr({
+
+          config:
+            telegramCredentials.requireCredentials(),
+
+          tokensDir:
+            runtimePaths.getTokensDir(),
 
           onError: async (error) => {
 
@@ -94,7 +103,12 @@ function createTelegramConnectionService() {
 
   async function createClient() {
 
-    return telegramService.initialize();
+    return telegramService.initialize({
+      config:
+        telegramCredentials.requireCredentials(),
+      tokensDir:
+        runtimePaths.getTokensDir()
+    });
   }
 
   async function disconnectClient(client) {
